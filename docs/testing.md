@@ -301,3 +301,104 @@ Session transcripts are JSONL (JSON Lines) files where each line is a JSON objec
 ```
 
 The `agentId` field links to subagent sessions, and the `usage` field contains token usage for that specific subagent invocation.
+
+## Antigravity 2.0 Testing
+
+### Overview
+
+The Antigravity 2.0 test suite lives at `tests/antigravity/` and validates Superpowers skills on Google DeepMind's Antigravity platform. It mirrors the Claude Code test suite but is adapted for Antigravity's CLI, transcript format, and tool names.
+
+### Test Location
+
+```
+tests/antigravity/
+├── README.md                          # Full documentation
+├── test-helpers.sh                    # Shared test utilities
+├── test-plugin-discovery.sh           # Plugin loading verification
+├── test-subagent-dispatch.sh          # Subagent workflow integration test
+├── test-tool-mapping-accuracy.sh      # Static tool name validation
+├── test-worktree-workspace.sh         # Workspace isolation guidance
+└── test-skill-triggering/
+    ├── run-test.sh                    # Individual skill trigger test
+    ├── run-all.sh                     # Run all skill triggering tests
+    └── prompts/
+        └── brainstorming.txt          # Brainstorming acceptance prompt
+```
+
+### Prerequisites
+
+1. **Antigravity CLI** (`agy`) must be installed and on `$PATH`
+2. **Superpowers plugin** symlinked into `~/.gemini/config/plugins/superpowers/`:
+   ```bash
+   ln -sfn "$(pwd)" ~/.gemini/config/plugins/superpowers
+   ```
+3. **bash** 4.0+ with standard GNU utils (`grep`, `sed`, `timeout`, `jq`)
+
+> **Note:** The `test-tool-mapping-accuracy.sh` test is purely static and does **not** require `agy`.
+
+### Running Tests
+
+#### Static validation (no agy required)
+
+```bash
+cd tests/antigravity
+./test-tool-mapping-accuracy.sh
+```
+
+#### Plugin discovery
+
+```bash
+cd tests/antigravity
+./test-plugin-discovery.sh
+```
+
+#### Skill triggering (all skills)
+
+```bash
+cd tests/antigravity/test-skill-triggering
+./run-all.sh
+```
+
+#### Skill triggering (individual)
+
+```bash
+cd tests/antigravity/test-skill-triggering
+./run-test.sh systematic-debugging ../../skill-triggering/prompts/systematic-debugging.txt
+```
+
+#### Subagent dispatch (integration — 10-30 min)
+
+```bash
+cd tests/antigravity
+./test-subagent-dispatch.sh
+```
+
+#### Workspace isolation
+
+```bash
+cd tests/antigravity
+./test-worktree-workspace.sh
+```
+
+### Transcript Format Differences
+
+Antigravity 2.0 session transcripts differ from Claude Code in several ways:
+
+| Aspect | Claude Code | Antigravity 2.0 |
+|--------|-------------|-----------------|
+| **Location** | `~/.claude/projects/<dir>/<session>.jsonl` | `~/.gemini/antigravity/brain/<id>/.system_generated/logs/transcript.jsonl` |
+| **Format** | Flat `type: "assistant"/"user"` | Structured with `step_index`, `source`, `type`, `status` |
+| **Tool calls** | `"name":"Skill"` with `"skill":"..."` | Tool name in `tool_calls[].name` (e.g., `invoke_subagent`) |
+| **Subagents** | `Task` / `Agent` tool | `invoke_subagent` tool |
+| **Task tracking** | `TodoWrite` tool | `write_to_file` creating `task.md` artifact |
+| **Skill invocation** | Explicit `Skill` tool call | Auto-loaded; look for `view_file` on `SKILL.md` |
+
+### Finding Antigravity Transcripts
+
+```bash
+# Recent transcripts (last 60 minutes)
+find ~/.gemini/antigravity/brain -name "transcript.jsonl" -mmin -60
+
+# Search for tool calls
+grep '"invoke_subagent"' ~/.gemini/antigravity/brain/<id>/.system_generated/logs/transcript.jsonl
+```
