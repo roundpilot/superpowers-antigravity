@@ -55,6 +55,17 @@ This structure informs the task decomposition. Each task should produce self-con
 
 **Architecture:** [2-3 sentences about approach]
 
+**Architecture Diagram:**
+
+```mermaid
+graph TD
+    subgraph "Component Name"
+        A[Module A] --> B[Module B]
+    end
+```
+
+Include a Mermaid diagram showing component relationships and data flow. This diagram should match the architecture description above.
+
 **Tech Stack:** [Key technologies/libraries]
 
 ---
@@ -118,6 +129,23 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
+
+## Rich Formatting
+
+Use Antigravity's artifact formatting to make plans scannable:
+
+- **File links:** Always use clickable links: `[filename](file:///absolute/path/to/file)` or `[function](file:///path/to/file#L10-L20)`
+- **Diff blocks:** Show code changes as diffs when modifying existing files:
+  ```diff
+  -old_function_name()
+  +new_function_name()
+   unchanged_line()
+  ```
+- **GitHub alerts:** Flag critical requirements and breaking changes:
+  > [!IMPORTANT]
+  > This change requires a database migration
+
+- **Mermaid diagrams:** Use in the architecture section and for complex data flows within tasks
 
 ## Self-Review
 
