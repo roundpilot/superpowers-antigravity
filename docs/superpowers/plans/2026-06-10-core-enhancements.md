@@ -35,7 +35,7 @@ Brainstorm this with the user. Show them visual options.
 
 Document: Does the agent use `generate_image`? Does it embed images in artifacts? Does it create comparison views? Does it ask for consent before generating images?
 
-- [ ] **Step 2: GREEN — Update checklist step 2**
+- [ ] **Step 2: GREEN — Update checklist step 2 and flowchart**
 
 In `skills/brainstorming/SKILL.md`, replace the checklist item on line 26:
 
@@ -46,6 +46,15 @@ In `skills/brainstorming/SKILL.md`, replace the checklist item on line 26:
 # AFTER:
 2. **Assess visual needs** — note whether upcoming questions have visual aspects. If so, use `generate_image` for mockups and diagrams as you go. No consent needed — this is a native tool, not a browser session.
 ```
+
+Also update the Graphviz flowchart (lines 37-64) to match. Replace the `"Visual questions ahead?"` diamond and `"Offer Visual Companion\n(own message, no other content)"` node with a single `"Assess visual needs"` box. The flow becomes:
+
+```dot
+"Explore project context" -> "Assess visual needs";
+"Assess visual needs" -> "Ask clarifying questions";
+```
+
+Remove the yes/no branching — visual assessment is now always done (it's a note, not a gate).
 
 - [ ] **Step 3: GREEN — Expand Visual Companion section**
 
@@ -203,13 +212,28 @@ git commit -m "feat(writing-plans): add Mermaid diagrams and rich artifact forma
 **Files:**
 - Create: `skills/executing-plans/SKILL.md`
 
-- [ ] **Step 1: Copy from installed plugin**
+- [ ] **Step 1: RED — Baseline test**
+
+Dispatch a subagent with this scenario (WITHOUT executing-plans in the workspace):
+
+```
+You have a written implementation plan at docs/superpowers/plans/test-plan.md with 3 tasks. You are executing it inline (no subagents available).
+
+You've just completed all 3 tasks and verified they pass. What do you do next?
+```
+
+Document: Does the agent create a walkthrough artifact? Does it use `write_to_file` with artifact metadata? Does it invoke finishing-a-development-branch? Or does it just say "done" without summary?
+
+- [ ] **Step 2: Copy from installed plugin**
+
+Note: This is a cross-filesystem copy (Windows plugin dir → WSL workspace). Use the appropriate copy mechanism for the execution environment.
 
 ```bash
+mkdir -p skills/executing-plans
 cp ~/.gemini/config/plugins/superpowers/skills/executing-plans/SKILL.md skills/executing-plans/SKILL.md
 ```
 
-- [ ] **Step 2: GREEN — Remove legacy multi-platform reference**
+- [ ] **Step 3: GREEN — Remove legacy multi-platform reference**
 
 Replace line 14:
 
@@ -221,14 +245,16 @@ Replace line 14:
 **Note:** This skill is for environments without subagent support. If subagents are available, use superpowers:subagent-driven-development instead — it provides higher quality through fresh-context-per-task and two-stage review.
 ```
 
-- [ ] **Step 3: GREEN — Replace TodoWrite reference**
+- [ ] **Step 4: GREEN — Replace TodoWrite and legacy language**
 
-Search for any references to `TodoWrite` or legacy tool names. Replace with native Antigravity equivalents:
+Search for and replace all legacy references:
 - `TodoWrite` → `task.md artifact` (using `write_to_file` with `IsArtifact: true, ArtifactType: "task"`)
+- `human partner` → `user` (throughout the file)
+- `Partner` → `User` (when referring to the human, e.g. "Partner updates the plan")
 
-- [ ] **Step 4: GREEN — Add walkthrough generation**
+- [ ] **Step 5: GREEN — Replace Step 3 with walkthrough generation**
 
-Before the "When to Stop" section, add to Step 3:
+Replace the existing `### Step 3: Complete Development` section (which only has finishing-a-development-branch) with an expanded version:
 
 ```markdown
 ### Step 3: Complete Development
@@ -246,21 +272,32 @@ After all tasks complete and verified:
    - Follow that skill to verify tests, present options, execute choice
 ```
 
-- [ ] **Step 5: Verify no legacy references remain**
+- [ ] **Step 6: Verify no legacy references remain**
 
 ```bash
-grep -i "claude\|codex\|cursor\|opencode\|copilot\|gemini cli\|TodoWrite\|Skill tool" skills/executing-plans/SKILL.md
+grep -i "claude\|codex\|cursor\|opencode\|copilot\|gemini cli\|TodoWrite\|Skill tool\|human partner" skills/executing-plans/SKILL.md
 ```
 
 Expected: No matches.
 
-- [ ] **Step 6: Word count check**
+- [ ] **Step 7: GREEN — Verify with same scenario**
+
+Re-dispatch the same scenario from Step 1 with executing-plans now in the workspace. Verify:
+- Agent creates a walkthrough artifact after completing tasks
+- Agent invokes finishing-a-development-branch
+- Agent uses `write_to_file` with artifact metadata (not TodoWrite)
+
+- [ ] **Step 8: REFACTOR — Close loopholes**
+
+Review subagent behavior from Step 7. Fix any gaps found. Re-test if changes were needed.
+
+- [ ] **Step 9: Word count check**
 
 ```bash
 wc -w skills/executing-plans/SKILL.md
 ```
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add skills/executing-plans/SKILL.md
@@ -435,18 +472,7 @@ Never claim UI work is correct without visual evidence. Browser automation makes
 
 **Core principle:** Evidence before assertions. Screenshots and DOM inspection prove correctness; text descriptions don't.
 
-## When to Use
-
-```dot
-digraph when_to_use {
-    "Implemented UI/frontend changes?" [shape=diamond];
-    "browser-testing" [shape=box];
-    "Skip" [shape=box];
-
-    "Implemented UI/frontend changes?" -> "browser-testing" [label="yes"];
-    "Implemented UI/frontend changes?" -> "Skip" [label="no - backend only"];
-}
-```
+**When to use:** After implementing any UI or frontend changes, before claiming the work is correct.
 
 ## The Process
 
