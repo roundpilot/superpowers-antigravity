@@ -64,11 +64,11 @@ Every skill file has been rewritten to use native Antigravity 2.0 tool names. Th
 #### Test Suite
 
 * **Deleted** — All Claude Code, OpenCode, brainstorm server, explicit skill request, and subagent-driven-dev test suites (platform-specific).
-* **Retained \& updated** — `tests/antigravity/` directory with updated test helpers.
-* **New: `test-skill-tool-purity.sh`** — Static analysis test that verifies zero legacy tool names, zero platform references, zero tool mapping references, and zero deleted skill references across all skill files. Runs without the `agy` binary.
+* **Retained & updated** — `tests/antigravity/` directory with updated test helpers.
+* **New: `test-skill-tool-purity.sh`** — Static analysis test that verifies zero legacy tool names, zero platform references, and zero tool mapping references across all skill files. Runs without the `agy` binary.
 * **Retained** — Plugin discovery, skill triggering, subagent dispatch, and worktree workspace integration tests.
 
-#### Bootstrap \& Activation
+#### Bootstrap & Activation
 
 * **`GEMINI.md`** — Loads `@./skills/using-superpowers/SKILL.md` (bootstrap). Tool mapping reference removed (no longer needed).
 * **Activation** — `/using-superpowers` slash command activates skills for the session, matching the upstream workflow.
@@ -86,29 +86,29 @@ Five skills upgraded or created to leverage native Antigravity 2.0 tools (`gener
   * **Background Task Management** — teaches coordinators to use `manage\_task` for long-running operations (>30s builds, test suites, deployments) instead of blocking.
   * **Agent Communication** — `send\_message` for mid-flight coordination (answering implementer questions, providing additional context without re-dispatch).
   * **Timeout Protection** — `schedule` as a safety net (one-shot timers for complex tasks, auto-cancel on response).
-* **browser-testing** \[NEW] — Discipline-enforcing skill: "evidence before assertions." Process: navigate → screenshot → inspect DOM → record walkthrough → embed evidence in artifacts. Quick reference table and common mistakes table included.
-
-#### Documentation
-
-* **README.md** — Added fork attribution, "What's different from upstream?" comparison table, Activation section, and updated Verify Installation steps.
-* **CONTRIBUTING.md** — Updated for Antigravity 2.0 only (was `CLAUDE.md` symlinked to `AGENTS.md`).
-* **`docs/testing.md`** — Updated for `tests/antigravity/` structure.
+* **browser-testing** [NEW] — Discipline-enforcing skill: "evidence before assertions." Process: navigate → screenshot → inspect DOM → record walkthrough → embed evidence in artifacts. Quick reference table and common mistakes table included.
 
 #### Antigravity 2.0 Feature Gap Integration
 
-All 12 feature gaps identified in the gap analysis have been fully implemented across the skill library to maximize token savings, verification quality, and native capability usage:
+All 12 feature gaps identified in the gap analysis have been implemented across the skill library to maximize token savings, verification quality, and native capability usage:
 
-* **Lightweight Research Subagents** — Integrates `TypeName: "research"` subagents for read-only codebase exploration and code reviewing, minimizing context size and API cost (`brainstorming`, `requesting-code-review`).
-* **Interactive User Feedback** — Enforces `RequestFeedback: true` in `ArtifactMetadata` for design documents, implementation plans, and walkthroughs, enabling structured, automated reviews (`brainstorming`, `writing-plans`, `executing-plans`).
-* **Workspace Mode Selection** — Introduces a "Workspace Mode Decision Table" to guide choice of `branch` (isolated write), `inherit` (read-only), or `share` (parallel non-overlapping edits) (`using-git-worktrees`, `subagent-driven-development`, `dispatching-parallel-agents`, `requesting-code-review`).
-* **Native Web Research** — Adds explicit requirements to use `search\_web` and `read\_url\_content` for troubleshooting unfamiliar errors or retrieving external API docs (`systematic-debugging`, `brainstorming`, `writing-plans`).
-* **Native Search Tools** — Restructures exploration phases to use `list\_dir` and `grep\_search` by name instead of generic grep/find patterns (`brainstorming`, `writing-plans`, `systematic-debugging`).
-* **Slash Command Recommendations** — Instructs agents to recommend `/grill-me`, `/goal`, and `/browser` to users for interactive alignment, autonomous sessions, or browser automation (`brainstorming`, `browser-testing`).
-* **Subagent Monitoring** — Leverages `manage\_subagents` (`Action: "list"` and `"kill"`) to verify subagent statuses before task progression or to clean up stalled processes (`subagent-driven-development`, `dispatching-parallel-agents`).
-* **Recurring Cron Verification** — Replaces simple timers with recurring cron schedules (`schedule(CronExpression: ..., MaxIterations: ...)`) for long-running builds or test suites (>5 minutes) (`verification-before-completion`, `subagent-driven-development`).
-* **Sandboxed Permissions** — Integrates `ask\_permission` for destructive operations like branch discarding, preventing accidental code loss (`finishing-a-development-branch`).
-* **Targeted File Edits** — Enforces using `replace\_file\_content` and `multi\_replace\_file\_content` instead of `write\_to\_file` when modifying existing skill files to conserve tokens and prevent regression (`writing-skills`).
-* **Rich Markdown Formatting** — Mandates Mermaid flowcharts for debugging hypotheses, carousels for design options, and severity-classified GitHub alerts (`[!CAUTION]`, `[!WARNING]`, `[!NOTE]`, `[!TIP]`) for structured outputs (`systematic-debugging`, `requesting-code-review`, `browser-testing`).
+* **Lightweight Research Subagents** — `TypeName: "research"` subagents for read-only codebase exploration and code reviewing, minimizing context size and API cost (`brainstorming`, `requesting-code-review`).
+* **Interactive User Feedback** — `RequestFeedback: true` in `ArtifactMetadata` for design documents, implementation plans, and walkthroughs, enabling structured feedback loops (`brainstorming`, `writing-plans`, `executing-plans`).
+* **Workspace Mode Selection** — "Workspace Mode Decision Table" guiding choice of `branch` (isolated write), `inherit` (read-only), or `share` (parallel non-overlapping edits) (`using-git-worktrees`, `subagent-driven-development`, `dispatching-parallel-agents`, `requesting-code-review`).
+* **Native Web Research** — `search\_web` and `read\_url\_content` for troubleshooting unfamiliar errors or retrieving external API docs (`systematic-debugging`, `brainstorming`, `writing-plans`).
+* **Native Search Tools** — `list\_dir` and `grep\_search` by name instead of generic grep/find patterns (`brainstorming`, `writing-plans`, `systematic-debugging`).
+* **Slash Command Recommendations** — `/grill-me`, `/goal`, and `/browser` recommendations for interactive alignment, autonomous sessions, or browser automation (`brainstorming`, `browser-testing`).
+* **Subagent Monitoring** — `manage\_subagents` (`Action: "list"` and `"kill"`) to verify subagent statuses or clean up stalled processes (`subagent-driven-development`, `dispatching-parallel-agents`).
+* **Recurring Cron Verification** — `schedule(CronExpression: ..., MaxIterations: ...)` for long-running builds or test suites (>5 minutes) (`verification-before-completion`, `subagent-driven-development`).
+* **Sandboxed Permissions** — `ask\_permission` for destructive operations like branch discarding (`finishing-a-development-branch`).
+* **Targeted File Edits** — `replace\_file\_content` and `multi\_replace\_file\_content` instead of `write\_to\_file` for existing skill modifications (`writing-skills`).
+* **Rich Markdown Formatting** — Mermaid flowcharts, carousels, and severity-classified GitHub alerts (`[!CAUTION]`, `[!WARNING]`, `[!NOTE]`, `[!TIP]`) for structured outputs (`systematic-debugging`, `requesting-code-review`, `browser-testing`).
+
+#### Documentation
+
+* **README.md** — Added fork attribution, "What's different from upstream?" comparison table, Activation section, migration instructions, and updated Verify Installation steps.
+* **CONTRIBUTING.md** — Updated for Antigravity 2.0 only (was `CLAUDE.md` symlinked to `AGENTS.md`).
+* **`docs/testing.md`** — Updated for `tests/antigravity/` structure.
 
 \---
 
@@ -124,7 +124,7 @@ All 12 feature gaps identified in the gap analysis have been fully implemented a
 
 `using-git-worktrees` and `finishing-a-development-branch` now detect when the agent is already running inside an isolated worktree and prefer the harness's native worktree controls before falling back to `git worktree`. Behavior was TDD-validated and cross-platform-checked across five harnesses. (PRI-974, PR #1121)
 
-* **Environment detection** — both skills check `GIT\\\_DIR != GIT\\\_COMMON` before doing anything; if already in a linked worktree, creation is skipped entirely. A submodule guard prevents false detection.
+* **Environment detection** — both skills check `GIT\_DIR != GIT\_COMMON` before doing anything; if already in a linked worktree, creation is skipped entirely. A submodule guard prevents false detection.
 * **Consent before creating worktrees** — `using-git-worktrees` no longer creates worktrees implicitly; the skill asks the user first. Fixes #991 (subagent-driven-development was auto-creating worktrees without consent).
 * **Native tool preference (Step 1a)** — when the harness exposes its own worktree tool (e.g. Codex), the skill defers to it. The user's stated preference is respected when expressed.
 * **Provenance-based cleanup** — `finishing-a-development-branch` only cleans up worktrees inside `.worktrees/` (created by superpowers); anything outside is left alone. Fixes #940 (Option 2 was incorrectly cleaning up worktrees), #999 (merge-then-remove ordering), and #238 (`cd` to repo root before `git worktree remove`).
@@ -145,7 +145,7 @@ New `sync-to-codex-plugin` script mirrors superpowers into the OpenAI Codex plug
 
 * Clones the fork fresh into a temp directory per run, regenerates overlays inline, and opens a PR; auto-detects upstream from the script's own location and preflights `rsync`/`git`/`gh auth`/`python3`.
 * `--bootstrap` flag for first-time setup; `EXCLUDES` patterns anchored to source root; `assets/` excluded.
-* Mirrors `CODE\\\_OF\\\_CONDUCT.md`; drops the `agents/openai.yaml` overlay.
+* Mirrors `CODE\_OF\_CONDUCT.md`; drops the `agents/openai.yaml` overlay.
 * Seeds `interface.defaultPrompt` in the mirrored `plugin.json`. (PR #1180 by @arittr)
 * Codex plugin files are committed to the source repo so the sync script uses canonical versions; Codex marketplace metadata is preserved.
 
@@ -186,7 +186,7 @@ New `sync-to-codex-plugin` script mirrors superpowers into the OpenAI Codex plug
 * **Factory Droid installation instructions** added to README.
 * **Quickstart install links** in README. (PR #1293 by @arittr)
 * **Codex plugin install guidance** updated. (PR #1288 by @arittr)
-* **Codex `wait` mapping corrected** to `wait\\\_agent` in the tools reference.
+* **Codex `wait` mapping corrected** to `wait\_agent` in the tools reference.
 * **Install order reorganized**; Codex install instructions cleaned up.
 * **Removed vestigial `CHANGELOG.md`** in favor of `RELEASE-NOTES.md` as the single source. (PR #1163 by @shaanmajid)
 * **Discord invite link** fixed; release announcements link and a detailed Discord description added to the Community section.
@@ -200,7 +200,7 @@ New `sync-to-codex-plugin` script mirrors superpowers into the OpenAI Codex plug
 
 ### GitHub Copilot CLI Support
 
-* **SessionStart context injection** — Copilot CLI v1.0.11 added support for `additionalContext` in sessionStart hook output. The session-start hook now detects the `COPILOT\\\_CLI` environment variable and emits the SDK-standard `{ "additionalContext": "..." }` format, giving Copilot CLI users the full superpowers bootstrap at session start. (Original fix by @culinablaz in PR #910)
+* **SessionStart context injection** — Copilot CLI v1.0.11 added support for `additionalContext` in sessionStart hook output. The session-start hook now detects the `COPILOT\_CLI` environment variable and emits the SDK-standard `{ "additionalContext": "..." }` format, giving Copilot CLI users the full superpowers bootstrap at session start. (Original fix by @culinablaz in PR #910)
 * **Tool mapping** — added `references/copilot-tools.md` with the full Claude Code to Copilot CLI tool equivalence table
 * **Skill and README updates** — added Copilot CLI to the `using-superpowers` skill's platform instructions and README installation section
 
@@ -222,7 +222,7 @@ The subagent review loop (dispatching a fresh agent to review plans/specs) doubl
 
 ### Brainstorm Server
 
-* **Session directory restructured** — the brainstorm server session directory now contains two peer subdirectories: `content/` (HTML files served to the browser) and `state/` (events, server-info, pid, log). Previously, server state and user interaction data were stored alongside served content, making them accessible over HTTP. The `screen\\\_dir` and `state\\\_dir` paths are both included in the server-started JSON. (Reported by 吉田仁)
+* **Session directory restructured** — the brainstorm server session directory now contains two peer subdirectories: `content/` (HTML files served to the browser) and `state/` (events, server-info, pid, log). Previously, server state and user interaction data were stored alongside served content, making them accessible over HTTP. The `screen\_dir` and `state\_dir` paths are both included in the server-started JSON. (Reported by 吉田仁)
 
 ### Bug Fixes
 
@@ -231,7 +231,7 @@ The subagent review loop (dispatching a fresh agent to review plans/specs) doubl
 
 ### Codex App Compatibility
 
-* **codex-tools** — added named agent dispatch mapping documenting how to translate Claude Code's named agent types to Codex's `spawn\\\_agent` with worker roles (PR #647 by @arittr)
+* **codex-tools** — added named agent dispatch mapping documenting how to translate Claude Code's named agent types to Codex's `spawn\_agent` with worker roles (PR #647 by @arittr)
 * **codex-tools** — added environment detection and Codex App finishing sections for worktree-aware skills (by @arittr)
 * **Design spec** — added Codex App compatibility design spec (PRI-823) covering read-only environment detection, worktree-safe skill behavior, and sandbox fallback patterns (by @arittr)
 
@@ -272,16 +272,16 @@ Dramatically reduces token usage and speeds up spec and plan reviews by eliminat
 
 ### Cursor Support
 
-* **Cursor hooks** — added `hooks/hooks-cursor.json` with Cursor's camelCase format (`sessionStart`, `version: 1`) and updated `.cursor-plugin/plugin.json` to reference it. Fixed platform detection in `session-start` to check `CURSOR\\\_PLUGIN\\\_ROOT` first (Cursor may also set `CLAUDE\\\_PLUGIN\\\_ROOT`). (Based on PR #709)
+* **Cursor hooks** — added `hooks/hooks-cursor.json` with Cursor's camelCase format (`sessionStart`, `version: 1`) and updated `.cursor-plugin/plugin.json` to reference it. Fixed platform detection in `session-start` to check `CURSOR\_PLUGIN\_ROOT` first (Cursor may also set `CLAUDE\_PLUGIN\_ROOT`). (Based on PR #709)
 
 ### Bug Fixes
 
 * **Stop firing SessionStart hook on `--resume`** — the startup hook was re-injecting context on resumed sessions, which already have the context in their conversation history. The hook now fires only on `startup`, `clear`, and `compact`.
 * **Bash 5.3+ hook hang** — replaced heredoc (`cat <<EOF`) with `printf` in `hooks/session-start`. Fixes indefinite hang on macOS with Homebrew bash 5.3+ caused by a bash regression with large variable expansion in heredocs. (#572, #571)
-* **POSIX-safe hook script** — replaced `${BASH\\\_SOURCE\\\[0]:-$0}` with `$0` in `hooks/session-start`. Fixes "Bad substitution" error on Ubuntu/Debian where `/bin/sh` is dash. (#553)
+* **POSIX-safe hook script** — replaced `${BASH\_SOURCE\[0]:-$0}` with `$0` in `hooks/session-start`. Fixes "Bad substitution" error on Ubuntu/Debian where `/bin/sh` is dash. (#553)
 * **Portable shebangs** — replaced `#!/bin/bash` with `#!/usr/bin/env bash` in all shell scripts. Fixes execution on NixOS, FreeBSD, and macOS with Homebrew bash where `/bin/bash` is outdated or missing. (#700)
-* **Brainstorm server on Windows** — auto-detect Windows/Git Bash (`OSTYPE=msys\\\*`, `MSYSTEM`) and switch to foreground mode, fixing silent server failure caused by `nohup`/`disown` process reaping. (#737)
-* **Codex docs fix** — replaced deprecated `collab` flag with `multi\\\_agent` in Codex documentation. (PR #749)
+* **Brainstorm server on Windows** — auto-detect Windows/Git Bash (`OSTYPE=msys\*`, `MSYSTEM`) and switch to foreground mode, fixing silent server failure caused by `nohup`/`disown` process reaping. (#737)
+* **Codex docs fix** — replaced deprecated `collab` flag with `multi\_agent` in Codex documentation. (PR #749)
 
 ## v5.0.2 (2026-03-11)
 
@@ -290,7 +290,7 @@ Dramatically reduces token usage and speeds up spec and plan reviews by eliminat
 **Removed all vendored node\_modules — server.js is now fully self-contained**
 
 * Replaced Express/Chokidar/WebSocket dependencies with zero-dependency Node.js server using built-in `http`, `fs`, and `crypto` modules
-* Removed \~1,200 lines of vendored `node\\\_modules/`, `package.json`, and `package-lock.json`
+* Removed \~1,200 lines of vendored `node\_modules/`, `package.json`, and `package-lock.json`
 * Custom WebSocket protocol implementation (RFC 6455 framing, ping/pong, proper close handshake)
 * Native `fs.watch()` file watching replaces Chokidar
 * Full test suite: HTTP serving, WebSocket protocol, file watching, and integration tests
@@ -314,7 +314,7 @@ Dramatically reduces token usage and speeds up spec and plan reviews by eliminat
 **Brainstorm-server moved into skill directory**
 
 * Moved `lib/brainstorm-server/` → `skills/brainstorming/scripts/` per the [agentskills.io](https://agentskills.io) specification
-* All `${CLAUDE\\\_PLUGIN\\\_ROOT}/lib/brainstorm-server/` references replaced with relative `scripts/` paths
+* All `${CLAUDE\_PLUGIN\_ROOT}/lib/brainstorm-server/` references replaced with relative `scripts/` paths
 * Skills are now fully portable across platforms — no platform-specific env vars needed to locate scripts
 * `lib/` directory removed (was the last remaining content)
 
@@ -333,24 +333,24 @@ Dramatically reduces token usage and speeds up spec and plan reviews by eliminat
 
 **Multi-platform brainstorm server launch**
 
-* Per-platform launch instructions in visual-companion.md: Claude Code (default mode), Codex (auto-foreground via `CODEX\\\_CI`), Gemini CLI (`--foreground` with `is\\\_background`), and fallback for other environments
-* Server now writes startup JSON to `$SCREEN\\\_DIR/.server-info` so agents can find the URL and port even when stdout is hidden by background execution
+* Per-platform launch instructions in visual-companion.md: Claude Code (default mode), Codex (auto-foreground via `CODEX\_CI`), Gemini CLI (`--foreground` with `is\_background`), and fallback for other environments
+* Server now writes startup JSON to `$SCREEN\_DIR/.server-info` so agents can find the URL and port even when stdout is hidden by background execution
 
 **Brainstorm server dependencies bundled**
 
-* `node\\\_modules` vendored into the repo so the brainstorm server works immediately on fresh plugin installs without requiring `npm` at runtime
+* `node\_modules` vendored into the repo so the brainstorm server works immediately on fresh plugin installs without requiring `npm` at runtime
 * Removed `fsevents` from bundled deps (macOS-only native binary; chokidar falls back gracefully without it)
-* Fallback auto-install via `npm install` if `node\\\_modules` is missing
+* Fallback auto-install via `npm install` if `node\_modules` is missing
 
 **OpenCode tool mapping fix**
 
-* `TodoWrite` → `todowrite` (was incorrectly mapped to `update\\\_plan`); verified against OpenCode source
+* `TodoWrite` → `todowrite` (was incorrectly mapped to `update\_plan`); verified against OpenCode source
 
 ### Bug Fixes
 
 **Windows/Linux: single quotes break SessionStart hook** (#577, #529, #644, PR #585)
 
-* Single quotes around `${CLAUDE\\\_PLUGIN\\\_ROOT}` in hooks.json fail on Windows (cmd.exe doesn't recognize single quotes as path delimiters) and on Linux (single quotes prevent variable expansion)
+* Single quotes around `${CLAUDE\_PLUGIN\_ROOT}` in hooks.json fail on Windows (cmd.exe doesn't recognize single quotes as path delimiters) and on Linux (single quotes prevent variable expansion)
 * Fix: replaced single quotes with escaped double quotes — works across macOS bash, Windows cmd.exe, Windows Git Bash, and Linux, with and without spaces in paths
 * Verified on Windows 11 (NT 10.0.26200.0) with Claude Code 2.1.72 and Git for Windows
 
@@ -374,7 +374,7 @@ Dramatically reduces token usage and speeds up spec and plan reviews by eliminat
 **Session-start hook emits context only once per platform**
 
 * Hook now detects whether it's running in Claude Code or another platform
-* Emits `hookSpecificOutput` for Claude Code, `additional\\\_context` for others — prevents double context injection
+* Emits `hookSpecificOutput` for Claude Code, `additional\_context` for others — prevents double context injection
 
 **Linting fix in token analysis script**
 
@@ -485,7 +485,7 @@ Added `<SUBAGENT-STOP>` block to using-superpowers. Subagents dispatched for spe
 
 **Writing-plans template updates**
 
-* Plan steps now use checkbox syntax (`- \\\[ ] \\\*\\\*Step N:\\\*\\\*`) for progress tracking
+* Plan steps now use checkbox syntax (`- \[ ] \*\*Step N:\*\*`) for progress tracking
 * Plan header references both subagent-driven-development and executing-plans with platform-aware routing
 
 \---
@@ -496,7 +496,7 @@ Added `<SUBAGENT-STOP>` block to using-superpowers. Subagents dispatched for spe
 
 **Cursor support**
 
-Superpowers now works with Cursor's plugin system. Includes a `.cursor-plugin/plugin.json` manifest and Cursor-specific installation instructions in the README. The SessionStart hook output now includes an `additional\\\_context` field alongside the existing `hookSpecificOutput.additionalContext` for Cursor hook compatibility.
+Superpowers now works with Cursor's plugin system. Includes a `.cursor-plugin/plugin.json` manifest and Cursor-specific installation instructions in the README. The SessionStart hook output now includes an `additional\_context` field alongside the existing `hookSpecificOutput.additionalContext` for Cursor hook compatibility.
 
 ### Fixed
 
@@ -544,9 +544,9 @@ Changed `async: true` to `async: false` in hooks.json. When async, the hook coul
 
 **Codex: Replaced bootstrap CLI with native skill discovery**
 
-The `superpowers-codex` bootstrap CLI, Windows `.cmd` wrapper, and related bootstrap content file have been removed. Codex now uses native skill discovery via `\\\~/.agents/skills/superpowers/` symlink, so the old `use\\\_skill`/`find\\\_skills` CLI tools are no longer needed.
+The `superpowers-codex` bootstrap CLI, Windows `.cmd` wrapper, and related bootstrap content file have been removed. Codex now uses native skill discovery via `\~/.agents/skills/superpowers/` symlink, so the old `use\_skill`/`find\_skills` CLI tools are no longer needed.
 
-Installation is now just clone + symlink (documented in INSTALL.md). No Node.js dependency required. The old `\\\~/.codex/skills/` path is deprecated.
+Installation is now just clone + symlink (documented in INSTALL.md). No Node.js dependency required. The old `\~/.codex/skills/` path is deprecated.
 
 ### Fixes
 
@@ -560,14 +560,14 @@ Fix: hooks.json now calls session-start.sh directly. Claude Code 2.1.x handles t
 
 The synchronous SessionStart hook blocked the TUI from entering raw mode on Windows, freezing all keyboard input. Running the hook async prevents the freeze while still injecting superpowers context.
 
-**Windows: Fixed O(n^2) `escape\\\_for\\\_json` performance**
+**Windows: Fixed O(n^2) `escape\_for\_json` performance**
 
 The character-by-character loop using `${input:$i:1}` was O(n^2) in bash due to substring copy overhead. On Windows Git Bash this took 60+ seconds. Replaced with bash parameter substitution (`${s//old/new}`) which runs each pattern as a single C-level pass — 7x faster on macOS, dramatically faster on Windows.
 
 **Codex: Fixed Windows/PowerShell invocation (#285, #243)**
 
 * Windows doesn't respect shebangs, so directly invoking the extensionless `superpowers-codex` script triggered an "Open with" dialog. All invocations now prefixed with `node`.
-* Fixed `\\\~/` path expansion on Windows — PowerShell doesn't expand `\\\~` when passed as an argument to `node`. Changed to `$HOME` which expands correctly in both bash and PowerShell.
+* Fixed `\~/` path expansion on Windows — PowerShell doesn't expand `\~` when passed as an argument to `node`. Changed to `$HOME` which expands correctly in both bash and PowerShell.
 
 **Codex: Fixed path resolution in installer**
 
@@ -575,7 +575,7 @@ Used `fileURLToPath()` instead of manual URL pathname parsing to correctly handl
 
 **Codex: Fixed stale skills path in writing-skills**
 
-Updated `\\\~/.codex/skills/` reference (deprecated) to `\\\~/.agents/skills/` for native discovery.
+Updated `\~/.codex/skills/` reference (deprecated) to `\~/.agents/skills/` for native discovery.
 
 ### Improvements
 
@@ -609,7 +609,7 @@ Improved documentation of how Codex tools map to Claude Code equivalents for sub
 
 **OpenCode: Standardized on `plugins/` directory per official docs (#343)**
 
-OpenCode's official documentation uses `\\\~/.config/opencode/plugins/` (plural). Our docs previously used `plugin/` (singular). While OpenCode accepts both forms, we've standardized on the official convention to avoid confusion.
+OpenCode's official documentation uses `\~/.config/opencode/plugins/` (plural). Our docs previously used `plugin/` (singular). While OpenCode accepts both forms, we've standardized on the official convention to avoid confusion.
 
 Changes:
 
@@ -621,7 +621,7 @@ Changes:
 
 * Added explicit `rm` before `ln -s` (fixes "file already exists" errors on reinstall)
 * Added missing skills symlink step that was absent from INSTALL.md
-* Updated from deprecated `use\\\_skill`/`find\\\_skills` to native `skill` tool references
+* Updated from deprecated `use\_skill`/`find\_skills` to native `skill` tool references
 
 \---
 
@@ -631,9 +631,9 @@ Changes:
 
 **OpenCode: Switched to native skills system**
 
-Superpowers for OpenCode now uses OpenCode's native `skill` tool instead of custom `use\\\_skill`/`find\\\_skills` tools. This is a cleaner integration that works with OpenCode's built-in skill discovery.
+Superpowers for OpenCode now uses OpenCode's native `skill` tool instead of custom `use\_skill`/`find\_skills` tools. This is a cleaner integration that works with OpenCode's built-in skill discovery.
 
-**Migration required:** Skills must be symlinked to `\\\~/.config/opencode/skills/superpowers/` (see updated installation docs).
+**Migration required:** Skills must be symlinked to `\~/.config/opencode/skills/superpowers/` (see updated installation docs).
 
 ### Fixes
 
@@ -801,7 +801,7 @@ Description changed to imperative: "You MUST use this before any creative work�
 
 * **Linux Compatibility**: Fixed polyglot hook wrapper (`run-hook.cmd`) to use POSIX-compliant syntax
 
-  * Replaced bash-specific `${BASH\\\_SOURCE\\\[0]:-$0}` with standard `$0` on line 16
+  * Replaced bash-specific `${BASH\_SOURCE\[0]:-$0}` with standard `$0` on line 16
   * Resolves "Bad substitution" error on Ubuntu/Debian systems where `/bin/sh` is dash
   * Fixes #141
 
@@ -826,7 +826,7 @@ Description changed to imperative: "You MUST use this before any creative work�
 
 * **OpenCode Support**: Native JavaScript plugin for OpenCode.ai
 
-  * Custom tools: `use\\\_skill` and `find\\\_skills`
+  * Custom tools: `use\_skill` and `find\_skills`
   * Message insertion pattern for skill persistence across context compaction
   * Automatic context injection via chat.message hook
   * Auto re-injection on session.compacted events
@@ -873,7 +873,7 @@ Description changed to imperative: "You MUST use this before any creative work�
 
 ### Bug Fixes
 
-* Clarified `writing-skills` guidance so it points to the correct agent-specific personal skill directories (`\\\~/.claude/skills` for Claude Code, `\\\~/.codex/skills` for Codex).
+* Clarified `writing-skills` guidance so it points to the correct agent-specific personal skill directories (`\~/.claude/skills` for Claude Code, `\~/.codex/skills` for Codex).
 
 ## v3.3.0 (2025-10-28)
 
@@ -1038,9 +1038,9 @@ These changes address observed agent behavior where they rationalize around skil
 
 * All skill references now use explicit requirement markers:
 
-  * `\\\*\\\*REQUIRED BACKGROUND:\\\*\\\*` - Prerequisites you must understand
-  * `\\\*\\\*REQUIRED SUB-SKILL:\\\*\\\*` - Skills that must be used in workflow
-  * `\\\*\\\*Complementary skills:\\\*\\\*` - Optional but helpful related skills
+  * `\*\*REQUIRED BACKGROUND:\*\*` - Prerequisites you must understand
+  * `\*\*REQUIRED SUB-SKILL:\*\*` - Skills that must be used in workflow
+  * `\*\*Complementary skills:\*\*` - Optional but helpful related skills
 * Removed old path format (`skills/collaboration/X` → just `X`)
 * Updated Integration sections with categorized relationships (Required vs Complementary)
 * Updated cross-reference documentation with best practices
@@ -1088,7 +1088,7 @@ We now use Anthropic's first-party skills system!
 
 * **Fixed session-start hook execution in plugin context** (#8, PR #9) - The hook was failing silently with "Plugin hook error" preventing skills context from loading. Fixed by:
 
-  * Using `${BASH\\\_SOURCE\\\[0]:-$0}` fallback when BASH\_SOURCE is unbound in Claude Code's execution context
+  * Using `${BASH\_SOURCE\[0]:-$0}` fallback when BASH\_SOURCE is unbound in Claude Code's execution context
   * Adding `|| true` to handle empty grep results gracefully when filtering status flags
 
 \---
@@ -1113,7 +1113,7 @@ Users experience seamless operation: the plugin handles cloning, forking, and up
 
 **What this means for you:**
 
-* **First install:** Plugin automatically clones skills to `\\\~/.config/superpowers/skills/`
+* **First install:** Plugin automatically clones skills to `\~/.config/superpowers/skills/`
 * **Forking:** During setup, you'll be offered the option to fork the skills repo (if `gh` is installed)
 * **Updates:** Skills auto-update on session start (fast-forward when possible)
 * **Contributing:** Work on branches, commit locally, submit PRs to upstream
@@ -1123,9 +1123,9 @@ Users experience seamless operation: the plugin handles cloning, forking, and up
 
 If you have an existing installation:
 
-1. Your old `\\\~/.config/superpowers/.git` will be backed up to `\\\~/.config/superpowers/.git.bak`
-2. Old skills will be backed up to `\\\~/.config/superpowers/skills.bak`
-3. Fresh clone of obra/superpowers-skills will be created at `\\\~/.config/superpowers/skills/`
+1. Your old `\~/.config/superpowers/.git` will be backed up to `\~/.config/superpowers/.git.bak`
+2. Old skills will be backed up to `\~/.config/superpowers/skills.bak`
+3. Fresh clone of obra/superpowers-skills will be created at `\~/.config/superpowers/skills/`
 
 ### Removed Features
 
@@ -1221,7 +1221,7 @@ If you have an existing installation:
 
 **Environment Variables**
 
-* `SUPERPOWERS\\\_SKILLS\\\_ROOT` set to `\\\~/.config/superpowers/skills`
+* `SUPERPOWERS\_SKILLS\_ROOT` set to `\~/.config/superpowers/skills`
 * Used consistently throughout all paths
 
 ## Bug Fixes
@@ -1297,7 +1297,7 @@ The plugin handles everything automatically.
 1. **Backup your personal skills** (if you have any):
 
 ```bash
-   cp -r \\\~/.config/superpowers/skills \\\~/superpowers-skills-backup
+   cp -r \~/.config/superpowers/skills \~/superpowers-skills-backup
    ```
 
 2. **Update the plugin:**
