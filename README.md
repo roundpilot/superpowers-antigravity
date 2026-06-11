@@ -135,6 +135,42 @@ git clone https://github.com/roundpilot/superpowers-antigravity /mnt/c/Users/$US
 git clone https://github.com/roundpilot/superpowers-antigravity /path/to/your/wsl/project/.agents/plugins/superpowers
 ```
 
+### Manual Installation (no git required)
+
+If you don't have git installed, you can download and extract the ZIP directly from GitHub.
+
+**macOS / Linux:**
+
+```bash
+# Download
+curl -L https://github.com/roundpilot/superpowers-antigravity/archive/refs/heads/main.zip -o superpowers.zip
+
+# Extract to global plugin directory
+unzip superpowers.zip
+mkdir -p ~/.gemini/config/plugins
+mv superpowers-antigravity-main ~/.gemini/config/plugins/superpowers
+
+# Clean up
+rm superpowers.zip
+```
+
+**Windows (PowerShell):**
+
+```powershell
+# Download
+Invoke-WebRequest -Uri "https://github.com/roundpilot/superpowers-antigravity/archive/refs/heads/main.zip" -OutFile superpowers.zip
+
+# Extract to global plugin directory
+Expand-Archive superpowers.zip -DestinationPath .
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.gemini\config\plugins"
+Move-Item superpowers-antigravity-main "$env:USERPROFILE\.gemini\config\plugins\superpowers"
+
+# Clean up
+Remove-Item superpowers.zip
+```
+
+To update later, delete the `superpowers` folder and repeat the steps above.
+
 ### Activation
 
 Once installed, Superpowers skills are available via the `/using-superpowers` slash command in Antigravity 2.0 and Antigravity IDE. For the Antigravity CLI, the command is `/superpowers:using-superpowers`. Type the appropriate command at the start of a session to activate the skill system. (Note: If you have Antigravity open during install, restart the application to ensure the plugin is scanned and loaded). The agent will load the bootstrap and tool mapping, then brainstorming, TDD, subagent-driven-development, and all other skills will trigger automatically for the rest of the session.
