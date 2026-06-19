@@ -199,11 +199,14 @@ EOF
 
 # Find the most recent Antigravity transcript JSONL file
 # Antigravity stores transcripts at:
-#   ~/.gemini/antigravity/brain/<conversation-id>/.system_generated/logs/transcript.jsonl
+#   ~/.gemini/antigravity-cli/brain/<conversation-id>/.system_generated/logs/transcript.jsonl
 # Usage: transcript=$(find_transcript [minutes_ago])
 find_transcript() {
     local minutes="${1:-60}"
-    local brain_dir="$HOME/.gemini/antigravity/brain"
+    local brain_dir="$HOME/.gemini/antigravity-cli/brain"
+    if [ ! -d "$brain_dir" ]; then
+        brain_dir="$HOME/.gemini/antigravity/brain"
+    fi
 
     if [ ! -d "$brain_dir" ]; then
         echo "ERROR: Brain directory not found: $brain_dir" >&2

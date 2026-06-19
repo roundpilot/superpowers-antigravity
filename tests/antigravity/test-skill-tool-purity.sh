@@ -20,7 +20,7 @@ echo "=== Check 1: Claude Code Tool Names ==="
 echo ""
 
 CC_TOOLS="TodoWrite|EnterWorktree|Task tool|Skill tool"
-if grep -rn "$CC_TOOLS" "$SKILLS_DIR"; then
+if grep -rnE "$CC_TOOLS" "$SKILLS_DIR"; then
     echo "  [FAIL] Claude Code tool names found in skills"
     FAILED=$((FAILED + 1))
 else
@@ -33,7 +33,7 @@ echo "=== Check 2: Legacy Platform References ==="
 echo ""
 
 PLATFORMS="Claude Code|Codex CLI|Codex App|Copilot CLI|OpenCode|Factory Droid|Gemini CLI"
-if grep -rn "$PLATFORMS" "$SKILLS_DIR"; then
+if grep -rnE "$PLATFORMS" "$SKILLS_DIR"; then
     echo "  [FAIL] Legacy platform references found in skills"
     FAILED=$((FAILED + 1))
 else
@@ -46,7 +46,7 @@ echo "=== Check 3: Tool Mapping References ==="
 echo ""
 
 MAPPINGS="antigravity-tools|copilot-tools|codex-tools|gemini-tools"
-if grep -rn "$MAPPINGS" "$SKILLS_DIR"; then
+if grep -rnE "$MAPPINGS" "$SKILLS_DIR"; then
     echo "  [FAIL] Tool mapping file references found in skills"
     FAILED=$((FAILED + 1))
 else
