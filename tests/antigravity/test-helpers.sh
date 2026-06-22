@@ -199,7 +199,8 @@ EOF
 
 # Find the most recent Antigravity transcript JSONL file
 # Antigravity stores transcripts at:
-#   ~/.gemini/antigravity-cli/brain/<conversation-id>/.system_generated/logs/transcript.jsonl
+#   ~/.gemini/antigravity-cli/brain/<conversation-id>/.system_generated/logs/transcript.jsonl (CLI)
+#   ~/.gemini/antigravity/brain/<conversation-id>/.system_generated/logs/transcript.jsonl (IDE / Fallback)
 # Usage: transcript=$(find_transcript [minutes_ago])
 find_transcript() {
     local minutes="${1:-60}"
