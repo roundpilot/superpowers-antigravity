@@ -17,6 +17,17 @@ Ensure work happens in an isolated workspace using Antigravity 2.0's native work
 
 **Before creating anything, check if you are already in an isolated workspace.**
 
+**Verify Git Repository Existence:**
+
+If not inside a git repository, you cannot use worktrees. Check if you need to run `git init` first.
+
+```bash
+if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+    echo "ERROR: Not inside a Git repository."
+    exit 1
+fi
+```
+
 ```bash
 GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
 GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
