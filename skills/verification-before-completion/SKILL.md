@@ -136,12 +136,12 @@ When launching a build or test suite that might take more than a few minutes:
 
 **Short waits (under 5 min):** Set a one-shot timer:
 ```
-schedule(DurationSeconds: 300, Prompt: "Check if the verification command has completed")
+schedule(DurationSeconds: "300", Prompt: "Check if the verification command has completed")
 ```
 
 **Long waits (5+ min):** Use a recurring cron schedule:
 ```
-schedule(CronExpression: "*/2 * * * *", MaxIterations: 5, Prompt: "Check if the verification command has completed")
+schedule(CronExpression: "*/2 * * * *", MaxIterations: "5", Prompt: "Check if the verification command has completed")
 ```
 This checks every 2 minutes, up to 5 times (10 minutes total). Adjust `MaxIterations` based on expected duration.
 

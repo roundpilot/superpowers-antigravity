@@ -194,7 +194,7 @@ digraph timeout {
 
 **For test suites expected to take 5+ minutes**, use a recurring schedule instead of a one-shot timer:
 ```
-schedule(CronExpression: "*/2 * * * *", MaxIterations: 5, Prompt: "Check implementer status for Task N")
+schedule(CronExpression: "*/2 * * * *", MaxIterations: "5", Prompt: "Check implementer status for Task N")
 ```
 
 ## Subagent Monitoring
