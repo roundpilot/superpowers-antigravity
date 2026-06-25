@@ -215,9 +215,12 @@ find_transcript() {
     fi
 
     # Find the most recently modified transcript.jsonl
-    local transcript
-    transcript=$(find "$brain_dir" -name "transcript.jsonl" -mmin "-${minutes}" -type f 2>/dev/null | \
-        xargs ls -t 2>/dev/null | head -1)
+    local transcript=""
+    local files
+    files=$(find "$brain_dir" -name "transcript.jsonl" -mmin "-${minutes}" -type f 2>/dev/null)
+    if [ -n "$files" ]; then
+        transcript=$(echo "$files" | xargs ls -t 2>/dev/null | head -1)
+    fi
 
     if [ -z "$transcript" ]; then
         echo "ERROR: No transcript found in last $minutes minutes" >&2
