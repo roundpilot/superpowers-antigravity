@@ -78,11 +78,11 @@ digraph process {
 
 ## Subagent Type Setup
 
-At the start of plan execution, **before dispatching any tasks**, define all three subagent types:
+At the start of plan execution, **before dispatching any tasks**, locate the absolute paths of the `subagent-driven-development` and `requesting-code-review` skill directories from the `<skills>` section of your prompt. Then, define all three subagent types:
 
-1. `define_subagent` with name `"implementer"` — read `./implementer-prompt.md` for the static system prompt
-2. `define_subagent` with name `"spec-reviewer"` — read `./spec-reviewer-prompt.md` for the static system prompt
-3. `define_subagent` with name `"code-reviewer"` — read `./code-reviewer.md` (in `requesting-code-review/`) for the static system prompt
+1. `define_subagent` with name `"implementer"` — read `implementer-prompt.md` from the `subagent-driven-development` directory.
+2. `define_subagent` with name `"spec-reviewer"` — read `spec-reviewer-prompt.md` from the `subagent-driven-development` directory.
+3. `define_subagent` with name `"code-reviewer"` — read `code-reviewer.md` from the `requesting-code-review` directory.
 
 This pays the prompt cost once. Every subsequent `invoke_subagent` with these types reuses the cached definition.
 
@@ -208,10 +208,10 @@ Don't poll in a loop — the system notifies you when subagents complete. Use `m
 
 ## Prompt Templates
 
-- `./implementer-prompt.md` — `define_subagent` definition (static system prompt + dynamic prompt template)
-- `./spec-reviewer-prompt.md` — `define_subagent` definition (static system prompt + dynamic prompt template)
-- `./code-quality-reviewer-prompt.md` — Delegates to `code-reviewer` type with extra review criteria
-- `requesting-code-review/code-reviewer.md` — `define_subagent` definition (static system prompt + dynamic prompt template)
+- `implementer-prompt.md` (located in the `subagent-driven-development` skill directory) — `define_subagent` definition (static system prompt + dynamic prompt template)
+- `spec-reviewer-prompt.md` (located in the `subagent-driven-development` skill directory) — `define_subagent` definition (static system prompt + dynamic prompt template)
+- `code-quality-reviewer-prompt.md` (located in the `subagent-driven-development` skill directory) — Delegates to `code-reviewer` type with extra review criteria
+- `code-reviewer.md` (located in the `requesting-code-review` skill directory) — `define_subagent` definition (static system prompt + dynamic prompt template)
 
 ## Example Workflow
 
