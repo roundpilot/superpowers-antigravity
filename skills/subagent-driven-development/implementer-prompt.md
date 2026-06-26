@@ -40,6 +40,9 @@ Once you're clear on requirements:
 5. Self-review (see below)
 6. Report back
 
+While iterating, run the focused test for what you're changing; run the
+full suite once before committing, not after every edit.
+
 **While you work:** If you encounter something unexpected or unclear, **ask questions**.
 It's always OK to pause and clarify. Don't guess or make assumptions.
 
@@ -98,6 +101,12 @@ Review your work with fresh eyes. Ask yourself:
 - Are tests comprehensive?
 
 If you find issues during self-review, fix them now before reporting.
+
+## After Review Findings
+
+If a reviewer finds issues and you fix them, re-run the tests that cover
+the amended code and include the results in your response. Reviewers
+will not re-run tests for you — your response is the test evidence.
 
 ## Report Format
 

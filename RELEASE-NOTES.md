@@ -1,5 +1,50 @@
 # Superpowers Release Notes
 
+## v6.0.1 (2026-06-26)
+
+### Selective v6.0.3 Cherry-Picks + Quality-of-Life Improvements
+
+Cherry-picked three high-value improvements from [obra/superpowers v6.0.3](https://github.com/obra/superpowers) into the existing v6.0.0 SDD architecture.
+
+#### SDD Improvements (from upstream v6.0.3)
+
+* **Pre-Flight Plan Review** — New section. Before dispatching Task 1, scan the plan for contradictions between tasks and Global Constraints. Present all conflicts as one batched question to the user, not one interrupt per discovery.
+* **Constructing Reviewer Prompts** — New section. Detailed anti-patterns for review dispatch: don't pre-judge findings ("do not flag," "at most Minor"), don't paste session history into dispatches, don't ask reviewers to re-run tests, copy global constraints verbatim. Fix dispatch contracts and final whole-branch review guidance.
+* **Durable Progress** — New section. Ledger-based recovery after context compaction. Track completed tasks in `.superpowers/sdd/progress.md` so controllers that lose context don't re-dispatch completed work.
+
+#### Planning Methodology (independent improvements)
+
+* **Task Right-Sizing** — Added to `writing-plans/SKILL.md`. A task is the smallest unit that carries its own test cycle and is worth a reviewer gate.
+* **Global Constraints** — Mandatory `## Global Constraints` header in implementation plans.
+* **Interfaces** — `Consumes:` / `Produces:` blocks in task structure for cross-task dependency tracking.
+
+#### Skill Writing (independent improvements)
+
+* **Match the Form to the Failure** — Added to `writing-skills/SKILL.md`. Guide for choosing the right skill structure.
+* **Micro-Test Wording Method** — Added to `writing-skills/SKILL.md`. Technique for testing skill instruction clarity.
+
+#### What we didn't port (and why)
+
+Upstream v6.0.3 also introduced a unified task-reviewer (replacing the two-stage spec-reviewer + code-quality-reviewer), Python helper scripts (`task_brief.py`, `review_package.py`, `sdd_workspace.py`), and file-based handoff patterns. We deliberately skipped these because:
+
+* **Overhead vs. value:** The scripts and `.superpowers/sdd/` infrastructure add orchestration complexity (brief extraction, review package generation, report file management) that slows down execution significantly — especially for plans with fewer than 5 tasks, which is the majority of real usage.
+* **Antigravity's workspace model:** Implementers run in `Workspace: "branch"` and cannot access gitignored directories like `.superpowers/sdd/`. This forces a split architecture where briefs are copy-pasted into chat and reports come back via chat — negating the file-based handoff benefit that upstream designed around.
+* **The two-stage review already works:** The v6.0.0 spec-reviewer → code-quality-reviewer flow is proven and functional in Antigravity. The unified reviewer halves the review cost per task but adds complexity to the prompt template. The trade-off isn't worth it for this fork.
+
+The three sections we *did* cherry-pick (Pre-Flight Plan Review, Constructing Reviewer Prompts, Durable Progress) are pure text guidance — zero scripts, zero infrastructure — and represent upstream's most valuable lessons learned from real session failures.
+
+#### Implementer Prompt (from upstream v6.0.3)
+
+* **Focused test iteration** — Added to `implementer-prompt.md`. Run focused tests while iterating; full suite once before committing. Prevents implementers from running massive test suites on every file write.
+* **Post-fix test evidence** — Added to `implementer-prompt.md`. After fixing reviewer findings, re-run covering tests and include results. Reviewers don't re-run tests — the implementer's response is the evidence.
+
+#### Bugfixes
+
+* **Red Flag contradiction** — "Never move to next task while either review has open issues" now correctly says "open Critical/Important issues" to match the Minor-ledgering guidance in Constructing Reviewer Prompts.
+* **`.superpowers/` gitignore** — Added `.superpowers/` to `.gitignore` so the Durable Progress ledger is genuinely ignored scratch as documented.
+* **Spec-reviewer calibration** — Added clarification that spec-compliance failures are always blocking; the Critical/Important/Minor severity triage applies to code-quality findings only.
+
+
 ## v6.0.0 (2026-06-10)
 
 ### Antigravity 2.0 Native Refactor

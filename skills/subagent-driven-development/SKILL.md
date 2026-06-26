@@ -76,6 +76,20 @@ digraph process {
 }
 ```
 
+## Pre-Flight Plan Review
+
+Before dispatching Task 1, scan the plan once for conflicts:
+
+- tasks that contradict each other or the plan's Global Constraints
+- anything the plan explicitly mandates that the review rubric treats as a
+  defect (a test that asserts nothing, verbatim duplication of a logic block)
+
+Present everything you find to your human partner as one batched question —
+each finding beside the plan text that mandates it, asking which governs —
+before execution begins, not one interrupt per discovery mid-plan. If the
+scan is clean, proceed without comment. The review loop remains the net for
+conflicts that only emerge from implementation.
+
 ## Subagent Type Setup
 
 At the start of plan execution, **before dispatching any tasks**, locate the absolute paths of the `subagent-driven-development` and `requesting-code-review` skill directories from the `<skills>` section of your prompt. Then, define all three subagent types:
@@ -126,6 +140,49 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 4. If the plan itself is wrong, escalate to the user
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
+
+## Constructing Reviewer Prompts
+
+Per-task reviews are task-scoped gates. The broad review happens once, at the
+final whole-branch review. When you fill a reviewer template:
+
+- Do not add open-ended directives like "check all uses" or "run race tests
+  if useful" without a concrete, task-specific reason
+- Do not ask a reviewer to re-run tests the implementer already ran on the
+  same code — the implementer's report carries the test evidence
+- Do not pre-judge findings for the reviewer — never instruct a reviewer to
+  ignore or not flag a specific issue. If you believe a finding would be a
+  false positive, let the reviewer raise it and adjudicate it in the review
+  loop. If the prompt you are writing contains "do not flag," "don't treat X
+  as a defect," "at most Minor," or "the plan chose" — stop: you are
+  pre-judging, usually to spare yourself a review loop.
+- The global-constraints block you hand the reviewer is its attention lens.
+  Copy the binding requirements verbatim from the plan's Global Constraints
+  section or the spec: exact values, exact formats, and the stated
+  relationships between components.
+- A dispatch prompt describes one task, not the session's history. Do not
+  paste accumulated prior-task summaries ("state after Tasks 1-3") into
+  later dispatches. A fresh subagent needs its task, the interfaces it
+  touches, and the global constraints. Nothing else.
+- Dispatch fix subagents for Critical and Important findings. Record Minor
+  findings in the progress ledger as you go, and point the final
+  whole-branch review at that list so it can triage which must be fixed
+  before merge.
+- Spec-compliance failures (from the spec-reviewer) are always blocking —
+  the implementer must fix them before proceeding to code quality review.
+  The severity triage above (Critical/Important/Minor) applies to the
+  code-quality reviewer's findings.
+- A finding labeled plan-mandated — or any finding that conflicts with what
+  the plan's text requires — is the human's decision: present the finding
+  and the plan text, ask which governs. Do not dismiss the finding because
+  the plan mandates it, and do not dispatch a fix that contradicts the plan
+  without asking.
+- Every fix dispatch carries the implementer contract: the fix subagent
+  re-runs the tests covering its change and reports the results. Name the
+  covering test files in the dispatch — a one-line fix does not need the
+  whole suite.
+- If the final whole-branch review returns findings, dispatch ONE fix
+  subagent with the complete findings list — not one fixer per finding.
 
 ## Background Task Management
 
@@ -205,6 +262,25 @@ Use `manage_subagents` to track running subagents:
 - `Action: "kill"` — terminate stuck subagents that haven't responded after timeout
 
 Don't poll in a loop — the system notifies you when subagents complete. Use `manage_subagents` only when you need an explicit status check (e.g., before cleanup or when a timer fires).
+
+## Durable Progress
+
+Conversation memory does not survive compaction. In real sessions, controllers
+that lost their place have re-dispatched entire completed task sequences — the
+single most expensive failure observed. Track progress in a ledger file, not
+only in todos.
+
+- At skill start, check for a ledger: read `.superpowers/sdd/progress.md`
+  from the repository root. Tasks listed there as complete are DONE — do not
+  re-dispatch them; resume at the first task not marked complete.
+- When a task's review comes back clean, append one line to the ledger in
+  the same message as your other bookkeeping:
+  `Task N: complete (commits <base7>..<head7>, review clean)`.
+- The ledger is your recovery map: the commits it names exist in git even
+  when your context no longer remembers creating them. After compaction,
+  trust the ledger and `git log` over your own recollection.
+- `git clean -fdx` will destroy the ledger (it's git-ignored scratch); if
+  that happens, recover from `git log`.
 
 ## Prompt Templates
 
@@ -333,7 +409,7 @@ Done!
 - Skip review loops (reviewer found issues = implementer fixes = review again)
 - Let implementer self-review replace actual review (both are needed)
 - **Start code quality review before spec compliance is ✅** (wrong order)
-- Move to next task while either review has open issues
+- Move to next task while either review has open Critical/Important issues
 
 **If subagent asks questions:**
 - Answer clearly and completely

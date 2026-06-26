@@ -153,9 +153,9 @@ Concrete results
 
 The description should ONLY describe triggering conditions. Do NOT summarize the skill's process or workflow in the description.
 
-**Why this matters:** Testing revealed that when a description summarizes the skill's workflow, the agent may follow the description instead of reading the full skill content. A description saying "code review between tasks" caused the agent to do ONE review, even though the skill's flowchart clearly showed TWO reviews (spec compliance then code quality).
+**Why this matters:** Testing revealed that when a description summarizes the skill's workflow, the agent may follow the description instead of reading the full skill content. A description saying "code review between tasks" caused the agent to do ONE review, even though the skill's flowchart clearly showed a mandatory task review gate.
 
-When the description was changed to just "Use when executing implementation plans with independent tasks" (no workflow summary), the agent correctly read the flowchart and followed the two-stage review process.
+When the description was changed to just "Use when executing implementation plans with independent tasks" (no workflow summary), the agent correctly read the flowchart and followed the mandatory review process.
 
 **The trap:** Descriptions that summarize workflow create a shortcut the agent will take. The skill body becomes documentation the agent skips.
 
@@ -442,6 +442,26 @@ Different skill types need different test approaches:
 - Gap testing: Are common use cases covered?
 
 **Success criteria:** Agent finds and correctly applies reference information
+
+## Match the Form to the Failure
+
+When writing skill instructions, choose the structural form that directly addresses the observed agent failure:
+
+| Baseline failure | Right form | Wrong form |
+|---|---|---|
+| Skips/violates a rule under pressure | Prohibition + rationalization table + red flags | Soft guidance ("prefer...", "consider...") |
+| Wrong output shape | Positive recipe/contract stating what output IS | Prohibition list ("don't restate") |
+| Omits a required element | Structural REQUIRED field in template | Prose reminders near template |
+| Conditional behavior | Conditional keyed to observable predicate | Unconditional rule + exemption clauses |
+
+## Micro-Test Wording Method
+
+To refine the wording of critical rules and instructions, use this micro-testing protocol:
+1. **One fresh-context sample per call:** Run each test in a completely fresh conversation to prevent context contamination.
+2. **Always include a no-guidance control:** Test without the skill active to establish a clear failure baseline.
+3. **5+ reps per variant:** Run at least 5 independent repetitions per wording variant to account for model temperature and variance.
+4. **Manually read every flagged match:** Do not rely on keyword matching alone; read the agent's reasoning to understand why it complied or failed.
+5. **Variance is a metric:** If a wording variant passes 3 times but fails 2, it is not robust. Keep refining until you achieve 5/5 compliance.
 
 ## Common Rationalizations for Skipping Testing
 

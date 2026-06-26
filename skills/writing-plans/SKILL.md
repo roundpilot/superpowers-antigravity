@@ -34,6 +34,10 @@ Before defining tasks, use `list_dir` and `grep_search` to map out which files w
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
 
+## Task Right-Sizing
+
+A task is the smallest unit that carries its own test cycle and is worth a fresh reviewer's gate. Fold setup, configuration, scaffolding, and documentation steps into the task whose deliverable needs them; split only where a reviewer could meaningfully reject one task while approving its neighbor.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
@@ -69,6 +73,10 @@ Include a Mermaid diagram showing component relationships and data flow. This di
 
 **Tech Stack:** [Key technologies/libraries]
 
+## Global Constraints
+
+[Project-wide requirements — version floors, dependency limits, naming rules, platform requirements — one line each, exact values from the spec.]
+
 ---
 ```
 
@@ -81,6 +89,10 @@ Include a Mermaid diagram showing component relationships and data flow. This di
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
 - Test: `tests/exact/path/to/test.py`
+
+**Interfaces:**
+- Consumes: [what this task uses from earlier tasks — exact signatures]
+- Produces: [what later tasks rely on — exact names, parameters, return types]
 
 - [ ] **Step 1: Write the failing test**
 
@@ -169,5 +181,5 @@ After saving the plan (using `write_to_file` with `IsArtifact: true`, `ArtifactT
 Use `ask_question` to present the confirmation.
 
 **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Fresh subagent per task + two-stage review
+- Fresh subagent per task + two-stage review (spec compliance + code quality)
 - Define implementer/spec-reviewer/code-reviewer types upfront
