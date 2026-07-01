@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/roundpilot/superpowers-antigravity#-installation"><img src="https://img.shields.io/badge/Install-Guide-blue?style=for-the-badge" alt="Install"></a>
-  <a href="RELEASE-NOTES.md"><img src="https://img.shields.io/badge/Version-6.0.1-green?style=for-the-badge" alt="Version 6.0.1"></a>
+  <a href="RELEASE-NOTES.md"><img src="https://img.shields.io/badge/Version-6.0.2-green?style=for-the-badge" alt="Version 6.0.2"></a>
   <a href="https://github.com/obra/superpowers"><img src="https://img.shields.io/badge/Fork%20of-obra%2Fsuperpowers-purple?style=for-the-badge" alt="Fork of obra/superpowers"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT License"></a>
 </p>

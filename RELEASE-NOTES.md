@@ -1,5 +1,19 @@
 # Superpowers Release Notes
 
+## v6.0.2 (2026-07-01)
+
+### Lower Per-Session Token Cost
+
+Cherry-picked the `using-superpowers` bootstrap compression from [obra/superpowers v6.1.0](https://github.com/obra/superpowers). The bootstrap is injected into every session, so its size compounds across every turn.
+
+- **Compressed the `using-superpowers` bootstrap.** Replaced the graphviz skill-flow diagram with the prose it encoded, folded the standalone Instruction-Priority section into User Instructions, dropped the How-to-Access-Skills walkthrough (redundant with the system prompt), and removed the Skill Types section (each skill already declares its own compliance expectations). The full Red Flags rationalization table is unchanged. 108 lines → ~55 lines.
+
+### Not Ported from Upstream v6.1.0
+
+The remaining v6.1.0 changes are platform-specific cleanup irrelevant to our Antigravity-only fork: per-harness tool-mapping pruning (we deleted all `references/` in v6.0.0), Codex marketplace manifest, Codex hook removal, and Gemini CLI EOL removal (we never supported it).
+
+---
+
 ## v6.0.1 (2026-06-26)
 
 ### Selective v6.0.3 Cherry-Picks + Quality-of-Life Improvements
