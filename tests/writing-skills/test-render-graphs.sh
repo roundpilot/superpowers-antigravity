@@ -8,7 +8,7 @@ NODE_BIN="$(command -v node)"
 if [[ -z "$NODE_BIN" ]]; then
   echo "Writing-skills render-graphs tests"
   echo "  [SKIP] node not found on PATH — cannot exercise render-graphs.js"
-  exit 0
+  exit 77
 fi
 
 PASSES=0
@@ -84,6 +84,13 @@ else
 fi
 assert_contains "$missing_dot_output" "Error: graphviz (dot) not found." "missing Graphviz reports install guidance"
 assert_not_contains "$missing_dot_output" "ReferenceError: require is not defined" "script runs as an ES module"
+
+# Fork divergence (S7.7): without Graphviz the five render assertions are not run; SKIP is exit 77.
+if ! command -v dot >/dev/null 2>&1; then
+  echo "  [SKIP] render assertions: Graphviz (dot) not on PATH — $PASSES passed, 5 not run"
+  [[ "$FAILURES" -gt 0 ]] && exit 1
+  exit 77
+fi
 
 render_output="$("$NODE_BIN" "$SCRIPT_UNDER_TEST" "$fixture" 2>&1)"
 render_status=$?

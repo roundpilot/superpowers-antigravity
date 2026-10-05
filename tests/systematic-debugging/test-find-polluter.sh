@@ -57,7 +57,7 @@ run_polluter() {
   rm -f "$PROJECT/pollution.marker"
   (
     cd "$PROJECT"
-    PATH="$PROJECT/bin:$PATH" "$SCRIPT_UNDER_TEST" 'pollution.marker' "$pattern" 2>&1
+    PATH="$PROJECT/bin:$PATH" bash "$SCRIPT_UNDER_TEST" 'pollution.marker' "$pattern" 2>&1
   ) || true
 }
 
