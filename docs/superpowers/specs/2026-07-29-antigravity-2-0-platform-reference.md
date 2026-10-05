@@ -1,5 +1,5 @@
 # Antigravity 2.0 Platform Reference — Tool Schemas & Subagent Model
-
+**SUPERSEDED 2026-09-25** by `2026-09-25-antigravity-platform-reference.md`, which is now the fork's ground truth. This file is frozen, unchanged since commit 53e969d (2026-08-24) apart from this line, so that `ref:NN` line citations stay valid. Its errors are listed in the successor's §14.
 > Captured 2026-07-29 from the official Antigravity 2.0 documentation (provided by the maintainer). This is the fork's **ground truth** for what the platform actually supports. Every tool invocation example under `skills/` must match these schemas exactly; every capability claim must be supported here. Where the older `2026-06-10-gap-analysis.md` conflicts with this document, this document wins.
 
 **Provenance:** the `Subagents` array shape, `define_subagent`, `manage_task`, `schedule`, and the `ArtifactMetadata` params below come from the maintainer's 2026-07-29 capture and are absent from the public documentation pages as of 2026-07-30 — treat those specific shapes as maintainer-sourced, not independently corroborated against a public page.
