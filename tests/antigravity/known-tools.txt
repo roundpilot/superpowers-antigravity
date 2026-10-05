@@ -1,0 +1,46 @@
+# Names that look like tools, read by test-skill-tool-purity.sh (check 6, S7.1 item 2).
+# Format: name<TAB>class<TAB>source. Classes:
+#   baseline    a Supported Tool that skill and rule prose may name (ref §2.1b)
+#   retired     removed from the CLI; an agent may still list it in tools:, skill and rule prose may not
+#   one-product named by one product only, so not baseline
+#   not-a-tool  an identifier that only looks like a tool
+# Rule 1: a new backticked non-tool identifier adds its not-a-tool line in the same commit.
+# Rule 2: promotion to baseline needs LC1 or LC8 on all three products (R13), and moves this file,
+#         the non-baseline-tools group of purity-patterns.txt and ref §2.1b together.
+view_file	baseline	D shared hooks:123-180
+write_to_file	baseline	D shared hooks:123-180
+replace_file_content	baseline	D shared hooks:123-180
+multi_replace_file_content	baseline	D shared hooks:123-180
+search_web	baseline	D shared hooks:123-180
+read_url_content	baseline	D shared hooks:123-180
+run_command	baseline	D shared hooks:123-180
+manage_task	baseline	D shared hooks:123-180
+schedule	baseline	D shared hooks:123-180
+list_permissions	baseline	D shared hooks:123-180
+ask_permission	baseline	D shared hooks:123-180
+invoke_subagent	baseline	D shared hooks:123-180
+define_subagent	baseline	D shared hooks:123-180
+send_message	baseline	D shared hooks:123-180
+manage_subagents	baseline	D shared hooks:123-180
+ask_question	baseline	D shared hooks:123-180
+generate_image	baseline	D shared hooks:123-180
+list_dir	retired	CL CLI 1.2.7
+find_by_name	retired	CL CLI 1.2.7
+grep_search	retired	CL CLI 1.2.7
+code_search	one-product	S1.9
+command_status	one-product	S1.9
+manage_inbox	one-product	S1.9
+read_resource	one-product	S1.9
+create_issue	not-a-tool	skills/writing-skills/anthropic-best-practices.md
+bigquery_schema	not-a-tool	skills/writing-skills/anthropic-best-practices.md
+created_at	not-a-tool	S6.9
+duration_seconds	not-a-tool	S6.9
+error_code	not-a-tool	S6.9
+kill_all	not-a-tool	S6.9
+read_file	not-a-tool	S6.9
+step_index	not-a-tool	S6.9
+step_update	not-a-tool	S6.9
+subagent_info	not-a-tool	S6.9
+tool_calls	not-a-tool	S6.9
+truncated_fields	not-a-tool	S6.9
+write_file	not-a-tool	S6.9
