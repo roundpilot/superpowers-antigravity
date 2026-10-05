@@ -25,7 +25,7 @@ VARIANTS=()
 
 # Negative fixtures, one per entry: label|file|kind|arg|expected reason.
 # `file` is relative to agents/. Each runs the lint on a mutated copy and must fail
-# with the expected reason in its output.
+# with the expected reason on a [FAIL] line of its output.
 NEGATIVE_FIXTURES=(
   "unknown key|implementer.md|key|mainagent: false|unknown key"
   "unvalidated gated key|implementer.md|key|hidden: true|gated: admitted only after LC3 (S3.1)"
@@ -309,7 +309,9 @@ check_5_roles() {
       bad=1
     fi
   done
-  if [ "$bad" -eq 0 ]; then pass "$base: roles ok (write tools only on WRITE_AGENTS, no dispatch or async tools)"; fi
+  # The pass wording must not repeat a fixture's expected reason (belt and braces: the
+  # fixture harness reads only [FAIL] lines).
+  if [ "$bad" -eq 0 ]; then pass "$base: roles ok (no write tool outside the write agents, no banned dispatch tool)"; fi
   return 0
 }
 
@@ -351,8 +353,8 @@ done
 
 # ---------------------------------------------------------------------------
 # Negative fixtures: each copies agents/ to a scratch ROOT, applies one mutation and
-# runs this script with --lint-only on it. The lint must exit 1 with the reason in its
-# output. Skipped under --lint-only, so a fixture never starts fixtures.
+# runs this script with --lint-only on it. The lint must exit 1 with the reason on one
+# of its [FAIL] lines. Skipped under --lint-only, so a fixture never starts fixtures.
 # ---------------------------------------------------------------------------
 FIXTURE_ROOT=""
 cleanup_fixture() {
@@ -360,6 +362,18 @@ cleanup_fixture() {
   FIXTURE_ROOT=""
 }
 trap cleanup_fixture EXIT
+
+# fail_line_has <output> <reason>: success when a `[FAIL]` line of the child's output
+# contains the reason, literally. Never the whole output: a [PASS] line that happens to
+# repeat the reason would otherwise satisfy a fixture whose failure came from elsewhere.
+# In-process (no fork), like fm_load.
+fail_line_has() {
+  local out="$1" reason="$2" line
+  while IFS= read -r line; do
+    if [[ $line == *"[FAIL]"* && $line == *"$reason"* ]]; then return 0; fi
+  done <<< "$out"
+  return 1
+}
 
 run_negative_fixtures() {
   local entry label file kind arg reason out code
@@ -379,7 +393,7 @@ run_negative_fixtures() {
     cleanup_fixture
     if [ "$code" -eq 0 ]; then
       fail "negative fixture '$label' passed the lint"
-    elif [ "$code" -eq 1 ] && [[ "$out" == *"$reason"* ]]; then
+    elif [ "$code" -eq 1 ] && fail_line_has "$out" "$reason"; then
       pass "negative fixture '$label' failed as expected"
     else
       fail "negative fixture '$label' failed with the wrong reason (exit $code, expected: $reason)"
