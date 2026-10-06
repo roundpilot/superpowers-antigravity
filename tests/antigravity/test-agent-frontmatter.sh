@@ -23,11 +23,13 @@ WRITE_AGENTS=(implementer)
 DISPATCH_AGENTS=()
 VARIANTS=()
 # The read-only class (S3.2): agents whose body must state that the review is read-only.
-READONLY_AGENTS=(spec-reviewer code-reviewer re-reviewer)
+READONLY_AGENTS=(spec-reviewer code-reviewer re-reviewer final-reviewer)
 
 # Negative fixtures, one per entry: label|file|kind|arg|expected reason.
-# `file` is relative to agents/. Each runs the lint on a mutated copy and must fail
-# with the expected reason on a [FAIL] line of its output.
+# `file` is a bare name, resolved against agents/, or a path containing `/`, resolved
+# against the fixture ROOT (which holds copies of agents/, skills/ and README.md).
+# Each runs the lint on a mutated copy and must fail with the expected reason on a
+# [FAIL] line of its output.
 NEGATIVE_FIXTURES=(
   "unknown key|implementer.md|key|mainagent: false|unknown key"
   "unvalidated gated key|implementer.md|key|hidden: true|gated: admitted only after LC3 (S3.1)"
@@ -36,6 +38,8 @@ NEGATIVE_FIXTURES=(
   "implementer schedule|implementer.md|tool|schedule|dispatch or async tool"
   "invoke_subagent|spec-reviewer.md|tool|invoke_subagent|dispatch or async tool"
   "mainAgent true|re-reviewer.md|set|mainAgent: true|mainAgent must be false"
+  "misspelled TypeName|skills/subagent-driven-development/spec-reviewer-prompt.md|sub|TypeName: \"spec-reviewer\"=>TypeName: \"spec-reviwer\"|unknown TypeName 'spec-reviwer' under skills/ (7e)"
+  "final-reviewer byte|final-reviewer.md|byte|x|not code-reviewer.md minus its SDD section (7b)"
 )
 
 fail() { echo "  [FAIL] $1"; FAILURES=$((FAILURES + 1)); }
@@ -173,11 +177,14 @@ tools_of() {
   if [ "${#FM_TOOLS[@]}" -gt 0 ]; then printf '%s\n' "${FM_TOOLS[@]}"; fi
 }
 
-# mutate <file> key|tool|set <arg>: rewrite <file> in place, in awk (not GNU-only sed).
+# mutate <file> key|tool|set|sub|byte <arg>: rewrite <file> in place, in awk (not GNU-only sed).
 #   key   insert <arg> as a line before the closing `---`
 #   tool  insert `  - <arg>` after the `tools:` line
 #   set   replace the frontmatter line whose key is <arg>'s key (the text before ':')
-# Returns 1 on a missing file, an unknown kind or an awk failure.
+#   sub   <arg> is `<old>=><new>`, split at the first `=>`: replace the first literal
+#         occurrence of <old> in the file with <new>
+#   byte  <arg> is one character: append it to the last non-blank line (a one-byte change)
+# Returns 1 on a missing file, an unknown kind, a bad <arg> or an awk failure.
 mutate() {
   local file="$1" kind="$2" arg="$3" tmp
   [ -f "$file" ] || return 1
@@ -201,6 +208,19 @@ mutate() {
         infm && /^---[[:space:]]*$/ { infm = 0 }
         infm && !done && index($0, k ":") == 1 { print line; done = 1; next }
         { print }' "$file" > "$tmp" || { rm -f "$tmp"; return 1; }
+      ;;
+    sub)
+      ARG="$arg" awk '
+        BEGIN { a = ENVIRON["ARG"]; i = index(a, "=>"); old = substr(a, 1, i - 1); new = substr(a, i + 2) }
+        !done && i > 1 && (p = index($0, old)) > 0 { $0 = substr($0, 1, p - 1) new substr($0, p + length(old)); done = 1 }
+        { print }' "$file" > "$tmp" || { rm -f "$tmp"; return 1; }
+      ;;
+    byte)
+      [ "${#arg}" -eq 1 ] || return 1
+      ARG="$arg" awk '
+        { line[NR] = $0 }
+        /[^[:space:]]/ { last = NR }
+        END { for (n = 1; n <= NR; n++) print line[n] (n == last ? ENVIRON["ARG"] : "") }' "$file" > "$tmp" || { rm -f "$tmp"; return 1; }
       ;;
     *) return 1 ;;
   esac
@@ -391,6 +411,83 @@ check_5_implementer() {
   return 0
 }
 
+# 7(b). final-reviewer is code-reviewer minus its Subagent-Driven Development section
+# (S3.3): the bodies are byte-identical once that section (its heading up to the next
+# `## ` heading) is cut from code-reviewer's, and the tools: lists are identical. A
+# missing file fails the same way.
+check_7b() {
+  local fr="$1/agents/final-reviewer.md" cr="$1/agents/code-reviewer.md" ok=1
+  local msg="final-reviewer.md: not code-reviewer.md minus its SDD section (7b)"
+  if [ ! -f "$fr" ] || [ ! -f "$cr" ]; then
+    fail "$msg"
+    return 0
+  fi
+  if ! cmp -s <(body_of "$fr") <(body_of "$cr" | awk '/^## Additional Checks \(Subagent-Driven Development\)$/{s=1;next} s&&/^## /{s=0} !s'); then
+    ok=0
+  fi
+  if [ "$(tools_of "$fr")" != "$(tools_of "$cr")" ]; then
+    ok=0
+  fi
+  if [ "$ok" -eq 1 ]; then
+    pass "final-reviewer.md: body is code-reviewer.md without its SDD section, same tools"
+  else
+    fail "$msg"
+  fi
+  return 0
+}
+
+# 7(c). No agent body carries a C5 heading: those two sections live only in the
+# requesting-code-review template's whole-branch block (S3.3, S5.7).
+check_7c() {
+  local root="$1" f hits bad=0
+  local files=()
+  shopt -s nullglob
+  files=("$root"/agents/*.md)
+  shopt -u nullglob
+  hits=""
+  if [ "${#files[@]}" -gt 0 ]; then
+    hits="$(grep -lF -e '## The spec is a vision document' -e '## Declined to judge' "${files[@]}" || true)"
+  fi
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    fail "${f##*/}: C5 heading in an agent body (7c)"
+    bad=1
+  done <<< "$hits"
+  if [ "$bad" -eq 0 ]; then pass "no agent body carries a C5 heading"; fi
+  return 0
+}
+
+# 7(e). Every TypeName literal under skills/ names an agent (bare or `superpowers:`
+# prefixed), `self` or `research`. A value starting with `<` is a placeholder and is
+# skipped. Each unknown value is reported once.
+check_7e() {
+  local root="$1" value seen=" " f bad=0
+  local stems=" self research "
+  if [ ! -d "$root/skills" ]; then
+    fail "skills/ directory missing, TypeNames not checked (7e)"
+    return 0
+  fi
+  shopt -s nullglob
+  for f in "$root"/agents/*.md; do
+    f="${f##*/}"
+    stems="$stems${f%.md} "
+  done
+  shopt -u nullglob
+  # Read line by line from the pipeline (not through a command substitution), so a grep
+  # that matches nothing yields no value at all while TypeName: "" yields an empty one.
+  while IFS= read -r value; do
+    value="${value%$'\r'}"
+    case "$value" in '<'*) continue ;; esac
+    case "$seen" in *" $value "*) continue ;; esac
+    seen="$seen$value "
+    case "$stems" in *" $value "*) continue ;; esac
+    fail "unknown TypeName '$value' under skills/ (7e)"
+    bad=1
+  done < <(grep -rhoE 'TypeName: ("[^"]*"|[A-Za-z0-9:_-]+)' "$root/skills" | sed -E 's/^TypeName: "?//; s/"$//; s/^superpowers://' || true)
+  if [ "$bad" -eq 0 ]; then pass "every TypeName under skills/ names an agent, self or research"; fi
+  return 0
+}
+
 # ---------------------------------------------------------------------------
 # The lint over <LINT_ROOT>/agents/*.md.
 # ---------------------------------------------------------------------------
@@ -413,11 +510,15 @@ done
 
 check_5_readonly "$LINT_ROOT"
 check_5_implementer "$LINT_ROOT"
+check_7b "$LINT_ROOT"
+check_7c "$LINT_ROOT"
+check_7e "$LINT_ROOT"
 
 # ---------------------------------------------------------------------------
-# Negative fixtures: each copies agents/ to a scratch ROOT, applies one mutation and
-# runs this script with --lint-only on it. The lint must exit 1 with the reason on one
-# of its [FAIL] lines. Skipped under --lint-only, so a fixture never starts fixtures.
+# Negative fixtures: each copies agents/, skills/ and README.md to a scratch ROOT (so the
+# cross-file checks see a whole tree), applies one mutation and runs this script with
+# --lint-only on it. The lint must exit 1 with the reason on one of its [FAIL] lines.
+# Skipped under --lint-only, so a fixture never starts fixtures.
 # ---------------------------------------------------------------------------
 FIXTURE_ROOT=""
 cleanup_fixture() {
@@ -439,14 +540,21 @@ fail_line_has() {
 }
 
 run_negative_fixtures() {
-  local entry label file kind arg reason out code
+  local entry label file kind arg reason out code orig target
   echo ""
   echo "Negative fixtures"
   for entry in "${NEGATIVE_FIXTURES[@]}"; do
     IFS='|' read -r label file kind arg reason <<< "$entry"
     FIXTURE_ROOT="$(mktemp -d)"
     cp -R "$AGENTS_DIR" "$FIXTURE_ROOT/agents"
-    if ! mutate "$FIXTURE_ROOT/agents/$file" "$kind" "$arg" || cmp -s "$AGENTS_DIR/$file" "$FIXTURE_ROOT/agents/$file"; then
+    if [ -d "$LINT_ROOT/skills" ]; then cp -R "$LINT_ROOT/skills" "$FIXTURE_ROOT/skills"; fi
+    if [ -f "$LINT_ROOT/README.md" ]; then cp "$LINT_ROOT/README.md" "$FIXTURE_ROOT/README.md"; fi
+    # A file name with a `/` is a path under ROOT; a bare name is under ROOT/agents/.
+    case "$file" in
+      */*) orig="$LINT_ROOT/$file"; target="$FIXTURE_ROOT/$file" ;;
+      *) orig="$AGENTS_DIR/$file"; target="$FIXTURE_ROOT/agents/$file" ;;
+    esac
+    if ! mutate "$target" "$kind" "$arg" || cmp -s "$orig" "$target"; then
       cleanup_fixture
       fail "negative fixture '$label' mutation did not apply"
       continue
