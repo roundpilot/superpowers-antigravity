@@ -17,7 +17,7 @@ TOOLS_DATA="$SCRIPT_DIR/known-tools.txt"
 FAILURES=0
 
 # The policy. Later tasks extend these arrays in the same form. VARIANTS (the tier
-# variants of the implementer, spec D5 fallback) is empty and no check reads it yet.
+# variants of the implementer, spec D5 fallback) is empty; check_5_implementer reads it.
 POLICY_KEYS=(name description subagent mainAgent model tools)
 WRITE_AGENTS=(implementer)
 DISPATCH_AGENTS=()
@@ -367,6 +367,30 @@ check_5_readonly() {
   return 0
 }
 
+# 5. Implementer family: implementer and every VARIANTS key whose file exists list
+# manage_task (the status and kill of a long run) and do not list schedule. A missing
+# variant file is not reported here; the roster check for variants owns that failure.
+# Reads FM_TOOLS after fm_load, which is what tools_of prints, without the fork.
+check_5_implementer() {
+  local root="$1" name file bad
+  for name in implementer ${VARIANTS[@]+"${VARIANTS[@]}"}; do
+    file="$root/agents/$name.md"
+    [ -f "$file" ] || continue
+    fm_load "$file"
+    bad=0
+    if ! in_list manage_task ${FM_TOOLS[@]+"${FM_TOOLS[@]}"}; then
+      fail "$name.md: implementer family must list manage_task"
+      bad=1
+    fi
+    if in_list schedule ${FM_TOOLS[@]+"${FM_TOOLS[@]}"}; then
+      fail "$name.md: implementer family must not list schedule"
+      bad=1
+    fi
+    if [ "$bad" -eq 0 ]; then pass "$name.md: implementer family tools ok (manage_task listed, schedule absent)"; fi
+  done
+  return 0
+}
+
 # ---------------------------------------------------------------------------
 # The lint over <LINT_ROOT>/agents/*.md.
 # ---------------------------------------------------------------------------
@@ -388,6 +412,7 @@ for f in "${AGENT_FILES[@]}"; do
 done
 
 check_5_readonly "$LINT_ROOT"
+check_5_implementer "$LINT_ROOT"
 
 # ---------------------------------------------------------------------------
 # Negative fixtures: each copies agents/ to a scratch ROOT, applies one mutation and

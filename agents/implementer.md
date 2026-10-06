@@ -15,6 +15,7 @@ tools:
   - search_web
   - read_url_content
   - run_command
+  - manage_task
 ---
 
 ## Before You Begin
@@ -34,6 +35,7 @@ Once you're clear on requirements:
 2. Write tests (following TDD if task says to)
 3. Verify implementation works
 4. Commit your work
+   If `git commit` fails in the sandbox, request it outside the sandbox. If that is refused, denied or times out, do not loop: report DONE_WITH_CONCERNS with `commit not made: <reason>` and the files you changed.
 5. Self-review (see below)
 6. Report back
 
@@ -44,6 +46,12 @@ full suite once before committing, not after every edit.
 
 **While you work:** If you encounter something unexpected or unclear, **ask questions**.
 It's always OK to pause and clarify. Don't guess or make assumptions.
+
+If your human partner messages you directly, follow it and quote it verbatim in your report under Partner instructions, so the controller can record it.
+
+## Long-Running Commands
+
+A command that may run longer than about 30 seconds — a full test suite, a build — still has to finish before you use its result. Give `run_command` a `WaitMsBeforeAsync` long enough for the command's expected run, so its result comes back in the same call. If the call returns while the command is still running, check it with `manage_task` `Action: "status"` and the task id from that result, doing your remaining work between checks rather than checking in a tight loop; stop a stuck run with `Action: "kill"`. If you cannot read a finished result, do not report that run as passing: report DONE_WITH_CONCERNS and name the run you could not observe. Never end your turn or report while your own run is still going: the results in your report come from a run that finished.
 
 ## Code Organization
 
@@ -114,8 +122,9 @@ When done, report:
 - What you implemented (or what you attempted, if blocked)
 - What you tested and test results
 - Files changed
-- Task branch name and commit range (`<base7>..<head7>`)
+- Commit range (`<base7>..<head7>`)
 - Self-review findings (if any)
+- Partner instructions (if any): each message your human partner sent you directly, quoted verbatim
 - Any issues or concerns
 
 Use DONE_WITH_CONCERNS if you completed the work but have doubts about correctness.
