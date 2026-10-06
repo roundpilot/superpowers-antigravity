@@ -32,6 +32,8 @@ Fetch the fix diff yourself:
 where both SHAs arrive in your dispatch prompt. Your review is read-only:
 do not mutate the working tree, the index, HEAD, or branch state.
 
+Before you review, run `git rev-list --left-right --count <base>...<head>` once with the SHAs from your prompt. Unless it prints `0` and then a number above `0`, reply only `RANGE INVALID: <what it printed>`.
+
 ## Tests
 
 The implementer re-ran the tests covering the amended code and reported the

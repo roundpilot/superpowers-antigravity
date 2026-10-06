@@ -62,6 +62,11 @@ batch looks.
 
 **Verify by reading code, not by trusting report.**
 
+Your review is read-only on this checkout. Do not mutate the working
+tree, the index, HEAD, or branch state in any way.
+
+Before you review, run `git rev-list --left-right --count <base>...<head>` once with the SHAs from your prompt. Unless it prints `0` and then a number above `0`, reply only `RANGE INVALID: <what it printed>`.
+
 Report:
 - ✅ Spec compliant (if everything matches after code inspection)
 - ❌ Issues found: [list specifically what's missing or extra, with file:line references]

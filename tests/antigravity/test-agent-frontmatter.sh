@@ -22,6 +22,8 @@ POLICY_KEYS=(name description subagent mainAgent model tools)
 WRITE_AGENTS=(implementer)
 DISPATCH_AGENTS=()
 VARIANTS=()
+# The read-only class (S3.2): agents whose body must state that the review is read-only.
+READONLY_AGENTS=(spec-reviewer code-reviewer re-reviewer)
 
 # Negative fixtures, one per entry: label|file|kind|arg|expected reason.
 # `file` is relative to agents/. Each runs the lint on a mutated copy and must fail
@@ -332,6 +334,40 @@ check_6_flags() {
 }
 
 # ---------------------------------------------------------------------------
+# Roster checks, each called as check_<n>_<name> <ROOT> once, after the per-file loop:
+# they look at a named set of agents under <ROOT>/agents/, not at one file. A full run
+# passes the repository root, --lint-only <ROOT> passes <ROOT>, so the negative-fixture
+# children run them too.
+# ---------------------------------------------------------------------------
+
+# body_of <file>: every line after the closing `---` of the frontmatter (the second
+# `---` line), raw. A `---` rule inside the body is printed, not counted.
+body_of() {
+  awk 'seen >= 2 { print; next } /^---[[:space:]]*$/ { seen++ }' "$1"
+}
+
+# 5. Read-only class: each of READONLY_AGENTS exists and its body says "read-only"
+# (case-insensitively). The body is read into a variable first, so grep -q closing
+# early cannot SIGPIPE the writer under pipefail.
+check_5_readonly() {
+  local root="$1" name file body
+  for name in "${READONLY_AGENTS[@]}"; do
+    file="$root/agents/$name.md"
+    if [ ! -f "$file" ]; then
+      fail "$name.md: read-only class agent missing"
+      continue
+    fi
+    body="$(body_of "$file")"
+    if grep -qi 'read-only' <<< "$body"; then
+      pass "$name.md: read-only class body states the review is read-only"
+    else
+      fail "$name.md: read-only class body lacks \"read-only\""
+    fi
+  done
+  return 0
+}
+
+# ---------------------------------------------------------------------------
 # The lint over <LINT_ROOT>/agents/*.md.
 # ---------------------------------------------------------------------------
 [ -d "$AGENTS_DIR" ] || { echo "[FAIL] agents/ directory missing: $AGENTS_DIR"; exit 1; }
@@ -350,6 +386,8 @@ for f in "${AGENT_FILES[@]}"; do
   check_5_roles "$f"
   check_6_flags "$f"
 done
+
+check_5_readonly "$LINT_ROOT"
 
 # ---------------------------------------------------------------------------
 # Negative fixtures: each copies agents/ to a scratch ROOT, applies one mutation and
