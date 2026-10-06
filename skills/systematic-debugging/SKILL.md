@@ -127,7 +127,7 @@ You MUST complete each phase before proceeding to the next.
 **Find the pattern before fixing:**
 
 1. **Find Working Examples**
-   - Use `grep_search` to locate similar working code in same codebase
+   - Locate similar working code in same codebase
    - What works that's similar to what's broken?
 
 2. **Compare Against References**

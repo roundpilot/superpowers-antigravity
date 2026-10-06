@@ -92,14 +92,14 @@ remove. Keep the spike in chat.
 5. **Report findings** — a recommendation; label anything built as throwaway
 
 **Bounded:**
-1. **Explore project context** — use `list_dir` and `grep_search` to check files, docs, recent commits
+1. **Explore project context** — check files, docs, recent commits
 2. **Ask clarifying questions** — one at a time, the ones that matter
 3. **Present short design in chat** — approach, files touched, testing. Use `generate_image` if the change is visual and a mockup would be clearer than prose
 4. **Get approval** — STOP and wait for an explicit yes; presenting the design and starting in the same breath is skipping the gate
 5. **Implement** — proceed with the normal development workflow (TDD applies); no plan document
 
 **Architectural:**
-1. **Explore project context** — use `list_dir` and `grep_search` to check files, docs, recent commits. For large codebases, dispatch a `TypeName: "research"` subagent to explore in parallel while you ask questions.
+1. **Explore project context** — check files, docs, recent commits. For large codebases, dispatch a `TypeName: "research"` subagent to explore in parallel while you ask questions (a built-in documented for Antigravity 2.0; if it does not resolve, explore yourself).
 2. **Assess visual needs** — note whether upcoming questions have visual aspects. If so, use `generate_image` for mockups and diagrams as you go. No consent needed — this is a native tool, not a browser session.
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
