@@ -155,7 +155,84 @@ function hooksConfig(argv) {
     return 0;
 }
 
-export const commands = { payload, 'hooks-config': hooksConfig };
+const KEYS_USAGE = 'usage: json-tool.mjs keys <file>';
+const GET_USAGE = 'usage: json-tool.mjs get <file> <dot.path>';
+
+// loadJson: read and parse a JSON file (a leading BOM is ignored). Returns {doc} or
+// {error}, the reason for stderr.
+function loadJson(file) {
+    let text;
+    try {
+        text = fs.readFileSync(file, 'utf8');
+    } catch (err) {
+        return { error: `cannot read ${file}: ${err.message}` };
+    }
+    try {
+        return { doc: JSON.parse(text.replace(/^﻿/, '')) };
+    } catch (err) {
+        return { error: `${file} is not JSON: ${err.message}` };
+    }
+}
+
+// keys: the top-level keys of a JSON object file, one per line, in document order.
+// Exit 1, with the reason on stderr, if the file cannot be read, does not parse or is not
+// an object; 2 on a usage error.
+function keys(argv) {
+    if (argv.length !== 1) return usage(KEYS_USAGE, 'keys takes one argument');
+    const loaded = loadJson(argv[0]);
+    if (loaded.error !== undefined) {
+        process.stderr.write(`json-tool: keys: ${loaded.error}\n`);
+        return 1;
+    }
+    const doc = loaded.doc;
+    if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
+        process.stderr.write(`json-tool: keys: ${argv[0]} is not a JSON object\n`);
+        return 1;
+    }
+    const names = Object.keys(doc);
+    if (names.length > 0) process.stdout.write(`${names.join('\n')}\n`);
+    return 0;
+}
+
+// get: the value at a dot path of a JSON file, followed by one newline. A string prints
+// raw; anything else prints as JSON.stringify gives it. The path splits on `.`: a segment
+// indexes an array when it is a canonical non-negative integer, else it is an own key of an
+// object (so a key that itself holds a dot cannot be addressed). Exit 1, with the reason
+// on stderr, if the file cannot be read, does not parse or has no such path; 2 on a usage
+// error.
+function get(argv) {
+    if (argv.length !== 2) return usage(GET_USAGE, 'get takes two arguments');
+    const [file, dotPath] = argv;
+    const loaded = loadJson(file);
+    if (loaded.error !== undefined) {
+        process.stderr.write(`json-tool: get: ${loaded.error}\n`);
+        return 1;
+    }
+    let value = loaded.doc;
+    for (const segment of dotPath.split('.')) {
+        if (Array.isArray(value)) {
+            const index = /^(0|[1-9][0-9]*)$/.test(segment) ? Number(segment) : -1;
+            if (index < 0 || index >= value.length) value = undefined;
+            else value = value[index];
+        } else if (
+            value !== null &&
+            typeof value === 'object' &&
+            Object.prototype.hasOwnProperty.call(value, segment)
+        ) {
+            value = value[segment];
+        } else {
+            value = undefined;
+        }
+        if (value === undefined) {
+            process.stderr.write(`json-tool: get: ${file} has no ${dotPath}\n`);
+            return 1;
+        }
+    }
+    process.stdout.write(`${typeof value === 'string' ? value : JSON.stringify(value)}\n`);
+    return 0;
+}
+
+export const commands = { payload, 'hooks-config': hooksConfig, keys, get };
 
 function isMain() {
     try {

@@ -1,6 +1,6 @@
 {
   "name": "superpowers",
-  "description": "Core skills library for Antigravity 2.0: TDD, debugging, collaboration patterns, and proven techniques",
+  "description": "Core skills library for Google Antigravity (2.0 app, IDE and CLI): TDD, debugging, collaboration patterns, and proven techniques",
   "version": "6.3.0",
   "contextFileName": "GEMINI.md"
 }
