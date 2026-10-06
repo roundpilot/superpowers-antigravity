@@ -11,7 +11,7 @@
 #         and checked.
 # Output: one line per finding, starting at column 0, no indentation: "[PASS] check N: ..." or
 #   "[FAIL] check N: ...". A check that finds several problems prints one [FAIL] line each.
-#   Callers grep "^\[FAIL\] check N". All five checks always run.
+#   Callers grep "^\[FAIL\] check N". Every check always runs.
 # Exit: 0 PASS; 1 FAIL; 77 SKIP (no node: a blocking SKIP in the gate tier).
 #
 #   check 1  plugin.json keys are within PLUGIN_KEYS (so no `$schema`); its name is
@@ -25,8 +25,12 @@
 #            the folder and holds no `:`; it has a `description:` line
 #   check 5  gemini-extension.json and GEMINI.md are both present or both absent (the legacy
 #            context channel is one pair)
+#   check 7  the Environment table labels (first column) of .github/ISSUE_TEMPLATE/
+#            diagnosis_report.md equal, in order, those of skills/diagnosing-superpowers/
+#            templates/issue.md; bug_report.md's table carries every BUG_LABELS entry
+#   check 8  CODE_OF_CONDUCT.md names no upstream contact (no `primeradiant`, no `jesse@`)
 #
-# Later tasks append check_7 and check_8 below check_5 and insert check_6 before them.
+# check_6 is inserted before check_7 by a later task (the README skills-table check).
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -37,6 +41,9 @@ JT="$SCRIPT_DIR/lib/json-tool.mjs"
 # The keys plugin.json may carry (a space-separated word list). Later tasks edit this line.
 PLUGIN_KEYS="name description version"
 DESCRIPTION='Core skills library for Google Antigravity (2.0 app, IDE and CLI): TDD, debugging, collaboration patterns, and proven techniques'
+
+# The Environment-table labels bug_report.md must carry (check 7), one array element each.
+BUG_LABELS=("Antigravity product (2.0 app / IDE / CLI)" "Antigravity version")
 
 echo "========================================"
 echo " Test: Plugin Packaging"
@@ -291,11 +298,100 @@ check_5() {
     fi
 }
 
+# env_labels <file>: the trimmed first-column cells of the first table after the first line
+# starting "## Environment", one per line, without the "Field" header row and the separator
+# row. A CR before the line end is ignored. Prints nothing if there is no such table.
+env_labels() {
+    local line cell state=0
+    while IFS= read -r line || [ -n "$line" ]; do
+        line="${line%$'\r'}"
+        case "$state" in
+            0)
+                case "$line" in
+                    '## Environment'*) state=1 ;;
+                esac
+                ;;
+            *)
+                line="${line#"${line%%[![:space:]]*}"}"
+                case "$line" in
+                    '|'*)
+                        cell="${line#|}"
+                        cell="${cell%%|*}"
+                        cell="${cell#"${cell%%[![:space:]]*}"}"
+                        cell="${cell%"${cell##*[![:space:]]}"}"
+                        if [ "$state" -eq 1 ]; then
+                            state=2
+                            [ "$cell" = Field ] && continue
+                        fi
+                        case "$cell" in
+                            '' | *[!:-]*) printf '%s\n' "$cell" ;;
+                        esac
+                        ;;
+                    *)
+                        [ "$state" -eq 2 ] && break
+                        ;;
+                esac
+                ;;
+        esac
+    done < "$1"
+}
+
+check_7() {
+    local diag_f="$ROOT/.github/ISSUE_TEMPLATE/diagnosis_report.md"
+    local issue_f="$ROOT/skills/diagnosing-superpowers/templates/issue.md"
+    local bug_f="$ROOT/.github/ISSUE_TEMPLATE/bug_report.md"
+    local before=$FAILURES diag issue bug label
+    if [ ! -f "$diag_f" ]; then
+        fail 7 ".github/ISSUE_TEMPLATE/diagnosis_report.md is missing"
+    elif [ ! -f "$issue_f" ]; then
+        fail 7 "skills/diagnosing-superpowers/templates/issue.md is missing"
+    else
+        diag="$(env_labels "$diag_f")"
+        issue="$(env_labels "$issue_f")"
+        if [ -z "$issue" ]; then
+            fail 7 "templates/issue.md has no Environment table"
+        elif [ "$diag" != "$issue" ]; then
+            fail 7 "diagnosis_report.md labels differ from templates/issue.md"
+        fi
+    fi
+    if [ ! -f "$bug_f" ]; then
+        fail 7 ".github/ISSUE_TEMPLATE/bug_report.md is missing"
+    else
+        bug="$(env_labels "$bug_f")"
+        for label in "${BUG_LABELS[@]}"; do
+            printf '%s\n' "$bug" | grep -qxF -e "$label" || fail 7 "bug_report.md lacks $label"
+        done
+    fi
+    if [ "$FAILURES" -eq "$before" ]; then
+        pass 7 "the issue-template Environment labels agree"
+    fi
+}
+
+check_8() {
+    local f="$ROOT/CODE_OF_CONDUCT.md" before=$FAILURES hits line
+    if [ ! -f "$f" ]; then
+        fail 8 "CODE_OF_CONDUCT.md is missing"
+        return
+    fi
+    hits="$(grep -niE 'primeradiant|jesse@' "$f")"
+    if [ -n "$hits" ]; then
+        while IFS= read -r line; do
+            line="${line%$'\r'}"
+            fail 8 "CODE_OF_CONDUCT.md:$line"
+        done <<< "$hits"
+    fi
+    if [ "$FAILURES" -eq "$before" ]; then
+        pass 8 "CODE_OF_CONDUCT.md names no upstream contact"
+    fi
+}
+
 check_1
 check_2
 check_3
 check_4
 check_5
+check_7
+check_8
 
 echo ""
 if [ "$FAILURES" -eq 0 ]; then

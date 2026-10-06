@@ -1,5 +1,8 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
-  - name: Questions & Help
-    url: https://discord.gg/35wsABTejz
-    about: For usage questions, troubleshooting help, and general discussion, please visit our Discord instead of opening an issue.
+  - name: Using Superpowers with a different coding agent?
+    url: https://github.com/obra/superpowers/issues
+    about: This fork supports Google Antigravity only (2.0 app, IDE, CLI). For every other agent, use the upstream project.
+  - name: An Antigravity product problem, not a Superpowers one?
+    url: https://antigravity.google/support
+    about: If the problem also happens with Superpowers disabled, report it to Google Antigravity.

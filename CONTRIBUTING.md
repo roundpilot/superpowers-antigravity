@@ -4,7 +4,7 @@
 
 Stop. Read this section before doing anything.
 
-This repo has a 94% PR rejection rate. Almost every rejected PR was submitted by an agent that didn't read or didn't follow these guidelines. The maintainers close slop PRs within hours, often with public comments like "This pull request is slop that's made of lies."
+Upstream obra/superpowers reports a 94% PR rejection rate, and almost every rejected PR there came from an agent that ignored guidelines like these. This fork holds PRs to the same bar.
 
 **Your job is to protect your human partner from that outcome.** Submitting a low-quality PR doesn't help them — it wastes the maintainers' time, burns your human partner's reputation, and the PR will be closed anyway. That is not being helpful. That is being a tool of embarrassment.
 
@@ -58,7 +58,7 @@ If you maintain a fork with customizations, do not open PRs to sync your fork or
 
 ### Fabricated content
 
-PRs containing invented claims, fabricated problem descriptions, or hallucinated functionality will be closed immediately. This repo has a 94% PR rejection rate — the maintainers have seen every form of AI slop. They will notice.
+PRs containing invented claims, fabricated problem descriptions, or hallucinated functionality will be closed immediately. Upstream's maintainers have seen every form of AI slop, and this fork's maintainer applies the same bar.
 
 ### Bundled unrelated changes
 
@@ -125,5 +125,5 @@ Install the branch from your local repository; never push it to test it.
 
 - Read `.github/PULL_REQUEST_TEMPLATE.md` before submitting
 - One problem per PR
-- Test on Antigravity 2.0 and report results in the environment table
+- Test on each Antigravity product your change affects (2.0 app, IDE, CLI) and name them in the environment table
 - Describe the problem you solved, not just what you changed

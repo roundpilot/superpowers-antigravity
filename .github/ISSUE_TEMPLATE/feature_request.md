@@ -31,4 +31,4 @@ progress, and some were intentionally declined.
      third-party tool, it may belong as its own plugin instead. -->
 
 ## Context
-<!-- Optional: version info, harness, model, workflow where you hit this. -->
+<!-- Optional: version info, Antigravity product (2.0 app / IDE / CLI), model, workflow where you hit this. -->

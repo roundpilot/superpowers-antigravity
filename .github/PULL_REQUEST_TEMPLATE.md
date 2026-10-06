@@ -46,48 +46,24 @@ of human involvement will be closed without review.
 
 ## Environment tested
 
-| Harness (e.g. Claude Code, Cursor) | Harness version | Model | Model version/ID |
-|-------------------------------------|-----------------|-------|------------------|
-|                                     |                 |       |                  |
+| Antigravity product (2.0 app / IDE / CLI) | Antigravity version | Model | Model version/ID |
+|-------------------------------------------|---------------------|-------|------------------|
+|                                           |                     |       |                  |
 
-## New harness support (required if this PR adds a new harness)
+## Tested on Antigravity (required if this PR changes skills, rules, agents or packaging)
 
-<!-- If this PR adds support for a new harness (IDE, CLI tool, agent
-     runner), you MUST include a session transcript proving the
-     integration actually works.
+<!-- On each Antigravity product your change affects, open a clean conversation
+     and send exactly "Let's make a react todo list". A working install reads
+     the brainstorming skill before writing any file.
 
-     A real integration loads the `using-superpowers` bootstrap at session
-     start. The bootstrap is what causes skills to auto-trigger. Without
-     it, the skills are dead weight — present on disk but never invoked
-     at the right moments.
+     CLI: run `agy -p "Let's make a react todo list" --output-format stream-json`
+     and paste the `view_file` tool_info line whose AbsolutePath ends in
+     brainstorming/SKILL.md.
 
-     ACCEPTANCE TEST: Open a clean session in the new harness and send
-     exactly this user message:
+     2.0 app and IDE: say, or attach a screenshot showing, that the
+     conversation read brainstorming/SKILL.md before it wrote any file.
 
-         Let's make a react todo list
-
-     A working integration auto-triggers the `brainstorming` skill before
-     any code is written. Paste the complete transcript below.
-
-     These are NOT real integrations and PRs that ship them will be closed:
-
-     - Manually copying skill files into the harness
-     - Wrapping with `npx skills` or similar at-runtime shims
-     - Anything that requires the user to opt in to skills per-session
-     - Anything where brainstorming does not auto-trigger on the test above
-
-     If you are not sure whether your integration loads the bootstrap at
-     session start, it does not.
--->
-
-<details>
-<summary>Clean-session transcript for "Let's make a react todo list"</summary>
-
-```
-paste the complete transcript here
-```
-
-</details>
+     This fork supports Antigravity only; support for other agents belongs upstream. -->
 
 ## Evaluation
 - What was the initial prompt you (or your human partner) used to start
