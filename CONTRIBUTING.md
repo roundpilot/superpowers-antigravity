@@ -79,6 +79,48 @@ Skills are not prose — they are code that shapes agent behavior. If you modify
 
 Before proposing changes to skill design, workflow philosophy, or architecture, read existing skills and understand the project's design decisions. Superpowers has its own tested philosophy about skill design, agent behavior shaping, and terminology (e.g., "your human partner" is deliberate, not interchangeable with "the user"). Changes that rewrite the project's voice or restructure its approach without understanding why it exists will be rejected.
 
+## Packaging and bootstrap
+
+### The bootstrap rule
+
+`rules/using-superpowers.md` delivers the using-superpowers bootstrap on all three Antigravity products. Antigravity silently discards a file in `rules/` that does not start with YAML frontmatter declaring a `trigger`, so the rule starts with exactly two keys: `trigger: always_on`, which injects it into every conversation, and a `description` string-equal to the one in `skills/using-superpowers/SKILL.md`, which Antigravity falls back to when rules exceed their token budget. No HTML comment may appear anywhere in the rule; notes about it belong here or in the header of `tests/antigravity/test-rule-sync.sh`.
+
+The body is upstream's session-start wrapper (`<EXTREMELY_IMPORTANT>`, "You have superpowers." and the "Below is the full content…" line, which ends "read their full `SKILL.md` when they apply" where upstream names another harness's tool) around a mirror of `skills/using-superpowers/SKILL.md`: everything after its frontmatter and the blank line that follows it, byte for byte. SKILL.md is the source of truth. Copy any change to its body or its `description` into the rule in the same change; `tests/antigravity/test-rule-sync.sh` fails otherwise.
+
+### Version bump list
+
+A release bumps all of these together, and `tests/antigravity/test-plugin-packaging.sh` checks that they match:
+
+- `plugin.json` `version` (canonical);
+- `package.json` `version`;
+- `gemini-extension.json` `version`, while the file exists;
+- the README badge: the URL (`Version-X.Y.Z-green`) and the alt text (`Version X.Y.Z`);
+- the first `## vX.Y.Z` heading in `RELEASE-NOTES.md`.
+
+`plugin.json` keeps `version` as a recorded exception to the published manifest schema, which allows only `name` and `description` (register E13): the 2.0 app loads the plugin with it, and the CLI parses manifest keys the schema does not list. Do not add `$schema`: its URL returns 404, and a validator would flag `version`.
+
+### Rule-walk hygiene
+
+**R12 — Rule-walk hygiene.** Nothing tracked in this repo may be a file that Antigravity's directory-scoped rule walk, or its project-subdirectory customization discovery, would load for a workspace-install user. The only exceptions are the entries on the layout test's allowlist, each naming the spec section that owns it.
+
+Concretely:
+- **Rule files.** No `AGENTS.md` or `GEMINI.md` at any depth, in any letter case. The root `GEMINI.md` is allowed while S2.3 keeps it.
+- **`.agents/` and `.agent/`.** No `AGENTS.md`, `GEMINI.md`, `rules/` or `rules.json` inside any such directory at any depth. The only tracked paths under a `.agents/` directory may be the repo-root `.agents/hooks.json` (S7.2's contributor entry, shipped disabled) and, only if Live check 6(e) shows it absent from workspace installs (D14), `.agents/skills/contributing-to-superpowers/SKILL.md`. Hooks are documented only at the workspace root, the global file and the plugin level [D hooks:13, :24-26, :40], so a nested copy is not expected to load [I]; it ships disabled either way (S7.3 check 3).
+- **Discovery files.** No `skills.json`, `agents.json` or `rules.json` at any depth (S2.4; D15).
+- **Contributor guidance** for agents goes in CONTRIBUTING.md, which is never auto-loaded, or in a snippet contributors copy into their own `~/.gemini/config/rules/`.
+
+### Delivery
+
+Additive delivery: the `rules/` bootstrap ships alongside `gemini-extension.json` and `GEMINI.md` until Live check 2's CLI leg confirms the rule channel; then both are retired (S2.3). The plugin ships no `hooks.json` and no `mcp_config.json`. The repository's disabled `.agents/hooks.json` and the global-hook entry in CONTRIBUTING are contributor-only tools (S7.2, S7.3).
+
+### Testing a branch without pushing
+
+Install the branch from your local repository; never push it to test it.
+
+- **CLI:** `git clone -b <branch> <path-to-your-local-repo> <dir>`, then `agy plugin install <dir>`. If `agy plugin list` already shows superpowers from `~/.gemini/config/plugins/`, move that clone out first: the CLI loads it too.
+- **2.0 app and IDE:** first move every other `superpowers` copy out of `~/.gemini/config/plugins/` and out of the test workspace's `.agents/plugins/`; with two copies of the same name you cannot tell which one is read. Then either update the global clone with `git -C ~/.gemini/config/plugins/superpowers fetch <path-to-your-local-repo> <branch>` and `git -C ~/.gemini/config/plugins/superpowers checkout FETCH_HEAD`, or run `git clone -b <branch> <path-to-your-local-repo> <scratch-ws>/.agents/plugins/superpowers`.
+- The `view_file` paths in the conversation's transcript show which copy was read.
+
 ## General
 
 - Read `.github/PULL_REQUEST_TEMPLATE.md` before submitting

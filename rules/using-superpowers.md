@@ -1,20 +1,12 @@
-<!--
-using-superpowers bootstrap rule (native Antigravity plugin channel).
+---
+trigger: always_on
+description: "Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions"
+---
 
-Intended activation: Always On. Antigravity's Rules docs
-(https://antigravity.google/docs/rules-workflows, https://antigravity.google/docs/ide/rules)
-describe four per-rule activation modes — Manual, Always On, Model Decision, Glob — as a
-setting "at the rule level," but do not document a file-level field (frontmatter or
-otherwise) for declaring which mode applies. If this rule does not already show as
-"Always On" after the plugin loads, set it manually in Antigravity's Rules panel.
+<EXTREMELY_IMPORTANT>
+You have superpowers.
 
-This file exists so the bootstrap ships through the documented plugin `rules/` channel
-(plugin.json / mcp_config.json / hooks.json / skills/ / rules/), in addition to the
-existing GEMINI.md + gemini-extension.json `contextFileName` channel kept for CLI/legacy
-compatibility.
--->
-
-<!-- MIRROR: body below must stay byte-identical to skills/using-superpowers/SKILL.md (from its first heading onward). tests/antigravity/test-rule-sync.sh enforces this. The @-import form was avoided because the platform docs are self-contradictory on relative-path resolution for rule files. -->
+**Below is the full content of your 'superpowers:using-superpowers' skill - your introduction to using skills. For all other skills, read their full `SKILL.md` when they apply:**
 
 <SUBAGENT-STOP>
 If you were dispatched as a subagent to execute a specific task, ignore this skill.
@@ -65,3 +57,4 @@ These thoughts mean STOP—you're rationalizing:
 ## User Instructions
 
 User instructions (GEMINI.md, AGENTS.md, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+</EXTREMELY_IMPORTANT>
