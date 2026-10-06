@@ -485,6 +485,33 @@ check_7c() {
   return 0
 }
 
+# 7(d). The requesting-code-review template carries the two C5 sections once each and the
+# three placeholders the whole-branch and executor blocks fill (S5.7): `grep -cF` is 1 for
+# each C5 heading and at least 1 for each placeholder. A missing template fails once.
+check_7d() {
+  local root="$1" tpl="$1/skills/requesting-code-review/code-reviewer.md" s n bad=0
+  if [ ! -f "$tpl" ]; then
+    fail "code-reviewer.md template: missing (7d)"
+    return 0
+  fi
+  for s in '## The spec is a vision document' '## Declined to judge'; do
+    n="$(grep -cF -e "$s" "$tpl" || true)"
+    if [ "$n" -ne 1 ]; then
+      fail "code-reviewer.md template: $s count $n (7d)"
+      bad=1
+    fi
+  done
+  for s in '{RULINGS}' '{DEFERRED_MINORS}' '{REVIEW_FOCUS}'; do
+    n="$(grep -cF -e "$s" "$tpl" || true)"
+    if [ "$n" -lt 1 ]; then
+      fail "code-reviewer.md template: $s count $n (7d)"
+      bad=1
+    fi
+  done
+  if [ "$bad" -eq 0 ]; then pass "code-reviewer.md template: C5 sections once each, review-focus, rulings and deferred-minors placeholders present"; fi
+  return 0
+}
+
 # 7(e). Every TypeName literal under skills/ names an agent (bare or `superpowers:`
 # prefixed), `self` or `research`. A value starting with `<` is a placeholder and is
 # skipped. Each unknown value is reported once.
@@ -541,6 +568,7 @@ check_5_implementer "$LINT_ROOT"
 check_5_diagnosing "$LINT_ROOT"
 check_7b "$LINT_ROOT"
 check_7c "$LINT_ROOT"
+check_7d "$LINT_ROOT"
 check_7e "$LINT_ROOT"
 
 # ---------------------------------------------------------------------------
