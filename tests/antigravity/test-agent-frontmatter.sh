@@ -19,11 +19,11 @@ FAILURES=0
 # The policy. Later tasks extend these arrays in the same form. VARIANTS (the tier
 # variants of the implementer, spec D5 fallback) is empty; check_5_implementer reads it.
 POLICY_KEYS=(name description subagent mainAgent model tools)
-WRITE_AGENTS=(implementer)
+WRITE_AGENTS=(implementer bundle-scrubber)  # bundle-scrubber: rewrites files inside BUNDLE (S3.6)
 DISPATCH_AGENTS=()
 VARIANTS=()
 # The read-only class (S3.2): agents whose body must state that the review is read-only.
-READONLY_AGENTS=(spec-reviewer code-reviewer re-reviewer final-reviewer)
+READONLY_AGENTS=(spec-reviewer code-reviewer re-reviewer final-reviewer session-analyst)
 
 # Negative fixtures, one per entry: label|file|kind|arg|expected reason.
 # `file` is a bare name, resolved against agents/, or a path containing `/`, resolved
@@ -40,6 +40,7 @@ NEGATIVE_FIXTURES=(
   "mainAgent true|re-reviewer.md|set|mainAgent: true|mainAgent must be false"
   "misspelled TypeName|skills/subagent-driven-development/spec-reviewer-prompt.md|sub|TypeName: \"spec-reviewer\"=>TypeName: \"spec-reviwer\"|unknown TypeName 'spec-reviwer' under skills/ (7e)"
   "final-reviewer byte|final-reviewer.md|byte|x|not code-reviewer.md minus its SDD section (7b)"
+  "scrubber shell|bundle-scrubber.md|tool|run_command|bundle-scrubber.md: must not list run_command (S3.6)"
 )
 
 fail() { echo "  [FAIL] $1"; FAILURES=$((FAILURES + 1)); }
@@ -411,6 +412,33 @@ check_5_implementer() {
   return 0
 }
 
+# 5. Diagnosing roles (S3.6): session-analyst and bundle-scrubber both exist; the scrubber
+# has no shell (R6) and the analyst lists manage_task (the status and kill of a long
+# read). A missing file is reported once and its tool rules are skipped. Reads FM_TOOLS
+# after fm_load, like check_5_implementer, instead of forking tools_of.
+check_5_diagnosing() {
+  local root="$1" name file bad
+  for name in session-analyst bundle-scrubber; do
+    file="$root/agents/$name.md"
+    if [ ! -f "$file" ]; then
+      fail "$name.md: missing (S3.6)"
+      continue
+    fi
+    fm_load "$file"
+    bad=0
+    if [ "$name" = bundle-scrubber ] && in_list run_command ${FM_TOOLS[@]+"${FM_TOOLS[@]}"}; then
+      fail "$name.md: must not list run_command (S3.6)"
+      bad=1
+    fi
+    if [ "$name" = session-analyst ] && ! in_list manage_task ${FM_TOOLS[@]+"${FM_TOOLS[@]}"}; then
+      fail "$name.md: must list manage_task (S3.6)"
+      bad=1
+    fi
+    if [ "$bad" -eq 0 ]; then pass "$name.md: diagnosing role tools ok"; fi
+  done
+  return 0
+}
+
 # 7(b). final-reviewer is code-reviewer minus its Subagent-Driven Development section
 # (S3.3): the bodies are byte-identical once that section (its heading up to the next
 # `## ` heading) is cut from code-reviewer's, and the tools: lists are identical. A
@@ -510,6 +538,7 @@ done
 
 check_5_readonly "$LINT_ROOT"
 check_5_implementer "$LINT_ROOT"
+check_5_diagnosing "$LINT_ROOT"
 check_7b "$LINT_ROOT"
 check_7c "$LINT_ROOT"
 check_7e "$LINT_ROOT"
