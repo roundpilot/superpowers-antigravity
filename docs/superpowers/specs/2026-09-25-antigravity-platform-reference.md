@@ -171,7 +171,7 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 - **T2:** `ArtifactMetadata` inner keys; the `Model` key once LC3's model leg shows each child's `modelName` following `flash` and `pro` on every product dispatched (S3 3a-M); until then T4, and S3.4's variant files ship (D5).
 - **T3:** `Workspace` `inherit`/`branch` (S4 uses `inherit`, D4); bundled agents via S3.7's chain; `research` for exploration, never called read-only; explicit artifact paths; slash forms and `/plan`; Idle re-awakening and `send_message` by conversation id (fallback: fresh dispatch); the child conversation id; `manage_task` status (secondary to the foreground wait); `ask_question` write-in; the `ask_permission` read/write Actions; non-workspace access (pre-emptive `ask_permission` grants only before a subagent fan-out or a sandbox mount).
 - **T4:** bare-`TargetFile` routing, `share`, `@path`, hook runtime, `unsandboxed`, `/boost`, `/teamwork-preview`.
-- `plugin.json` keeps `version` as a recorded schema exception.
+- `plugin.json` carries no `version`; `package.json` holds it (Live check 8, S2.5).
 
 ## §1 Products, roots and identifiers
 
@@ -478,7 +478,7 @@ Tools are the explicit list [D 2.0 subagents:47]; `inheritCustomizations` adopts
   - `name` is required on the CLI and optional on 2.0 and the IDE;
   - the pattern is `^[a-zA-Z0-9-_]+$`, with `additionalProperties: false`;
   - the `$schema` URL returned 404 on 2026-09-25 [MO docs ? 2026-09-25 schema URL fetch].
-- `plugin.json` keeps `version` outside the published schema: a recorded schema exception, with no `$schema` (D15).
+- `plugin.json` carries no `version`, as the published schema requires; after Live check 8, `package.json` holds it (E13). No `$schema` (D15).
 - Installation by product:
   - 2.0 and the IDE: `.agents/plugins/` for a workspace (it "activates only when working in that project") or `~/.gemini/config/plugins/` [D 2.0 plugins:110-111; D IDE plugins:180-181].
   - CLI: `agy plugin list|install|enable|disable|uninstall`, with staging at `~/.gemini/antigravity-cli/plugins/<plugin_name>/` [D CLI plugins:131-167]. This conflicts with CLI 1.0.2, which names the shared `~/.gemini/config/` [CL CLI 1.0.2] (X1).
@@ -1167,7 +1167,7 @@ Decision record changes of this release (id — old — new — part). The ids a
 - register E8 — render-graphs node guard, never run — runs with Graphviz installed (D13); closed — S7, S8
 - register E11 — `/using-superpowers` observed "on the IDE" — relabelled "2.0 (probable)"; CLI form unverified — S2
 - register E12 — specs and plans untracked; reference tracked — evidence stays outside the repo; durable facts in the platform reference — S1
-- register E13 — `$schema` not applied, no reason recorded — keep `plugin.json` `version` as a recorded schema exception; no `$schema` — S2
+- register E13 — `$schema` not applied, no reason recorded — drop `plugin.json` `version` after Live check 8; `package.json` is canonical; no `$schema` — S2
 - register §2 item 6 — `inheritCustomizations` in no tracked file — closed by ref §3.9 — S1, S3
 - register §3 rule 2 — only documented capabilities ("no model argument" trap) — refined: labelled evidence model, maintainer-observed facts allowed by tier; the `Model` key only if 3a-M proves it (D5) — S1, S3
 - register §3 rule 9 — additive delivery — reversed for the bootstrap under outcome A only — S2

@@ -91,12 +91,11 @@ The body is upstream's session-start wrapper (`<EXTREMELY_IMPORTANT>`, "You have
 
 A release bumps all of these together, and `tests/antigravity/test-plugin-packaging.sh` checks that they match:
 
-- `plugin.json` `version` (canonical);
-- `package.json` `version`;
+- `package.json` `version` (canonical);
 - the README badge: the URL (`Version-X.Y.Z-green`) and the alt text (`Version X.Y.Z`);
 - the first `## vX.Y.Z` heading in `RELEASE-NOTES.md`.
 
-`plugin.json` keeps `version` as a recorded exception to the published manifest schema, which allows only `name` and `description` (register E13): the 2.0 app loads the plugin with it, and the CLI parses manifest keys the schema does not list. Do not add `$schema`: its URL returns 404, and a validator would flag `version`.
+`plugin.json` carries no `version`, as the published manifest schema requires (it allows only `name` and `description`); after Live check 8, `package.json` holds the version (register E13). Do not add `$schema`: its URL returns 404.
 
 ### Rule-walk hygiene
 

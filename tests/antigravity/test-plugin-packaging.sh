@@ -39,7 +39,7 @@ ROOT="${ROOT:-$REPO_ROOT}"
 JT="$SCRIPT_DIR/lib/json-tool.mjs"
 
 # The keys plugin.json may carry (a space-separated word list). Later tasks edit this line.
-PLUGIN_KEYS="name description version"
+PLUGIN_KEYS="name description"
 DESCRIPTION='Core skills library for Google Antigravity (2.0 app, IDE and CLI): TDD, debugging, collaboration patterns, and proven techniques'
 
 # The Environment-table labels bug_report.md must carry (check 7), one array element each.
