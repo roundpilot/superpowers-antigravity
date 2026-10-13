@@ -30,7 +30,7 @@ JT="$SCRIPT_DIR/lib/json-tool.mjs"
 TAB=$'\t'
 
 # Exact, case-sensitive path allowances. Later tasks edit these lines.
-ALLOWED_AGENT_FACING=(GEMINI.md)
+ALLOWED_AGENT_FACING=()
 ALLOWED_DOT_AGENTS=(.agents/hooks.json)
 HOOKS_DIR_ALLOWED=(
     hooks/purity-check.mjs

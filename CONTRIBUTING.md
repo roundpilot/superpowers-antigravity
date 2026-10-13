@@ -93,7 +93,6 @@ A release bumps all of these together, and `tests/antigravity/test-plugin-packag
 
 - `plugin.json` `version` (canonical);
 - `package.json` `version`;
-- `gemini-extension.json` `version`, while the file exists;
 - the README badge: the URL (`Version-X.Y.Z-green`) and the alt text (`Version X.Y.Z`);
 - the first `## vX.Y.Z` heading in `RELEASE-NOTES.md`.
 
@@ -111,7 +110,9 @@ Concretely:
 
 ### Delivery
 
-Additive delivery: the `rules/` bootstrap ships alongside `gemini-extension.json` and `GEMINI.md` until Live check 2's CLI leg confirms the rule channel; then both are retired (S2.3). The plugin ships no `hooks.json` and no `mcp_config.json`. The repository's disabled `.agents/hooks.json` and the global-hook entry in CONTRIBUTING are contributor-only tools (S7.2, S7.3).
+**Delivery uses documented plugin components only**: `plugin.json`, `rules/`, `skills/`, `agents/`. The plugin ships no `hooks.json` and no `mcp_config.json`. The repository's disabled `.agents/hooks.json` and the global-hook entry in CONTRIBUTING are contributor-only tools (S7.2, S7.3).
+
+Contributors who open this repository as a workspace lose the root GEMINI.md; they rely on their installed plugin.
 
 ### Testing a branch without pushing
 

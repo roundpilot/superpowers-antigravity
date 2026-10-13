@@ -1114,7 +1114,7 @@ The rules every change follows. R1–R5 are the decision register's standing rul
 - **R6 — Shell neutrality.**
 - **R7 — Tiers come from agent frontmatter.** Refined by D5.
 - **R8 — Git hygiene.** No `Co-Authored-By`; upstream read through `refs/upstream-tags/*`.
-- **R9 — Additive delivery.** See §16.5.
+- **R9 — Documented plugin components only.** See §16.5.
 - **R10 — Honest verification.** An unrun check reads "not run".
 - **R11 — Rulings, not stalls.**
 
@@ -1140,7 +1140,7 @@ R13: skill and rule prose names only ref §2.1b tools, including in tool-call ex
 
 ### §16.5 Delivery
 
-Additive delivery: the `rules/` bootstrap ships alongside `gemini-extension.json` and `GEMINI.md` until Live check 2's CLI leg confirms the rule channel; then both are retired (S2.3). The plugin ships no `hooks.json` and no `mcp_config.json`. The repository's disabled `.agents/hooks.json` and the global-hook entry in CONTRIBUTING are contributor-only tools (S7.2, S7.3).
+**Delivery uses documented plugin components only**: `plugin.json`, `rules/`, `skills/`, `agents/`. The plugin ships no `hooks.json` and no `mcp_config.json`. The repository's disabled `.agents/hooks.json` and the global-hook entry in CONTRIBUTING are contributor-only tools (S7.2, S7.3).
 
 ### §16.6 Decision record changes
 
