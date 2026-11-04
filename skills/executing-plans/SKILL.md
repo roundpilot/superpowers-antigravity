@@ -52,10 +52,7 @@ Your human partner may steer while the plan runs — a message, a comment on the
 - Tasks are mostly independent — the same precondition as
   superpowers:subagent-driven-development.
 
-A fully specified plan makes inline execution transcription plus testing:
-it runs well on a mid-tier session model, and the one place the most
-capable model earns its cost is the final review, which this skill
-dispatches separately. Tell your human partner so when they choose inline.
+A fully specified plan makes inline execution transcription plus testing: it runs well on a mid-tier session model, and the one place a stronger model earns its cost is the final review, which this skill dispatches separately, to the bundled `final-reviewer` at the Pro tier. Tell your human partner so when they choose inline.
 
 Prefer superpowers:subagent-driven-development when your human partner
 wants a review gate on every task, or when the plan is long enough that
@@ -225,25 +222,9 @@ A failing run records nothing; the task is not complete. When it records, mark t
 
 Compute MERGE_BASE — the commit the branch started from, `git merge-base <base-branch> HEAD` (e.g. `git merge-base main HEAD`) — and check the range before the review starts: `git rev-list --left-right --count MERGE_BASE...HEAD` must print `0` and then a number above `0`. If it prints anything else, do not start the review: find where the commits went first.
 
-**With a subagent tool:** dispatch the reviewer on the most capable
-available model — the whole-branch review is a judgment task — using
-superpowers:requesting-code-review's
-[code-reviewer.md](../requesting-code-review/code-reviewer.md), with the
-package path, the plan and spec paths, the plan's Review Focus section
-verbatim if it has one (the input classes and failure modes the plan's
-tests do not exercise — the reviewer checks each deliberately), and a
-pointer to the ledger's `Ruling:` lines so it can weigh the calls you
-made. Specify the model
-explicitly; an omitted model inherits the session's, which may not be the
-most capable. This is the one fresh context the whole run buys. Do not
-skip it, and do not replace it with your own read of the diff.
+**With a subagent tool:** dispatch the bundled `final-reviewer` — the whole-branch review is a judgment task. It ships at the Pro tier, set in its frontmatter; which model the Pro tier is, is not documented. Fill superpowers:requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md) for a whole-branch review: `{BASE_SHA}` is MERGE_BASE, `{HEAD_SHA}` is HEAD, `{PLAN_OR_REQUIREMENTS}` is the plan and spec paths, `{REVIEW_FOCUS}` is the plan's Review Focus section verbatim if it has one (the input classes and failure modes the plan's tests do not exercise — the reviewer checks each deliberately), and `{RULINGS}` is every ledger line containing `Ruling:`, parked ones included, pasted in so it can weigh the calls you made; leave the Deferred Minors section out. Dispatch `invoke_subagent(Subagents: [{TypeName: "final-reviewer", Role: "Final whole-branch reviewer", Workspace: "inherit", Prompt: <filled template>}])`. If `final-reviewer` is rejected as unknown, dispatch it once more as `superpowers:final-reviewer`. If that is rejected too, read the plugin's [`agents/final-reviewer.md`](../../agents/final-reviewer.md) and dispatch the built-in `self` subagent with `Workspace: "inherit"` and that file's body, below its closing `---`, pasted ahead of the same filled template; write `Final review: self subagent (bundled agent unavailable)` to the ledger. If every dispatch fails, do the review below yourself and write `Final review: self-review (<what failed>)`. This is the one fresh context the whole run buys. Do not skip it, and do not replace it with your own read of the diff.
 
-**Without a subagent tool:** read code-reviewer.md and perform that review
-yourself against the package, as a separate pass after the last task's
-ledger line. Write `Final review: self-review (no subagent tool)` to the
-ledger, and say so in your final message: a self-review by the author is
-weaker than a fresh reviewer, and your human partner decides whether that
-is enough before merge.
+**Without a subagent tool:** read the reviewer's instructions — the plugin's `agents/final-reviewer.md` and code-reviewer.md as filled for a whole-branch review — and perform that review yourself over `git diff MERGE_BASE..HEAD`, as a separate pass after the last task's ledger line. Write `Final review: self-review (no subagent tool)` to the ledger, and say so in your final message: a self-review by the author is weaker than a fresh reviewer, and your human partner decides whether that is enough before merge.
 
 Sort the findings before you act on any of them. The reviewer's severity
 labels are advice; the gate is yours. Its "Declined to judge" list is
@@ -281,9 +262,9 @@ in the rulings list. There is no second fix pass.
 Before you delete anything, collect every ledger line containing
 `Ruling:` into your final message under "Rulings I made", in the order you
 made them, each with what it costs if wrong, and every `minor (deferred)`
-line under "Deferred minors". Both lists are exhaustive. Your final
-message is the only place the decisions you took on your human partner's
-behalf — and the findings you chose not to act on — reach them.
+line under "Deferred minors". Both lists are exhaustive. Your final message, and the walkthrough artifact that copies it, are the only places the decisions you took on your human partner's behalf — and the findings you chose not to act on — reach them.
+
+Then, still before you delete anything, write the walkthrough: `write_to_file` as an artifact — with your other artifacts, never into the repository — with `IsArtifact: true` and `ArtifactMetadata` `{ArtifactType: "walkthrough", RequestFeedback: false, UserFacing: true}`. It holds what was built (one line per task, from the ledger's completion lines), how the final review ran (the bundled reviewer, a `self` subagent, or your own self-review) and what it fixed, and both lists above, copied verbatim; embed screenshots or recordings and link key changed files where they help. It asks for nothing: superpowers:finishing-a-development-branch presents the choices.
 
 When the final review is clean and its fixes are committed, delete this
 plan's workspace directory — the git history is the record now. Sibling
@@ -358,6 +339,7 @@ Deferred minors:
 - README lacks a usage example
 - recovery.js could split verify/repair into two files
 
+[Write walkthrough artifact: tasks, final review, both lists]
 [Delete this plan's workspace — the record now lives in git]
 
 Using superpowers:finishing-a-development-branch.

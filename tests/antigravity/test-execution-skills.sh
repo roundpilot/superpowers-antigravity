@@ -68,7 +68,13 @@ check_E6() {
     'A failing run records nothing; the task is not complete.' \
     '`Task <N>: complete (commits <base7>..<head7>, tests: <command> → <result>)`' \
     'Task <N>: partner instruction: <one-liner>' 'Plan map: Task 1 L<first>-<last>'; do must_have "$ep" "$s"; done
+  for s in 'superpowers:final-reviewer' 'TypeName: "final-reviewer", Role: "Final whole-branch reviewer", Workspace: "inherit"'     'Final review: self-review (no subagent tool)' 'Final review: self-review (<what failed>)'     'Final review: self subagent (bundled agent unavailable)' 'RequestFeedback: false'     'and the walkthrough artifact that copies it'     'It asks for nothing: superpowers:finishing-a-development-branch presents the choices.'; do must_have "$ep" "$s"; done
   verdict E6 'executing-plans carries its ledger and task-loop strings'
+}
+check_E7() {
+  local ep=skills/executing-plans/SKILL.md
+  [ "$(tr -s '[:space:]' ' ' < "$ROOT/$ep" | grep -cF 'most capable')" = 0 ] || problem "$ep says 'most capable' (joined lines)"
+  verdict E7 "executors keep their restored lines and ledger strings and never say 'most capable'"
 }
 check_E9() {
   local t
