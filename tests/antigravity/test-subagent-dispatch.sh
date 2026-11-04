@@ -23,7 +23,7 @@ echo ""
 # Check agy is available
 if ! command -v agy &>/dev/null; then
     echo "[SKIP] 'agy' command not found. Install Antigravity CLI to run this test."
-    exit 0
+    exit 77
 fi
 
 # Create test project
@@ -182,19 +182,8 @@ if echo "$(cat "$OUTPUT_FILE")" | grep -qiE "invoke_subagent|subagent|dispatchin
     echo "  [PASS] Subagent dispatch evidence found in output"
     PASSED=$((PASSED + 1))
 else
-    # Fall back to transcript check. Pass $TEST_PROJECT explicitly -- that's
-    # the workspace agy was actually invoked from (see the `cd "$TEST_PROJECT"`
-    # above) -- so find_transcript's cache-based lookup resolves the right
-    # conversation deterministically instead of relying on $PWD happening to
-    # still match at this point in the script.
-    TRANSCRIPT=$(find_transcript 60 "$TEST_PROJECT" 2>/dev/null) || true
-    if [ -n "$TRANSCRIPT" ] && transcript_has_tool "$TRANSCRIPT" "invoke_subagent"; then
-        echo "  [PASS] invoke_subagent found in transcript"
-        PASSED=$((PASSED + 1))
-    else
-        echo "  [FAIL] No subagent dispatch evidence found"
-        FAILED=$((FAILED + 1))
-    fi
+    echo "  [FAIL] No subagent dispatch evidence found"
+    FAILED=$((FAILED + 1))
 fi
 echo ""
 

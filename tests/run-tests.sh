@@ -183,6 +183,11 @@ run_tier() {
   done
 }
 
+if [ "$RUN_LIVE" -eq 1 ] || [ "$RUN_LIVE_EXTRA" -eq 1 ]; then
+  if command -v agy >/dev/null 2>&1; then agy_version="$(agy --version 2>/dev/null | head -n 1)"; else agy_version=absent; fi
+  add_row INFO live "agy ${agy_version:-absent}"
+fi
+
 run_tier gate ${GATE_TESTS[@]+"${GATE_TESTS[@]}"}
 run_tier unit ${UNIT_TESTS[@]+"${UNIT_TESTS[@]}"}
 if [ "$RUN_LIVE" -eq 1 ]; then

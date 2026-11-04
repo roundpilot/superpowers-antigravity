@@ -232,7 +232,209 @@ function get(argv) {
     return 0;
 }
 
-export const commands = { payload, 'hooks-config': hooksConfig, keys, get };
+const STREAM_USAGE = 'usage: json-tool.mjs stream init-tools|text|tool-calls [name]|subagents|result [--field <key>]  (stdin)';
+
+// jsonLines: the JSON objects with an `event` key among the lines of a text; others are skipped.
+function jsonLines(text) {
+    const out = [];
+    for (const line of text.split(/\r?\n/)) {
+        const t = line.trim();
+        if (t === '' || t[0] !== '{') continue;
+        try {
+            const obj = JSON.parse(t);
+            if (obj !== null && typeof obj === 'object' && typeof obj.event === 'string') out.push(obj);
+        } catch { /* not JSON: skipped */ }
+    }
+    return out;
+}
+
+const printField = (value) => (typeof value === 'string' ? value : JSON.stringify(value));
+
+// sameDir: a file URI and a directory resolve, through fileURLToPath and path.resolve, to one path.
+function sameDir(uri, cwd) {
+    try {
+        let a = path.resolve(fileURLToPath(uri));
+        let b = path.resolve(cwd);
+        if (process.platform === 'win32') {
+            a = a.toLowerCase();
+            b = b.toLowerCase();
+        }
+        return a === b;
+    } catch {
+        return false;
+    }
+}
+
+// stream: views over an `agy --output-format stream-json` capture on stdin.
+function stream(argv) {
+    const view = argv[0];
+    const rest = argv.slice(1);
+    if (!['init-tools', 'text', 'tool-calls', 'subagents', 'result'].includes(view)) {
+        return usage(STREAM_USAGE, `unknown view ${view}`);
+    }
+    let field;
+    let name;
+    for (let i = 0; i < rest.length; i++) {
+        if (rest[i] === '--field') {
+            if (i + 1 >= rest.length) return usage(STREAM_USAGE, '--field needs a value');
+            field = rest[++i];
+        } else if (view === 'tool-calls' && name === undefined) {
+            name = rest[i];
+        } else {
+            return usage(STREAM_USAGE, `unexpected argument ${rest[i]}`);
+        }
+    }
+    let input = '';
+    try {
+        input = fs.readFileSync(0, 'utf8');
+    } catch { /* an empty stdin reads as no events */ }
+    const events = jsonLines(input);
+    const out = (line) => process.stdout.write(`${line}\n`);
+    const init = events.find((e) => e.event === 'init');
+
+    if (view === 'init-tools') {
+        if (!init) {
+            process.stderr.write('json-tool: stream: no init event\n');
+            return 1;
+        }
+        for (const tool of (init.init && init.init.tools) || []) out(tool);
+        return 0;
+    }
+
+    if (view === 'result') {
+        const last = events.filter((e) => e.event === 'result').pop();
+        let obj = {};
+        if (last) {
+            const r = last.result || {};
+            obj = {
+                status: r.status,
+                conversation_id: r.conversation_id,
+                denied_actions: Array.isArray(r.denied_actions) ? r.denied_actions : [],
+            };
+        }
+        if (field !== undefined) {
+            if (obj[field] !== undefined) out(printField(obj[field]));
+        } else {
+            out(JSON.stringify(obj));
+        }
+        return 0;
+    }
+
+    // steps: step_update payloads keyed by conversation_id + step_index, merged in arrival
+    // order so the last update wins per key; first-seen order is kept.
+    const steps = new Map();
+    for (const e of events) {
+        if (e.event !== 'step_update' || !e.step_update) continue;
+        const u = e.step_update;
+        const key = `${u.conversation_id}#${u.step_index}`;
+        const cur = steps.get(key) || { text: '' };
+        const { text_delta: delta, ...others } = u;
+        Object.assign(cur, others);
+        if (typeof delta === 'string') cur.text += delta;
+        steps.set(key, cur);
+    }
+
+    if (view === 'text') {
+        const parts = [...steps.values()].filter((s) => s.step_type === 'agent_response' && s.text !== '').map((s) => s.text);
+        out(parts.join('\n'));
+        return 0;
+    }
+
+    if (view === 'tool-calls') {
+        for (const s of steps.values()) {
+            if (s.step_type !== 'tool' || !s.tool_info || typeof s.tool_info !== 'object') continue;
+            if (name !== undefined && s.tool_info.name !== name) continue;
+            const params = s.tool_info.parameters === undefined ? {} : s.tool_info.parameters;
+            if (field !== undefined) {
+                if (params !== null && typeof params === 'object' && Object.prototype.hasOwnProperty.call(params, field)) {
+                    out(printField(params[field]));
+                }
+            } else {
+                out(JSON.stringify({ name: s.tool_info.name, parameters: params }));
+            }
+        }
+        return 0;
+    }
+
+    const cwd = init && init.init ? init.init.cwd : undefined;
+    for (const s of steps.values()) {
+        const list = s.subagent_info && Array.isArray(s.subagent_info.subagents) ? s.subagent_info.subagents : [];
+        for (const sub of list) {
+            const uris = Array.isArray(sub.workspace_uris) ? sub.workspace_uris : [];
+            const item = {
+                type_name: sub.type_name,
+                role: sub.role,
+                conversation_id: sub.conversation_id,
+                workspace_uris: uris,
+                init_cwd: cwd === undefined ? null : path.resolve(cwd),
+                at_init_cwd: cwd !== undefined && uris.every((u) => sameDir(u, cwd)),
+            };
+            if (field !== undefined) {
+                if (item[field] !== undefined) out(printField(item[field]));
+            } else {
+                out(JSON.stringify(item));
+            }
+        }
+    }
+    return 0;
+}
+
+const NAMES_USAGE = 'usage: json-tool.mjs skills-json|agents-json <file|->';
+
+// collectNames: every string under a `name` key at any depth, recursing into strings that
+// parse as JSON; unique, in input order.
+function collectNames(value, seen) {
+    if (typeof value === 'string') {
+        const t = value.trim();
+        if (t[0] === '{' || t[0] === '[') {
+            try {
+                collectNames(JSON.parse(t), seen);
+            } catch { /* plain text */ }
+        }
+    } else if (Array.isArray(value)) {
+        for (const v of value) collectNames(v, seen);
+    } else if (value !== null && typeof value === 'object') {
+        for (const k of Object.keys(value)) {
+            if (k === 'name' && typeof value[k] === 'string') seen.add(value[k]);
+            else collectNames(value[k], seen);
+        }
+    }
+}
+
+// namesJson: the names listed in `agy ... --output-format json`, for skills-json and agents-json.
+function namesJson(argv) {
+    if (argv.length !== 1) return usage(NAMES_USAGE, 'takes one argument');
+    let text;
+    try {
+        text = fs.readFileSync(argv[0] === '-' ? 0 : argv[0], 'utf8');
+    } catch (err) {
+        process.stderr.write(`json-tool: cannot read ${argv[0]}: ${err.message}\n`);
+        return 1;
+    }
+    text = text.replace(/^﻿/, '');
+    const seen = new Set();
+    try {
+        collectNames(JSON.parse(text), seen);
+    } catch {
+        for (const line of text.split(/\r?\n/)) collectNames(line, seen);
+    }
+    if (seen.size === 0) {
+        process.stderr.write('json-tool: no names found\n');
+        return 1;
+    }
+    process.stdout.write(`${[...seen].join('\n')}\n`);
+    return 0;
+}
+
+export const commands = {
+    payload,
+    'hooks-config': hooksConfig,
+    keys,
+    get,
+    stream,
+    'skills-json': namesJson,
+    'agents-json': namesJson,
+};
 
 function isMain() {
     try {

@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
-# Run all skill triggering tests for Antigravity 2.0
+# Run every skill-triggering test.
 # Usage: ./run-all.sh
-
-set -e
-set -o pipefail
+# Exit 1 on any FAIL, else 77 on any SKIP, else 0.
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROMPTS_DIR="$SCRIPT_DIR/prompts"
 
-# Check agy is available
 if ! command -v agy &>/dev/null; then
-    echo "[SKIP] 'agy' command not found. Install Antigravity CLI to run this test."
-    exit 0
+    echo "[SKIP] 'agy' command not found"
+    exit 77
 fi
 
 SKILLS=(
@@ -21,14 +19,9 @@ SKILLS=(
     "dispatching-parallel-agents"
     "requesting-code-review"
     "brainstorming"
+    "executing-plans"
+    "diagnosing-superpowers"
 )
-
-echo "=========================================="
-echo " Skill Triggering Tests (Antigravity 2.0)"
-echo "=========================================="
-echo ""
-echo "Prompts directory: $PROMPTS_DIR"
-echo ""
 
 PASSED=0
 FAILED=0
@@ -37,44 +30,28 @@ RESULTS=()
 
 for skill in "${SKILLS[@]}"; do
     prompt_file="$PROMPTS_DIR/${skill}.txt"
-
     if [ ! -f "$prompt_file" ]; then
-        echo "⚠️  SKIP: No prompt file for $skill"
-        SKIPPED=$((SKIPPED + 1))
-        RESULTS+=("⚠️  $skill (skipped — no prompt)")
+        echo "[FAIL] $skill: no prompt file"
+        FAILED=$((FAILED + 1))
+        RESULTS+=("FAIL $skill (no prompt file)")
         continue
     fi
-
     echo "Testing: $skill"
-    echo "  Prompt: $prompt_file"
-
-    if "$SCRIPT_DIR/run-test.sh" "$skill" "$prompt_file" 300 2>&1 | tee /tmp/agy-skill-test-$skill.log; then
-        PASSED=$((PASSED + 1))
-        RESULTS+=("✅ $skill")
-    else
-        FAILED=$((FAILED + 1))
-        RESULTS+=("❌ $skill")
-    fi
-
-    echo ""
-    echo "---"
-    echo ""
+    set +e # a failing test must not stop the loop
+    bash "$SCRIPT_DIR/run-test.sh" "$skill" "$prompt_file" 300
+    code=$?
+    case "$code" in
+        0) PASSED=$((PASSED + 1)); RESULTS+=("PASS $skill") ;;
+        77) SKIPPED=$((SKIPPED + 1)); RESULTS+=("SKIP $skill") ;;
+        *) FAILED=$((FAILED + 1)); RESULTS+=("FAIL $skill") ;;
+    esac
+    echo
 done
 
-echo ""
-echo "=========================================="
-echo " Summary"
-echo "=========================================="
-echo ""
-for result in "${RESULTS[@]}"; do
-    echo "  $result"
-done
-echo ""
-echo "Passed:  $PASSED"
-echo "Failed:  $FAILED"
-echo "Skipped: $SKIPPED"
-echo "Total:   ${#SKILLS[@]}"
+echo "Summary"
+printf '  %s\n' "${RESULTS[@]}"
+echo "Passed: $PASSED  Failed: $FAILED  Skipped: $SKIPPED  Total: ${#SKILLS[@]}"
 
-if [ $FAILED -gt 0 ]; then
-    exit 1
-fi
+if [ "$FAILED" -gt 0 ]; then exit 1; fi
+if [ "$SKIPPED" -gt 0 ]; then exit 77; fi
+exit 0

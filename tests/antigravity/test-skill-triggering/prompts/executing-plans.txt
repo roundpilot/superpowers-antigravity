@@ -1,0 +1,1 @@
+The implementation plan is in docs/superpowers/plans/2026-09-25-rate-limiter.md. Please implement it yourself, task by task, right here in this session — I don't want any subagents for this one.

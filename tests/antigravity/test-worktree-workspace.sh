@@ -24,7 +24,7 @@ echo ""
 # Check agy is available
 if ! command -v agy &>/dev/null; then
     echo "[SKIP] 'agy' command not found. Install Antigravity CLI to run this test."
-    exit 0
+    exit 77
 fi
 
 # Create a test project with git initialized
@@ -86,28 +86,6 @@ if echo "$OUTPUT" | grep -qiE 'worktree|feature.branch|git.*branch|isolated.*bra
     EVIDENCE_FOUND=true
 else
     echo "  [INFO] No branch/worktree concept mention"
-fi
-
-# Check 4: Check transcript if available
-echo "Check 4: Transcript analysis..."
-TRANSCRIPT=$(find_transcript 10 2>/dev/null) || true
-if [ -n "$TRANSCRIPT" ]; then
-    if transcript_has_tool "$TRANSCRIPT" "invoke_subagent"; then
-        echo "  [PASS] invoke_subagent found in transcript"
-        EVIDENCE_FOUND=true
-    else
-        echo "  [INFO] No invoke_subagent in transcript"
-    fi
-
-    # Check for Workspace parameter in transcript
-    if grep -q '"Workspace"' "$TRANSCRIPT" 2>/dev/null; then
-        echo "  [PASS] Workspace parameter found in transcript"
-        EVIDENCE_FOUND=true
-    else
-        echo "  [INFO] No Workspace parameter in transcript"
-    fi
-else
-    echo "  [INFO] No recent transcript found (this is OK for output-only checks)"
 fi
 
 echo ""
