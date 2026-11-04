@@ -36,7 +36,7 @@ There's a bunch more to it, but that's the core of the system. And because the s
 
 The original superpowers supports 9+ platforms via a tool mapping abstraction layer — skills are written with Claude Code tool names, and per-platform reference files translate at runtime.
 
-This fork **removes the abstraction entirely**. All skills use native Antigravity 2.0 tool names directly (`view_file`, `run_command`, `invoke_subagent`, `define_subagent`, etc.), eliminating translation overhead and making every skill read exactly as the agent will execute it.
+This fork **removes the abstraction entirely**. All skills use native Antigravity tool names directly (`view_file`, `run_command`, `invoke_subagent`, etc.), eliminating translation overhead and making every skill read exactly as the agent will execute it.
 
 <details>
 <summary><strong>Why remove cross-platform support?</strong> (click to expand)</summary>
@@ -49,9 +49,9 @@ The abstraction layer costs tokens on every interaction, and those costs compoun
 
 3. **Platform-conditional branching in skills.** The upstream `using-superpowers` skill has separate instruction blocks for Claude Code, Copilot CLI, Gemini CLI, Codex, Antigravity 2.0, and "other environments." Only one applies.
 
-4. **87 fewer files than upstream (as of v6.3.0 on both sides).** When agents explore the repo, fewer files means less noise in `list_dir` output and faster orientation.
+4. **85 fewer files than upstream (as of v7.0.2 on both sides).** When agents explore the repo, fewer files means less noise in `list_dir` output and faster orientation.
 
-5. **Leaner skills without platform detection.** No harness-detection or fallback branches inside skills — `using-git-worktrees` is 120 lines to upstream's 167 (as of v6.3.0). Shorter skills = less context consumed.
+5. **Leaner skills without platform detection.** No harness-detection or fallback branches inside skills — `using-git-worktrees` is 103 lines to upstream's 167 (as of v7.0.2). Shorter skills = less context consumed.
 
 </details>
 
