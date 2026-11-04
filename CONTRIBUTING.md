@@ -104,13 +104,13 @@ A release bumps all of these together, and `tests/antigravity/test-plugin-packag
 
 Concretely:
 - **Rule files.** No `AGENTS.md` or `GEMINI.md` at any depth, in any letter case. The root `GEMINI.md` is allowed while S2.3 keeps it.
-- **`.agents/` and `.agent/`.** No `AGENTS.md`, `GEMINI.md`, `rules/` or `rules.json` inside any such directory at any depth. The only tracked paths under a `.agents/` directory may be the repo-root `.agents/hooks.json` (S7.2's contributor entry, shipped disabled) and, only if Live check 6(e) shows it absent from workspace installs (D14), `.agents/skills/contributing-to-superpowers/SKILL.md`. Hooks are documented only at the workspace root, the global file and the plugin level [D hooks:13, :24-26, :40], so a nested copy is not expected to load [I]; it ships disabled either way (S7.3 check 3).
+- **`.agents/` and `.agent/`.** No `AGENTS.md`, `GEMINI.md`, `rules/` or `rules.json` inside any such directory at any depth. The only tracked path under a `.agents/` directory is `.agents/skills/contributing-to-superpowers/SKILL.md`, which Live check 6(e) showed absent from workspace installs (D14).
 - **Discovery files.** No `skills.json`, `agents.json` or `rules.json` at any depth (S2.4; D15).
 - **Contributor guidance** for agents goes in CONTRIBUTING.md, which is never auto-loaded, or in a snippet contributors copy into their own `~/.gemini/config/rules/`.
 
 ### Delivery
 
-**Delivery uses documented plugin components only**: `plugin.json`, `rules/`, `skills/`, `agents/`. The plugin ships no `hooks.json` and no `mcp_config.json`. The repository's disabled `.agents/hooks.json` and the global-hook entry in CONTRIBUTING are contributor-only tools (S7.2, S7.3).
+**Delivery uses documented plugin components only**: `plugin.json`, `rules/`, `skills/`, `agents/`. The plugin ships no `hooks.json` and no `mcp_config.json`. The global-hook entry in CONTRIBUTING is a contributor-only tool (S7.2).
 
 Contributors who open this repository as a workspace lose the root GEMINI.md; they rely on their installed plugin.
 

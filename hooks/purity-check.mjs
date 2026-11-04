@@ -44,7 +44,7 @@ import { fileURLToPath } from 'node:url';
 
 const FILE_TOOLS = ['write_to_file', 'replace_file_content', 'multi_replace_file_content'];
 // A guarded folder is found by the first of these segments whose prefix is this repository.
-const ROOT_MARKERS = ['/skills/', '/agents/', '/rules/', '/.github/'];
+const ROOT_MARKERS = ['/skills/', '/agents/', '/rules/', '/.github/', '/.agents/'];
 const GATE = 'bash tests/antigravity/test-skill-tool-purity.sh';
 const PATTERNS_REL = 'tests/antigravity/purity-patterns.txt';
 const PATTERNS_URL = new URL('../tests/antigravity/purity-patterns.txt', import.meta.url);

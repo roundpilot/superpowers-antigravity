@@ -2,6 +2,6 @@
 # group<TAB>paths<TAB>regex<TAB>example<TAB>counterexample; paths = comma list of prefixes.
 # Case-sensitive. No \b \d \s \w, lookaround, lazy quantifiers or back-references;
 # boundaries are (^|[^A-Za-z0-9_]) ... ([^A-Za-z0-9_]|$). Example matches; counterexample must not.
-cc-tools	skills	TodoWrite|EnterWorktree|Task tool|Skill tool	track it with TodoWrite	track it in task.md
-platforms	skills	Claude Code|Codex CLI|Codex App|Copilot CLI|OpenCode|Factory Droid|Gemini CLI	Harness (Claude Code, etc.)	Museum of Cursors
-mappings	skills	antigravity-tools|copilot-tools|codex-tools|gemini-tools	see references/codex-tools.md	see references/tool-notes.md
+cc-tools	skills,.agents/skills/contributing-to-superpowers	TodoWrite|EnterWorktree|Task tool|Skill tool	track it with TodoWrite	track it in task.md
+platforms	skills,.agents/skills/contributing-to-superpowers	Claude Code|Codex CLI|Codex App|Copilot CLI|OpenCode|Factory Droid|Gemini CLI	Harness (Claude Code, etc.)	Museum of Cursors
+mappings	skills,.agents/skills/contributing-to-superpowers	antigravity-tools|copilot-tools|codex-tools|gemini-tools	see references/codex-tools.md	see references/tool-notes.md
