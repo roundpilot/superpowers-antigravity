@@ -91,7 +91,7 @@ Antigravity 2.0 supports three workspace modes for subagents. Choose based on th
 ## Red Flags
 
 **Never:**
-- Use `git worktree add` — use `Workspace: "branch"` instead
+- Use `git worktree add` — use `Workspace: "branch"` for concurrent writers instead
 - Create a worktree when Step 0 detects existing isolation
 - Skip baseline test verification
 - Proceed with failing tests without asking

@@ -218,14 +218,7 @@ them to review the plan and confirm it captures what they want; wait for that
 review before implementation, then use the preserved method. Otherwise, ask
 them to review the plan and choose an execution method before implementation.
 
-**Linking it:** request the review on the plan as it stands after the self-review: the save
-that follows the self-review carries
-`ArtifactMetadata: {ArtifactType: "implementation_plan", RequestFeedback: true}`, plus
-`IsArtifact: true` when it is a whole-file write. If the self-review changed nothing, re-save the
-plan unchanged. Always request this review; their review setting decides only whether
-the platform pauses, and where it leaves the call to you, a plan always gets one. In 2.0, the IDE and the CLI, save it as a plain markdown artifact instead — `IsArtifact: true` on a whole-file write, with no `ArtifactType` and no `RequestFeedback`. Proceed approves
-the plan, not an execution method, and in the CLI approving the write only lets the file reach
-disk — so ask the question below either way, after the write returns.
+**Linking it:** save the plan as a plain markdown artifact — `IsArtifact: true` on a whole-file write, with no `ArtifactType` and no `RequestFeedback`. Ask the question below after the write returns.
 
 Ask with `ask_question`: one single-select question whose text is the message below, with short
 options, the recommended method first. Choosing a method answers "does the plan capture what you

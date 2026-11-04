@@ -9,6 +9,7 @@ FAILS=0
 problem() { PROBLEMS+=("$1"); }
 must_have() { grep -qF -- "$2" "$ROOT/$1" 2>/dev/null || problem "$1: missing '$2'"; }
 must_lack() {
+  test -f "$ROOT/$1" || test -d "$ROOT/$1" || { problem "$1: missing"; return; }
   local line
   while IFS= read -r line; do problem "$line"; done < <(grep -rnHF -- "$2" "$ROOT/$1" 2>/dev/null)
 }
@@ -38,8 +39,7 @@ check_E12() {
   local f=skills/subagent-driven-development/SKILL.md edges
   edges=$(grep -F '"Answer questions, provide context" ->' "$ROOT/$f" || true)
   [ -n "$edges" ] || problem "no edge leaves \"Answer questions, provide context\""
-  if printf '%s
-' "$edges" | grep -qF invoke_subagent; then problem "answer edge dispatches: $edges"; fi
+  if printf '%s\n' "$edges" | grep -qF invoke_subagent; then problem "answer edge dispatches: $edges"; fi
   verdict E12 'no answer edge leads to invoke_subagent'
 }
 
@@ -82,10 +82,8 @@ e4_block() { awk '/^- Each plan owns a workspace:/{p=1; print; next} p && (/^- /
 check_E4() {
   local ep=skills/executing-plans/SKILL.md sdd=skills/subagent-driven-development/SKILL.md a b
   a="$(e4_block "$ep")"; b="$(e4_block "$sdd")"
-  [ "$(printf '%s
-' "$a" | grep -cE '^  [1-4]. ')" = 4 ] || problem "$ep: workspace block does not have four sub-items"
-  [ "$(printf '%s
-' "$a" | grep -cF -- "$MKDIR_SENTENCE")" = 1 ] || problem "$ep: MKDIR_SENTENCE not exactly once in the workspace block"
+  [ "$(printf '%s\n' "$a" | grep -cE '^  [1-4]\. ')" = 4 ] || problem "$ep: workspace block does not have four sub-items"
+  [ "$(printf '%s\n' "$a" | grep -cF -- "$MKDIR_SENTENCE")" = 1 ] || problem "$ep: MKDIR_SENTENCE not exactly once in the workspace block"
   [ "$a" = "$b" ] || problem "$sdd: workspace block differs from $ep's"
   [ "$(grep -cF -- "$MKDIR_SENTENCE" "$ROOT/skills/diagnosing-superpowers/references/session-discovery.md")" = 1 ] || problem "session-discovery.md: MKDIR_SENTENCE not exactly once"
   verdict E4 'plan-workspace block identical in both executors, MKDIR_SENTENCE once in it and in session-discovery.md'
@@ -96,7 +94,7 @@ check_E5() {
     [ "$(grep -cF -- "$o" "$ROOT/$ep")" = 1 ] || problem "$ep: not exactly one '$o' line"
     [ "$(grep -F -- "$o" "$ROOT/$ep")" = "$(grep -F -- "$o" "$ROOT/$sdd")" ] || problem "$sdd: '$o' line differs from $ep's"
   done
-  grep -qE '^Approvals can pause an unattended run..* Never change their permission settings yourself. This is a notice, not a stop: start Task 1.$' "$ROOT/$ep" || problem "$ep: block C does not end with the pinned sentence"
+  grep -qE '^Approvals can pause an unattended run\..* Never change their permission settings yourself\. This is a notice, not a stop: start Task 1\.$' "$ROOT/$ep" || problem "$ep: block C does not end with the pinned sentence"
   verdict E5 'block C and the steering line: one line each, identical in both executors'
 }
 check_E6() {
@@ -105,14 +103,24 @@ check_E6() {
     'A failing run records nothing; the task is not complete.' \
     '`Task <N>: complete (commits <base7>..<head7>, tests: <command> → <result>)`' \
     'Task <N>: partner instruction: <one-liner>' 'Plan map: Task 1 L<first>-<last>'; do must_have "$ep" "$s"; done
-  for s in 'superpowers:final-reviewer' 'TypeName: "final-reviewer", Role: "Final whole-branch reviewer", Workspace: "inherit"'     'Final review: self-review (no subagent tool)' 'Final review: self-review (<what failed>)'     'Final review: self subagent (bundled agent unavailable)' 'RequestFeedback: false'     'and the walkthrough artifact that copies it'     'It asks for nothing: superpowers:finishing-a-development-branch presents the choices.'; do must_have "$ep" "$s"; done
+  for s in 'superpowers:final-reviewer' 'TypeName: "final-reviewer", Role: "Final whole-branch reviewer", Workspace: "inherit"' \
+    'Final review: self-review (no subagent tool)' 'Final review: self-review (<what failed>)' \
+    'Final review: self subagent (bundled agent unavailable)' 'RequestFeedback: false' \
+    'and the walkthrough artifact that copies it' \
+    'It asks for nothing: superpowers:finishing-a-development-branch presents the choices.'; do must_have "$ep" "$s"; done
   verdict E6 'executing-plans carries its ledger and task-loop strings'
 }
 check_E7() {
   local ep=skills/executing-plans/SKILL.md
   [ "$(tr -s '[:space:]' ' ' < "$ROOT/$ep" | grep -cF 'most capable')" = 0 ] || problem "$ep says 'most capable' (joined lines)"
   local sdd=skills/subagent-driven-development/SKILL.md s
-  for s in '**Narration:**' 'Partner chose inline, or no subagent tool?' '**vs. Executing Plans (inline):**'     '- Both run in this session, share the same plan workspace and ledger, and never pause between tasks'     'whose last line is a fix round is mid-loop: resume the loop at the next'     'Task <N>: dispatched implementer <conversation ID> (base <base7>[, round <R>])'     'Task <N>: killed implementer <conversation ID> (round <R> takeover)'     'your human partner stopped it' 'Setup: self subagent for <name> (bundled agent unavailable)'     'git rev-list --left-right --count <BASE>...<HEAD>'; do must_have "$sdd" "$s"; done
+  for s in '**Narration:**' 'Partner chose inline, or no subagent tool?' '**vs. Executing Plans (inline):**' \
+    '- Both run in this session, share the same plan workspace and ledger, and never pause between tasks' \
+    'whose last line is a fix round is mid-loop: resume the loop at the next' \
+    'Task <N>: dispatched implementer <conversation ID> (base <base7>[, round <R>])' \
+    'Task <N>: killed implementer <conversation ID> (round <R> takeover)' \
+    'your human partner stopped it' 'Setup: self subagent for <name> (bundled agent unavailable)' \
+    'git rev-list --left-right --count <BASE>...<HEAD>'; do must_have "$sdd" "$s"; done
   verdict E7 "executors keep their restored lines and ledger strings and never say 'most capable'"
 }
 check_E9() {
