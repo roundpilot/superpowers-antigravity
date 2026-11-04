@@ -27,13 +27,20 @@ Tests failing (<N> failures). Must fix before completing:
 
 ## Step 2: Detect Environment
 
-```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-# Capture now, while still inside the workspace — Step 5 changes directory
-# before cleanup (Step 6) needs this value
-WORKTREE_PATH=$(git rev-parse --show-toplevel)
+Run each of these on its own and note what it prints — later steps need these values, and a later `run_command` may start in a fresh shell:
+
 ```
+git rev-parse --path-format=absolute --git-dir --git-common-dir
+git rev-parse --show-toplevel
+```
+
+The first prints `GIT_DIR`, then `GIT_COMMON`; the second prints `WORKTREE_PATH`. Then run, with the `GIT_COMMON` you noted:
+
+```
+git -C "<GIT_COMMON>/.." rev-parse --show-toplevel
+```
+
+It prints `MAIN_ROOT`, the main checkout's root. Note all four now, while still inside the workspace — Step 5 changes directory before cleanup (Step 6) needs them. (Git older than 2.31 lacks `--path-format`: resolve each printed path to an absolute one before comparing.) Later steps write these values as `<MAIN_ROOT>` and `<WORKTREE_PATH>`; put the values you noted in their place.
 
 This determines which menu to show and how cleanup works:
 
@@ -87,12 +94,13 @@ is theirs.
 
 ## Step 5: Execute Choice
 
+**Run every command in Step 5 and Step 6 through `run_command` with `Cwd` set to `<MAIN_ROOT>`.** The `cd "<MAIN_ROOT>"` lines say the same for a shell that keeps its directory; a new command may start in a fresh shell, and worktree removal must run from outside the worktree.
+
 ### Option 1: Merge Locally
 
 ```bash
-# Get main repo root for CWD safety
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
+# Main repo root (noted in Step 2) for CWD safety
+cd "<MAIN_ROOT>"
 
 # Merge first — verify success before removing anything
 git checkout <base-branch>
@@ -150,8 +158,7 @@ Type 'discard' to confirm.
 Wait for that exact confirmation. When it arrives:
 
 ```bash
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
+cd "<MAIN_ROOT>"
 ```
 
 Then clean up the worktree (Step 6) and force-delete the branch:
@@ -177,9 +184,8 @@ wins.
 Superpowers created this worktree — we own cleanup:
 
 ```bash
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
-git worktree remove "$WORKTREE_PATH"
+cd "<MAIN_ROOT>"
+git worktree remove "<WORKTREE_PATH>"
 git worktree prune  # Self-healing: clean up any stale registrations
 ```
 
@@ -189,7 +195,7 @@ or scratch work. Never `--force` on your own initiative. Show your human
 partner what is at stake and ask:
 
 ```bash
-git -C "$WORKTREE_PATH" status --porcelain -uall
+git -C "<WORKTREE_PATH>" status --porcelain -uall
 ```
 
 ```
@@ -207,7 +213,7 @@ Which?
 Carry out the choice, then remove the worktree.
 
 **Otherwise:** The host environment owns this workspace — leave it in
-place. If your platform provides a workspace-exit tool, use it.
+place.
 
 ## Quick Reference
 

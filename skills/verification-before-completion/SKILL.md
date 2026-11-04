@@ -122,7 +122,7 @@ Skip any step = lying, not verifying
 
 ## Long-Running Verification
 
-When launching a build or test suite that might take more than a few minutes:
+When launching a build or test suite that might take more than a few minutes, start it with `run_command` and a `WaitMsBeforeAsync` long enough for its expected run, so its result comes back in the same call. If the call returns while the command is still running, check on it with `manage_task` (`Action: "status"`) and the task id from that result. Your evidence is the command's own output and exit status once it has finished; a result you cannot read is not evidence. Use a timer to come back to it:
 
 **Short waits (under 5 min):** Set a one-shot timer:
 ```
@@ -134,3 +134,5 @@ schedule(DurationSeconds: "300", Prompt: "Check if the verification command has 
 schedule(CronExpression: "*/2 * * * *", MaxIterations: "5", Prompt: "Check if the verification command has completed")
 ```
 This checks every 2 minutes, up to 5 times (10 minutes total). Adjust `MaxIterations` based on expected duration.
+
+A timer that fires after the command has finished is only a reminder: check the status and move on. If you are a subagent, never end your turn to wait — your turn's end is your result to your parent. Run a command whose result your report needs in the foreground with a longer `WaitMsBeforeAsync`, or space your `manage_task` status checks between other work; never check it in a tight loop.
