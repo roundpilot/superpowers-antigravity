@@ -4,6 +4,16 @@ sections blank, contain multiple unrelated changes, or show no evidence
 of human involvement will be closed without review.
 -->
 
+## Who is submitting this PR? (required)
+<!-- Who are you, and what did your human partner ask you to do? As close
+     to their words as you can get. If you wrote this PR by hand with no
+     agent, say so. -->
+
+## Human-authored summary (required, under 200 words)
+<!-- A human writes this section, in their own words: why this PR exists
+     and what they checked before approving it. If an agent is submitting,
+     that means your human partner, not you. -->
+
 ## What problem are you trying to solve?
 <!-- Describe the specific problem you encountered. If this was a session
      issue, include: what you were doing, what went wrong, the model's
