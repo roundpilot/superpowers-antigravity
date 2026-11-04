@@ -3,12 +3,18 @@
 # Verifies that Antigravity correctly handles workspace isolation
 # when triggered with a prompt that invokes the using-git-worktrees skill.
 #
-# In Antigravity, workspace isolation uses the invoke_subagent Workspace parameter
-# ("branch" or "share") instead of git worktree commands.
+# WORKSPACE_VARIANT names the expected isolation: A = feature branch with inherit
+# implementers (default), B = branch worktrees for implementers.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/test-helpers.sh"
+WORKSPACE_VARIANT="${WORKSPACE_VARIANT:-A}"
+case "$WORKSPACE_VARIANT" in
+  A) ISOLATION_RE='feature.branch|checkout -b|"inherit"' ;;
+  B) ISOLATION_RE='"branch"|workspace.*branch' ;;
+  *) echo "[FAIL] WORKSPACE_VARIANT must be A or B, not '$WORKSPACE_VARIANT'"; exit 1 ;;
+esac
 
 echo "========================================"
 echo " Test: Workspace Isolation (Antigravity)"
@@ -55,9 +61,9 @@ echo ""
 FAILED=0
 EVIDENCE_FOUND=false
 
-# Check 1: Workspace: branch or share parameter mentioned
+# Check 1: the isolation WORKSPACE_VARIANT expects
 echo "Check 1: Workspace isolation parameter..."
-if echo "$OUTPUT" | grep -qiE 'workspace.*branch|workspace.*share|"branch"|"share"|isolated.*workspace'; then
+if echo "$OUTPUT" | grep -qiE "$ISOLATION_RE"; then
     echo "  [PASS] Workspace isolation parameter referenced"
     EVIDENCE_FOUND=true
 else

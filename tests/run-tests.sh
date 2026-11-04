@@ -27,7 +27,7 @@ ROOT="$(pwd)"
 # Repo-relative paths, one array per line starting at column 0 (the runner's mutation
 # self-checks rewrite these lines with sed). Later tasks append to these arrays in the
 # same form.
-GATE_TESTS=(tests/antigravity/test-skill-tool-purity.sh tests/antigravity/test-plugin-layout.sh tests/antigravity/test-agent-frontmatter.sh tests/antigravity/test-purity-hook.sh tests/antigravity/test-rule-sync.sh tests/antigravity/test-plugin-packaging.sh tests/diagnosing-superpowers/test-skill-structure.sh)
+GATE_TESTS=(tests/antigravity/test-skill-tool-purity.sh tests/antigravity/test-plugin-layout.sh tests/antigravity/test-agent-frontmatter.sh tests/antigravity/test-purity-hook.sh tests/antigravity/test-rule-sync.sh tests/antigravity/test-plugin-packaging.sh tests/diagnosing-superpowers/test-skill-structure.sh tests/antigravity/test-execution-skills.sh)
 UNIT_TESTS=(tests/writing-skills/test-render-graphs.sh tests/systematic-debugging/test-find-polluter.sh)
 LIVE_TESTS=(tests/antigravity/test-plugin-discovery.sh tests/antigravity/test-subagent-dispatch.sh tests/antigravity/test-worktree-workspace.sh tests/antigravity/test-skill-triggering/run-all.sh)
 LIVE_EXTRA_TESTS=()

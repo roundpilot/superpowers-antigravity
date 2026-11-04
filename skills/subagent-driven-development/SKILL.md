@@ -119,10 +119,11 @@ discovered — verify the plugin installation before working around it.
 
 | Role | Workspace Mode | Why |
 |------|---------------|-----|
-| Implementer | `Workspace: "branch"` | Needs isolated write access |
+| Implementer (any tier) | `Workspace: "inherit"` | Works in your checkout, one at a time, so its commits land on the working branch the reviewers read |
 | Spec reviewer | `Workspace: "inherit"` | Read-only — only inspects code |
 | Code reviewer | `Workspace: "inherit"` | Read-only — only inspects code |
 | Re-reviewer | `Workspace: "inherit"` | Read-only — verifies the fix diff |
+| Final reviewer | `Workspace: "inherit"` | Read-only — reviews the whole branch |
 
 Read the plan once, extract all tasks with full text and context, and
 create a `task.md` artifact tracking each task's status. If the plan names
@@ -183,8 +184,8 @@ judgment, its own tests, or its own review surface.
 
 For each task, in plan order:
 
-1. Fill `implementer-prompt.md`'s dynamic template with the task's full text and scene-setting context, then dispatch: `invoke_subagent(Subagents: [{TypeName: "implementer", Role: "Implement Task <N>", Prompt: <filled template>, Workspace: "branch"}])`.
-2. **Record the implementer's conversation ID and its task branch name from the dispatch result** — the fix loop and the ledger's commit range depend on both.
+1. Fill `implementer-prompt.md`'s dynamic template with the task's full text and scene-setting context, then dispatch: `invoke_subagent(Subagents: [{TypeName: "implementer", Role: "Implement Task <N>", Prompt: <filled template>, Workspace: "inherit"}])`.
+2. Record the implementer's agent identity from the dispatch result (its conversation ID) — fix-loop rounds 1-3 resume this agent.
 3. When the implementer reports DONE, run the two review stages in order: `spec-reviewer` first, then `code-reviewer` (dispatch templates in Prompt Templates below). Findings from either stage enter The Fix Loop.
 
 **Never:**
@@ -272,10 +273,12 @@ Out-of-scope observations go to the ledger, never back into the loop.
 **Rounds 4–5 — fresh implementer, takeover framing.** If three resumed
 rounds haven't converged, the original implementer's approach may be the
 problem. Kill it (`manage_subagents`), dispatch a fresh `implementer`
-whose Prompt carries: the task text, the prior implementer's last report,
-and the open findings. Its first action is `git checkout <task-branch>` in
-its workspace so it continues the task's commits rather than starting
-over.
+whose Prompt carries: the task text, the open findings, and this framing:
+"A prior implementer attempted this task [N] times; you own it now."
+followed by the prior implementer's last report. The task's commits are
+already on the working branch, so it continues from them. Its first action
+is `git status`: a killed implementer can leave uncommitted edits, which it
+builds on or reports — it never discards them.
 
 **Round counting is shared per task, across both stages.** Append
 `Task <N>: fix round <R>/5 (<stage>: <one-line summary>)` to the ledger
@@ -413,13 +416,12 @@ the entire implementation — the one whole-branch review that per-task
 reviews don't cover.
 
 - If the final whole-branch review returns findings, dispatch ONE fix
-  subagent with the complete findings list — not one fixer per finding.
-  Record its task branch name from the dispatch result: the fix subagent
-  commits to its own branch, not to yours, so the fix range lives there.
+  subagent (`implementer`, `Workspace: "inherit"`) with the complete
+  findings list — not one fixer per finding.
 - Then run exactly one scoped re-review of the fix wave: dispatch the
   `re-reviewer` (see `re-review-prompt.md`) with the findings and the fix
-  range — the head the final review saw as the fix base, the fix branch's
-  head as the head. The fix wave's commits, nothing earlier.
+  range FIX_BASE..HEAD, where FIX_BASE is the HEAD the final review saw.
+  The fix wave's commits, nothing earlier.
   Adjudicate any residual findings as in the task loop's breaker: park with
   rulings, or rule on the load-bearing ones and ledger what you decided.
   Only the four classes above stop you here. There is no second fix wave —

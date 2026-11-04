@@ -2,7 +2,7 @@
 
 This role ships as the bundled `implementer` agent (`agents/implementer.md`) — no
 registration needed. Fill the template below and dispatch:
-`invoke_subagent(Subagents: [{TypeName: "implementer", Role: "<role for this task>", Prompt: <filled template>, Workspace: "branch"}])`
+`invoke_subagent(Subagents: [{TypeName: "implementer", Role: "<role for this task>", Prompt: <filled template>, Workspace: "inherit"}])`
 
 ## Dynamic Prompt Template
 

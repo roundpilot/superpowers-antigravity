@@ -20,7 +20,7 @@ The implementer reports: <implementer's fix summary and test results,
 pasted from its reply>
 
 **Fix base:** <the head SHA the previous review saw>
-**Head:** <current head SHA of the task branch>
+**Head:** <current HEAD SHA>
 
 Fetch the diff yourself: `git diff --stat <fix-base>..<head>` and
 `git diff <fix-base>..<head>`.
