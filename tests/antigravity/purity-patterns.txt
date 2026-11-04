@@ -2,6 +2,8 @@
 # group<TAB>paths<TAB>regex<TAB>example<TAB>counterexample; paths = comma list of prefixes.
 # Case-sensitive. No \b \d \s \w, lookaround, lazy quantifiers or back-references;
 # boundaries are (^|[^A-Za-z0-9_]) ... ([^A-Za-z0-9_]|$). Example matches; counterexample must not.
-cc-tools	skills,.agents/skills/contributing-to-superpowers	TodoWrite|EnterWorktree|Task tool|Skill tool	track it with TodoWrite	track it in task.md
-platforms	skills,.agents/skills/contributing-to-superpowers	Claude Code|Codex CLI|Codex App|Copilot CLI|OpenCode|Factory Droid|Gemini CLI	Harness (Claude Code, etc.)	Museum of Cursors
-mappings	skills,.agents/skills/contributing-to-superpowers	antigravity-tools|copilot-tools|codex-tools|gemini-tools	see references/codex-tools.md	see references/tool-notes.md
+# non-baseline-tools omits agents/: CLI 1.2.7 keeps the retired tools for agents that list them in tools: (S7.1).
+cc-tools	skills,agents,rules,.agents/skills/contributing-to-superpowers	TodoWrite|EnterWorktree|Task tool|Skill tool	track it with TodoWrite	track it in task.md
+platforms	skills,agents,rules,.github,.agents/skills/contributing-to-superpowers	Claude Code|Codex CLI|Codex App|Copilot CLI|OpenCode|Factory Droid|Gemini CLI|(^|[^A-Za-z0-9_])(Codex|Copilot|Cursor|Hermes|Devin|Kimi|Muse|Qwen|Grok)([^A-Za-z0-9_]|$)	Harness (Cursor, etc.)	Museum of Cursors
+mappings	skills,agents,rules,.agents/skills/contributing-to-superpowers	antigravity-tools|copilot-tools|codex-tools|gemini-tools|[a-z-]+-tools\.md|using-superpowers/references/	see references/codex-tools.md	see references/tool-notes.md
+non-baseline-tools	skills,rules,.agents/skills/contributing-to-superpowers	(^|[^A-Za-z0-9_])(list_dir|find_by_name|grep_search|code_search|command_status|manage_inbox|read_resource)([^A-Za-z0-9_]|$)|(^|[^A-Za-z0-9_])browser_[a-z]	use `grep_search`	my_grep_search_helper

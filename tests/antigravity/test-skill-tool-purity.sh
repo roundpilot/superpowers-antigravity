@@ -33,6 +33,8 @@ fi
 ROW_GROUP=()
 ROW_PATHS=()
 ROW_REGEX=()
+ROW_EX=()
+ROW_CEX=()
 row=0
 while IFS= read -r line || [ -n "$line" ]; do
     line="${line//$CR/}"
@@ -52,6 +54,9 @@ while IFS= read -r line || [ -n "$line" ]; do
     paths="${rest%%"$TAB"*}"
     rest="${rest#*"$TAB"}"
     regex="${rest%%"$TAB"*}"
+    rest="${rest#*"$TAB"}"
+    example="${rest%%"$TAB"*}"
+    counter="${rest#*"$TAB"}"
 
     if [ -z "$group" ] || [ -z "$paths" ] || [ -z "$regex" ]; then
         echo "[FAIL] malformed row $row in purity-patterns.txt"
@@ -61,6 +66,8 @@ while IFS= read -r line || [ -n "$line" ]; do
     ROW_GROUP+=("$group")
     ROW_PATHS+=("$paths")
     ROW_REGEX+=("$regex")
+    ROW_EX+=("$example")
+    ROW_CEX+=("$counter")
 done < "$DATA"
 
 ROOT_ARG="${1:-$SCRIPT_DIR/../..}"
@@ -70,6 +77,29 @@ if ! ROOT="$(cd "$ROOT_ARG" 2>/dev/null && pwd)"; then
 fi
 
 FAILED=0
+
+# Check 0: each row's example matches and its counterexample does not, under grep -E and node.
+echo "=== Check 0: examples ==="
+echo ""
+c0=0
+for ((i = 0; i < ${#ROW_GROUP[@]}; i++)); do
+    g="${ROW_GROUP[$i]}"
+    re="${ROW_REGEX[$i]}"
+    for t in ex cex; do
+        if [ "$t" = ex ]; then s="${ROW_EX[$i]}"; else s="${ROW_CEX[$i]}"; fi
+        gh=0
+        nh=0
+        printf '%s\n' "$s" | grep -qE -- "$re" && gh=1
+        RE="$re" S="$s" node -e 'process.exit(new RegExp(process.env.RE,"m").test(process.env.S)?0:1)' && nh=1
+        for e in grep node; do
+            if [ "$e" = grep ]; then h=$gh; en="grep -E"; else h=$nh; en="node"; fi
+            if [ "$t" = ex ] && [ "$h" -ne 1 ]; then echo "  [FAIL] check 0: $g example not matched by $en"; c0=1; fi
+            if [ "$t" = cex ] && [ "$h" -ne 0 ]; then echo "  [FAIL] check 0: $g counterexample matched by $en"; c0=1; fi
+        done
+    done
+done
+if [ "$c0" -ne 0 ]; then FAILED=$((FAILED + 1)); else echo "  [PASS] check 0: examples agree under both engines"; fi
+echo ""
 
 for ((i = 0; i < ${#ROW_GROUP[@]}; i++)); do
     group="${ROW_GROUP[$i]}"

@@ -143,7 +143,7 @@ expect_raw "row 4: malformed JSON -> ask" ask "purity gate error" \
     '{"toolCall": {"name": "write_to_file", "args": {'
 expect "row 5: multi_replace, second chunk bad -> deny" deny "Claude Code" \
     --tool multi_replace_file_content --target "$S/SKILL.md" --chunks "$CH5"
-expect "row 6: Codex CLI in skills/ -> deny" deny "(platforms): 'Codex CLI'" \
+expect "row 6: Codex CLI in skills/ -> deny" deny "(platforms): ' Codex '" \
     --tool write_to_file --target "$S/reference.md" --code $'This used to require Codex CLI specifically.\n'
 expect "row 7: antigravity-tools in skills/ -> deny" deny "(mappings)" \
     --tool replace_file_content --target "$S/reference.md" --replacement $'See antigravity-tools for the mapping.\n'
