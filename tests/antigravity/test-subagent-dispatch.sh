@@ -1,191 +1,84 @@
 #!/usr/bin/env bash
-# Test: Subagent Dispatch Workflow (Antigravity 2.0)
-# Verifies that the subagent-driven-development skill correctly:
-#   1. Dispatches subagents via invoke_subagent
+# Test: Subagent Dispatch Workflow (Antigravity)
+# Verifies that the subagent-driven-development skill, on a two-task plan:
+#   1. Dispatches an implementer, a spec reviewer and a code reviewer (read from the stream)
 #   2. Creates implementation files
 #   3. Makes git commits
-set -euo pipefail
+# Usage: test-subagent-dispatch.sh [--from-stream <file>]   (--from-stream runs Test 1 only)
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/test-helpers.sh"
+JT="$SCRIPT_DIR/lib/json-tool.mjs"
 
 echo "========================================"
 echo " Test: Subagent Dispatch (Antigravity)"
 echo "========================================"
 echo ""
-echo "This test creates a temp project with a 2-task plan,"
-echo "executes it via subagent-driven-development, and verifies"
-echo "subagent dispatch, file creation, and git commits."
-echo ""
-echo "WARNING: This test may take 10-30 minutes to complete."
-echo ""
 
-# Check agy is available
-if ! command -v agy &>/dev/null; then
-    echo "[SKIP] 'agy' command not found. Install Antigravity CLI to run this test."
-    exit 77
-fi
-
-# Create test project
-TEST_PROJECT=$(create_test_project)
-echo "Test project: $TEST_PROJECT"
-
-# Trap to cleanup
-trap "cleanup_test_project $TEST_PROJECT" EXIT
-
-# Set up minimal Node.js project
-cd "$TEST_PROJECT"
-
-cat > package.json <<'EOF'
-{
-  "name": "test-project",
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "test": "node --test"
-  }
-}
-EOF
-
-mkdir -p src test docs/superpowers/plans
-
-# Create a simple 2-task implementation plan
-PLAN_PATH="docs/superpowers/plans/implementation-plan.md"
-
-cat > "$PLAN_PATH" <<'EOF'
-# Test Implementation Plan
-
-This is a minimal plan to test the subagent-driven-development workflow on Antigravity.
-
-## Task 1: Create Hello Function
-
-Create a function that returns a greeting.
-
-**File:** `src/hello.js`
-
-**Requirements:**
-- Function named `hello`
-- Takes an optional `name` parameter (defaults to "World")
-- Returns `"Hello, <name>!"`
-- Export the function
-
-**Implementation:**
-```javascript
-export function hello(name = "World") {
-  return `Hello, ${name}!`;
-}
-```
-
-**Tests:** Create `test/hello.test.js` that verifies:
-- `hello()` returns `"Hello, World!"`
-- `hello("Alice")` returns `"Hello, Alice!"`
-
-**Verification:** `npm test`
-
-## Task 2: Create Goodbye Function
-
-Create a function that returns a farewell message.
-
-**File:** `src/goodbye.js`
-
-**Requirements:**
-- Function named `goodbye`
-- Takes a required `name` parameter
-- Returns `"Goodbye, <name>!"`
-- Export the function
-
-**Implementation:**
-```javascript
-export function goodbye(name) {
-  return `Goodbye, ${name}!`;
-}
-```
-
-**Tests:** Create `test/goodbye.test.js` that verifies:
-- `goodbye("Alice")` returns `"Goodbye, Alice!"`
-- `goodbye("Bob")` returns `"Goodbye, Bob!"`
-
-**Verification:** `npm test`
-EOF
-
-# Initialize git repo
-git init --quiet
-git config user.email "test@test.com"
-git config user.name "Test User"
-git add .
-git commit -m "Initial commit" --quiet
-
-echo ""
-echo "Project setup complete. Starting execution..."
-echo ""
-
-# Run Antigravity with subagent-driven-development
-OUTPUT_FILE="$TEST_PROJECT/agy-output.txt"
-
-PROMPT="Execute the implementation plan at $PLAN_PATH using superpowers:subagent-driven-development. The plan is at: $PLAN_PATH
-
-IMPORTANT: Follow the skill exactly. I will be verifying that you:
-1. Read the plan once at the beginning
-2. Dispatch subagents for implementation tasks
-3. Create all specified files
-4. Commit changes to git
-
-Begin now. Execute the plan."
-
-# agy's own --print-timeout documents only whole-minute durations (default
-# "5m", example "--print-timeout 15m" -- no seconds unit is ever shown), so
-# round this test's 1800s (30 minute) budget up to the nearest whole minute.
-# The external `timeout` wrapper stays as a backstop for hangs that happen
-# before agy's own --print-timeout can engage, so it must not be tighter
-# than the internal budget it is backstopping.
-AGY_BUDGET_SECS=1800
-PRINT_TIMEOUT_MINUTES=$(( (AGY_BUDGET_SECS + 59) / 60 ))
-EXTERNAL_TIMEOUT_SECS=$(( PRINT_TIMEOUT_MINUTES * 60 + 60 ))
-
-# --dangerously-skip-permissions is required here too: without it, agy's
-# default permission mode pauses for interactive diff review, which hangs
-# indefinitely since this test writes files (src/hello.js, tests, commits).
-AGY_ARGS=(--print "$PROMPT" --print-timeout "${PRINT_TIMEOUT_MINUTES}m" --dangerously-skip-permissions)
-if [ -n "${AGY_TEST_MODEL:-}" ]; then
-    AGY_ARGS+=(--model "$AGY_TEST_MODEL")
-fi
-if [ -n "${AGY_TEST_EFFORT:-}" ]; then
-    AGY_ARGS+=(--effort "$AGY_TEST_EFFORT")
-fi
-
-echo "Running agy (cwd: $TEST_PROJECT)..."
-echo "================================================================================"
-cd "$TEST_PROJECT" && timeout "$EXTERNAL_TIMEOUT_SECS" agy "${AGY_ARGS[@]}" 2>&1 | tee "$OUTPUT_FILE" || {
+FROM_STREAM=""
+if [ "${1:-}" = "--from-stream" ]; then
+    FROM_STREAM="${2:?--from-stream needs a file}"
+    OUTPUT_FILE="$FROM_STREAM"
+    classify_agy_run 0 /dev/null "$OUTPUT_FILE" || exit $?
+else
+    echo "This test creates a temp project with a 2-task plan,"
+    echo "executes it via subagent-driven-development, and verifies"
+    echo "subagent dispatch, file creation, and git commits."
     echo ""
-    echo "================================================================================"
-    echo "EXECUTION COMPLETED (exit code: $?)"
+    echo "WARNING: This test may take 10-30 minutes to complete."
     echo ""
-}
-echo "================================================================================"
 
-echo ""
-echo "Execution complete. Analyzing results..."
-echo ""
+    require_agy_and_plugin
 
-# Verification tests
+    TEST_PROJECT=$(create_test_project)
+    echo "Test project: $TEST_PROJECT"
+    OUT_DIR=$(mktemp -d)
+    trap 'cleanup_test_project "$TEST_PROJECT"; rm -rf "$OUT_DIR"' EXIT
+    PLAN_PATH=$(bash "$SCRIPT_DIR/lib/fixture-plan-project.sh" "$TEST_PROJECT") || exit 1
+
+    OUTPUT_FILE="$OUT_DIR/stream.jsonl"
+    echo "Running agy (cwd: $TEST_PROJECT)..."
+    (cd "$TEST_PROJECT" && agy_run "$OUTPUT_FILE" "$OUTPUT_FILE.err" 1800 \
+        -p "$(bash "$SCRIPT_DIR/lib/fixture-plan-project.sh" --print-prompt sdd)" --output-format stream-json)
+    classify_agy_run $? "$OUTPUT_FILE.err" "$OUTPUT_FILE" || exit $?
+fi
+
 FAILED=0
 PASSED=0
 
 echo "=== Verification Tests ==="
 echo ""
 
-# Test 1: Check output/transcript for invoke_subagent calls
+# Test 1: subagent dispatch, read from the stream
 echo "Test 1: Subagent dispatch..."
-
-# Check output text for subagent evidence
-if echo "$(cat "$OUTPUT_FILE")" | grep -qiE "invoke_subagent|subagent|dispatching.*agent|launching.*agent"; then
-    echo "  [PASS] Subagent dispatch evidence found in output"
-    PASSED=$((PASSED + 1))
-else
-    echo "  [FAIL] No subagent dispatch evidence found"
-    FAILED=$((FAILED + 1))
-fi
+TYPES=$(node "$JT" stream subagents --field type_name < "$OUTPUT_FILE")
+for role in implementer spec-reviewer code-reviewer; do
+    members="$role"
+    [ "$role" = implementer ] && members="$IMPL_FAMILY"
+    found=""
+    while IFS= read -r t; do
+        [ -n "$t" ] || continue
+        if type_in_set "$t" $members; then found="$t"; break; fi
+    done <<< "$TYPES"
+    if [ -n "$found" ]; then
+        echo "  [PASS] $role dispatched as $found"
+        PASSED=$((PASSED + 1))
+    else
+        echo "  [FAIL] no $role dispatch"
+        FAILED=$((FAILED + 1))
+    fi
+done
+while IFS= read -r t; do
+    [ -n "$t" ] || continue
+    if type_in_set "$t" final-reviewer; then echo "  [INFO] final-reviewer dispatched as $t"; fi
+done <<< "$TYPES"
 echo ""
+
+if [ -n "$FROM_STREAM" ]; then
+    [ "$FAILED" -eq 0 ]
+    exit $?
+fi
 
 # Test 2: Implementation files created
 echo "Test 2: Implementation files..."

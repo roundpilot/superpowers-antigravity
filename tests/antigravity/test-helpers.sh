@@ -322,3 +322,18 @@ export -f agy_run
 export -f classify_agy_run
 export -f agy_superpowers_installed
 export -f require_agy_and_plugin
+
+# IMPL_FAMILY: implementer agent names under S3.4 variant-files
+IMPL_FAMILY="implementer implementer-flash implementer-pro"
+
+# type_in_set <type_name> <member...>: 0 when the name equals a member or ends in :<member>
+type_in_set() {
+    local name="$1" m
+    shift
+    for m in "$@"; do
+        case "$name" in "$m"|*":$m") return 0 ;; esac
+    done
+    return 1
+}
+export -f type_in_set
+export IMPL_FAMILY
