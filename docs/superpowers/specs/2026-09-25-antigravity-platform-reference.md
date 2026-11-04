@@ -482,7 +482,7 @@ Fallback applied: LC3 S1-e found send_message and manage_task in the bundled rev
   - `name` is required on the CLI and optional on 2.0 and the IDE;
   - the pattern is `^[a-zA-Z0-9-_]+$`, with `additionalProperties: false`;
   - the `$schema` URL returned 404 on 2026-09-25 [MO docs ? 2026-09-25 schema URL fetch].
-- `plugin.json` carries no `version`, as the published schema requires; after Live check 8, `package.json` holds it (E13). No `$schema` (D15).
+- `plugin.json` carries the documented manifest fields, `version` included (Antigravity build-plugins; spec Addendum D.1 supersedes S2.5). No `$schema` (D15).
 - Installation by product:
   - 2.0 and the IDE: `.agents/plugins/` for a workspace (it "activates only when working in that project") or `~/.gemini/config/plugins/` [D 2.0 plugins:110-111; D IDE plugins:180-181].
   - CLI: `agy plugin list|install|enable|disable|uninstall`, with staging at `~/.gemini/antigravity-cli/plugins/<plugin_name>/` [D CLI plugins:131-167]. This conflicts with CLI 1.0.2, which names the shared `~/.gemini/config/` [CL CLI 1.0.2] (X1).
@@ -1171,7 +1171,7 @@ Decision record changes of this release (id — old — new — part). The ids a
 - register E8 — render-graphs node guard, never run — runs with Graphviz installed (D13); closed — S7, S8
 - register E11 — `/using-superpowers` observed "on the IDE" — relabelled "2.0 (probable)"; CLI form unverified — S2
 - register E12 — specs and plans untracked; reference tracked — evidence stays outside the repo; durable facts in the platform reference — S1
-- register E13 — `$schema` not applied, no reason recorded — drop `plugin.json` `version` after Live check 8; `package.json` is canonical; no `$schema` — S2
+- register E13 — `$schema` not applied, no reason recorded — drop `plugin.json` `version` after Live check 8; `package.json` is canonical; no `$schema` — S2 [superseded: spec Addendum D.1 keeps `version` in `plugin.json`; `package.json` stays in step]
 - register §2 item 6 — `inheritCustomizations` in no tracked file — closed by ref §3.9 — S1, S3
 - register §3 rule 2 — only documented capabilities ("no model argument" trap) — refined: labelled evidence model, maintainer-observed facts allowed by tier; the `Model` key only if 3a-M proves it (D5) — S1, S3
 - register §3 rule 9 — additive delivery — reversed for the bootstrap under outcome A only — S2
