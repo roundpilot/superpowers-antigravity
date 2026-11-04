@@ -80,7 +80,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 - 🔄 **Async subagent coordination** — `manage_task` for builds, `send_message` mid-flight, `schedule` for timeouts
 - 🌐 **Browser-testing skill** — evidence-before-assertions discipline for UI work
 - 💰 **Token-saving subagents** — reviewers are read-only bundled agents
-- ✅ **Automatic feedback loops** — `RequestFeedback: true` (in `ArtifactMetadata`) on design docs and plans
+- ✅ **Review gates** — design docs and plans end with an `ask_question` your partner answers before work goes on
 - 🔀 **Workspace mode guidance** — decision tables for `branch` and `inherit` per role; `share` is not recommended (semantics unverified)
 - 🛡️ **Edit-time purity gate** — a `PreToolUse` hook blocks banned legacy vocabulary from entering this plugin's `skills/` before a write ever lands (opt-in for contributors: rename `hooks.example.json` → `hooks.json`; requires `bash` available to the hook runner)
 - 🔍 **Web research integration** — `search_web` woven into debugging, brainstorming, and planning
@@ -256,7 +256,7 @@ Inside an `agy` session, `/plugin install <local-path>` does the same as `agy pl
 - **List:** `agy plugin list`
 - **Update:** run the same install command again. It replaces the installed copy, so any edits made inside the installed copy are lost.
 - **Disable or enable:** `agy plugin disable superpowers` / `agy plugin enable superpowers`
-- **Uninstall:** `agy plugin uninstall superpowers`
+- **Uninstall:** `agy plugin uninstall superpowers` (it also removes `plugins.superpowers.enabled` from `~/.gemini/config/config.json`)
 
 > The CLI keeps its own copy of installed plugins. If you also use the 2.0 app or the IDE, install for each. If `agy plugin list` already shows superpowers after you cloned for the app, skip the CLI install.
 
@@ -297,7 +297,7 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 | Skill | Purpose |
 |-------|---------|
 | **brainstorming** | Three-path router (spike / bounded / architectural) so ceremony scales to the task; Socratic refinement with `generate_image` mockups and `search_web` for prior art |
-| **writing-plans** | Detailed plans with Mermaid diagrams, rich formatting, `RequestFeedback`, and a `Spec:` pointer so the spec travels with the plan |
+| **writing-plans** | Detailed plans with Mermaid diagrams, rich formatting, an `ask_question` review gate, and a `Spec:` pointer so the spec travels with the plan |
 | **executing-plans** | Inline plan execution: one context, one final review |
 | **dispatching-parallel-agents** | Concurrent workflows with `Workspace: "branch"` / `"inherit"` and monitoring |
 | **requesting-code-review** | Bundled `code-reviewer` (one task or a small range) and Pro-tier `final-reviewer` (whole branch), with severity classification |

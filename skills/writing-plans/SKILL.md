@@ -218,7 +218,7 @@ them to review the plan and confirm it captures what they want; wait for that
 review before implementation, then use the preserved method. Otherwise, ask
 them to review the plan and choose an execution method before implementation.
 
-**Linking it:** save the plan as a plain markdown artifact — `IsArtifact: true` on a whole-file write, with no `ArtifactType` and no `RequestFeedback`. Ask the question below after the write returns.
+**Linking it:** save the plan as a plain repository file — a whole-file `write_to_file` with no `IsArtifact` and no `ArtifactMetadata`, because artifact writes are refused outside the conversation folder. Ask the question below after the write returns.
 
 Ask with `ask_question`: one single-select question whose text is the message below, with short
 options, the recommended method first. Choosing a method answers "does the plan capture what you
