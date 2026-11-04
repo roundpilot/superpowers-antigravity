@@ -16,7 +16,7 @@
 
 ---
 
-> **This is a fork of [obra/superpowers](https://github.com/obra/superpowers) rebuilt natively for [Google Antigravity 2.0](https://antigravity.google).** If you need multi-platform support (Claude Code, Codex, Cursor, etc.), use the upstream repo instead.
+> **This is a fork of [obra/superpowers](https://github.com/obra/superpowers) rebuilt natively for [Google Antigravity](https://antigravity.google): the 2.0 app, the IDE and the CLI (`agy`).** If you need multi-platform support (Claude Code, Codex, Cursor, etc.), use the upstream repo instead.
 
 ---
 
@@ -59,7 +59,7 @@ The abstraction layer costs tokens on every interaction, and those costs compoun
 
 | Area | Upstream (obra/superpowers) | This fork |
 |------|---------------------------|-----------| 
-| **Platforms** | 9+ (Claude Code, Codex, Cursor, etc.) | Antigravity 2.0 only |
+| **Platforms** | 9+ (Claude Code, Codex, Cursor, etc.) | Antigravity only (2.0 app, IDE, CLI) |
 | **Tool names in skills** | Claude Code names + mapping files | Native Antigravity names |
 | **Subagent dispatch** | `Task tool (general-purpose)` | Bundled custom agents + `invoke_subagent` |
 | **Workspace isolation** | `git worktree` with fallback | Native `Workspace: "branch"` / `"inherit"` (`"share"` not recommended: its semantics are unverified) |
@@ -107,7 +107,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 1. **brainstorming** — Classifies the request (spike / bounded / architectural), then refines it through questions, explores alternatives, generates visual mockups
 2. **using-git-worktrees** — Isolates the session on a feature branch; concurrent writing subagents get native `Workspace: "branch"`
 3. **writing-plans** — Breaks work into bite-sized tasks with exact file paths and verification steps
-4. **subagent-driven-development** - Fresh subagent per task with two-stage review (spec compliance + code quality)
+4. **subagent-driven-development** or **executing-plans** — Activates with plan. Either dispatches a fresh subagent per task with a two-stage review after each (most thorough), or implements every task inline in the current session with one fresh review of the whole branch at the end (cheapest).
 5. **test-driven-development** — RED-GREEN-REFACTOR: write failing test → minimal code → pass → commit
 6. **requesting-code-review** — Reviews against plan, reports issues by severity
 7. **finishing-a-development-branch** — Verifies tests, presents merge/PR/keep options
@@ -115,6 +115,14 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 **Where each executor runs.** subagent-driven-development needs `invoke_subagent` and the plugin's bundled agents — documented for 2.0 and the CLI, not available in the IDE (it has no `invoke_subagent`). executing-plans runs on all three; its final review uses a subagent where one is available.
 
 **Skills trigger automatically.** Mandatory workflows, not suggestions.
+
+## 🩺 When Something Goes Wrong
+
+Sometimes a session misbehaves: a skill fires when it shouldn't, stays silent when it should, or the agent ignores its plan, repeats work, or burns more tokens than you'd expect. Ask your coding agent to "figure out what went wrong with superpowers in this session" and it will invoke the **diagnosing-superpowers** skill. To examine an earlier session, name it: "figure out what went wrong with superpowers in session `<id>`".
+
+The skill reads the session transcript, reports what happened with line-level evidence, and, if you want, packages a scrubbed bundle for a bug report.
+
+You can also start it directly: `/diagnosing-superpowers` in the 2.0 app or `/superpowers:diagnosing-superpowers` in the CLI.
 
 ## Running long plans
 
@@ -133,21 +141,13 @@ When a subagent's commit approval times out — the CLI gives subagent interacti
 
 ## 📦 Installation
 
-### Antigravity CLI (`agy`)
+> **Already installed `obra/superpowers`?** In the CLI, upstream's install most likely uses the same plugin name, `superpowers`, so installing one replaces the other. Run `agy plugin uninstall superpowers` before installing this one. Upstream's install also brings its own session-start bootstrap. In the 2.0 app and the IDE, if a folder named `superpowers` already exists in `~/.gemini/config/plugins/`, move it out of that folder before cloning this one.
 
-One command, straight from GitHub:
+### Antigravity 2.0 app and Antigravity IDE
 
-```bash
-agy plugin install https://github.com/roundpilot/superpowers-antigravity
-```
+Both discover plugins in the same folders, so one clone serves both. Install globally unless you want superpowers in chosen projects only.
 
-Manage with `agy plugin list` / `agy plugin enable superpowers` / `agy plugin disable superpowers`.
-
-> The CLI and the IDE keep independent plugin stores — installing into one does not install into the other.
-
-### Antigravity 2.0 IDE (desktop app)
-
-The IDE loads plugins from its config directories — clone this repo into one:
+A workspace install (`.agents/plugins/superpowers`) is project-level. In a 2.0 Project conversation started in New Worktree Mode, check Customizations that superpowers is listed; if it is not, use the global install for those conversations.
 
 #### macOS / Linux
 
@@ -185,7 +185,7 @@ cd "$env:USERPROFILE\.gemini\config\plugins\superpowers"; git pull
 
 #### Windows (WSL)
 
-If you run Antigravity inside WSL, use the Linux paths above.
+**2.0 app connected to a WSL distribution** (Application Settings): confirm in Settings > Customizations that superpowers is listed. If it is not, clone into `~/.gemini/config/plugins/superpowers` inside the WSL distribution.
 
 If you run the **Windows Antigravity IDE** but your workspace is in **WSL**:
 
@@ -197,7 +197,7 @@ git clone https://github.com/roundpilot/superpowers-antigravity /mnt/c/Users/$US
 git clone https://github.com/roundpilot/superpowers-antigravity /path/to/your/wsl/project/.agents/plugins/superpowers
 ```
 
-#### Manual IDE installation (no git required)
+#### Manual installation for the 2.0 app and the IDE (no git required)
 
 <details>
 <summary>Download ZIP instead of cloning (click to expand)</summary>
@@ -224,7 +224,7 @@ To update later, delete the `superpowers` folder and repeat the steps above.
 
 </details>
 
-#### Migrating an IDE install from `roundpilot/superpowers`
+#### Migrating a 2.0 app or IDE install from `roundpilot/superpowers`
 
 If you previously installed from `roundpilot/superpowers`, update your remote:
 
@@ -234,25 +234,49 @@ git remote set-url origin https://github.com/roundpilot/superpowers-antigravity.
 git pull
 ```
 
+#### Troubleshooting
+
+**If superpowers is listed but its skills are never followed,** the agent may not be allowed to read files outside your project: check the IDE's non-workspace file access and strict mode, or, in the 2.0 app on Windows, the project's outside-of-folder file access policy. A workspace install keeps the skills inside the project.
+
+### Antigravity CLI (`agy`)
+
+```bash
+agy plugin install https://github.com/roundpilot/superpowers-antigravity
+```
+
+If the CLI rejects the URL, clone the repository and install from the folder (to update this way, run `git -C <dir> pull`, then install again):
+
+```bash
+git clone https://github.com/roundpilot/superpowers-antigravity <dir>
+agy plugin install <dir>
+```
+
+Inside an `agy` session, `/plugin install <local-path>` does the same as `agy plugin install <dir>`.
+
+- **List:** `agy plugin list`
+- **Update:** run the same install command again. It replaces the installed copy, so any edits made inside the installed copy are lost.
+- **Disable or enable:** `agy plugin disable superpowers` / `agy plugin enable superpowers`
+- **Uninstall:** `agy plugin uninstall superpowers`
+
+> The CLI keeps its own copy of installed plugins. If you also use the 2.0 app or the IDE, install for each. If `agy plugin list` already shows superpowers after you cloned for the app, skip the CLI install.
+
 ### ✅ Verify Installation
 
-1. Start a new Antigravity session in any project
-2. Type `/using-superpowers` (or `/superpowers:using-superpowers` for the CLI) — the bootstrap loads for the session
-3. Alternatively, ask: "What superpowers skills do you have available?" — the agent should enumerate skills from this plugin
-4. Say "Let's make a react todo list"
-5. The brainstorming skill should trigger automatically — the agent asks design questions instead of writing code
-
-> The slash form isn't on the documented slash-command surface (that page covers workflows), but it works in practice — the palette also surfaces skills. If it ever stops resolving, steps 3-5 are the fallback check.
+1. **Check the product's own view** (no model turn):
+   - **2.0 app:** Settings > Customizations lists superpowers under Plugins and its 16 skills under Skills.
+   - **IDE:** the … menu in the agent side panel > Customizations lists superpowers among the active plugin components, with its skills.
+   - **CLI:** `agy plugin list` shows superpowers and its components; `agy -p "/skills" --output-format json` lists the skills without starting an agent turn.
+2. **Slash command:** type `/using-superpowers` in the 2.0 app or `/superpowers:using-superpowers` in the CLI. The bootstrap loads for the session.
+3. **Behaviour:** say "Let's make a react todo list". The brainstorming skill should trigger and ask design questions instead of writing code.
 
 ## 🔌 Activation
 
 Once installed, the methodology loads itself — no per-session setup:
 
-- **Automatic (default).** The plugin's context file loads the `using-superpowers` bootstrap into every session, and the bundled rule (`rules/using-superpowers.md`) does the same through Antigravity's rule system — check the Rules panel once after installing and set it to **Always On** if it isn't already. From there, individual skills trigger themselves based on what you ask for: describe a feature and brainstorming starts, report a bug and systematic-debugging starts.
-- **Per session.** Type `/using-superpowers` (IDE) or `/superpowers:using-superpowers` (CLI) to load the methodology for just the current conversation.
-- **Scoped, if you don't want it everywhere.** Install as a **workspace plugin** (`.agents/plugins/superpowers`) so only chosen projects get it — or set the bundled rule to **Manual** in the Rules panel and summon it on demand with the slash command when a session calls for it.
+- **Automatic (default).** The plugin ships the using-superpowers bootstrap as an always-on rule (`rules/using-superpowers.md`), so it loads into every conversation with no setup. Individual skills then trigger on what you ask for: describe a feature and brainstorming starts, report a bug and systematic-debugging starts.
+- **Scoped, if you don't want it everywhere.** In the 2.0 app and the IDE, install as a **workspace plugin** (`.agents/plugins/superpowers`) so only chosen projects get it. In the CLI, `agy plugin disable superpowers` turns it off and `agy plugin enable superpowers` turns it back on.
 
-The always-loaded footprint is a single compressed bootstrap (~55 lines); individual skills are read only when they actually trigger.
+The always-loaded footprint is a single ~55-line bootstrap; individual skills are read only when they trigger.
 
 ## 📚 Skills Reference
 
@@ -267,13 +291,14 @@ The always-loaded footprint is a single compressed bootstrap (~55 lines); indivi
 |-------|---------|
 | **systematic-debugging** | 4-phase root cause process with `search_web` for unfamiliar errors |
 | **verification-before-completion** | Ensure it's actually fixed; cron schedules for long test suites |
+| **diagnosing-superpowers** | Work out what went wrong in a session, with evidence; export a scrubbed bundle or file an issue |
 
 ### Collaboration
 | Skill | Purpose |
 |-------|---------|
 | **brainstorming** | Three-path router (spike / bounded / architectural) so ceremony scales to the task; Socratic refinement with `generate_image` mockups and `search_web` for prior art |
 | **writing-plans** | Detailed plans with Mermaid diagrams, rich formatting, `RequestFeedback`, and a `Spec:` pointer so the spec travels with the plan |
-| **executing-plans** | Inline plan execution with walkthrough generation |
+| **executing-plans** | Inline plan execution: one context, one final review |
 | **dispatching-parallel-agents** | Concurrent workflows with `Workspace: "branch"` / `"inherit"` and monitoring |
 | **requesting-code-review** | Bundled `code-reviewer` dispatches with severity classification (`research` for lightweight ad-hoc reviews) |
 | **receiving-code-review** | Responding to feedback with technical rigor |

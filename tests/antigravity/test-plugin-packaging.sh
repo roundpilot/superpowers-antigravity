@@ -31,7 +31,7 @@
 #            templates/issue.md; bug_report.md's table carries every BUG_LABELS entry
 #   check 8  CODE_OF_CONDUCT.md names no upstream contact (no `primeradiant`, no `jesse@`)
 #
-# check_6 is inserted before check_7 by a later task (the README skills-table check).
+#   check 6  every skills/<folder>/ has exactly one `| **<folder>** |` row in README.md
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -314,6 +314,25 @@ check_5() {
     fi
 }
 
+check_6() {
+    local before=$FAILURES dir n count k=0
+    if [ ! -f "$ROOT/README.md" ]; then
+        fail 6 "README.md is missing"
+        return
+    fi
+    for dir in "$ROOT"/skills/*/; do
+        [ -d "$dir" ] || continue
+        n="${dir%/}"
+        n="${n##*/}"
+        k=$((k + 1))
+        count="$(grep -cF "| **$n** |" "$ROOT/README.md")"
+        [ "$count" = 1 ] || fail 6 "$n: $count rows"
+    done
+    if [ "$FAILURES" -eq "$before" ]; then
+        pass 6 "$k skills have one README row each"
+    fi
+}
+
 # env_labels <file>: the trimmed first-column cells of the first table after the first line
 # starting "## Environment", one per line, without the "Field" header row and the separator
 # row. A CR before the line end is ignored. Prints nothing if there is no such table.
@@ -406,6 +425,7 @@ check_2
 check_3
 check_4
 check_5
+check_6
 check_7
 check_8
 
