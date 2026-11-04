@@ -127,11 +127,17 @@ check_E7() {
     'Task <N>: complete (commits <base7>..<head7>, <K> parked)' 'Never move to the next task while'; do
     must_have "$sdd" "$s"; done
   must_have "$sdd" "Task <N>: Ruling: controller committed <files> — implementer's commit could not run — cost if wrong: one amend"
+  [ "$(tr -s '[:space:]' ' ' < "$ROOT/$sdd" | grep -cF 'most capable')" = 0 ] || problem "$sdd says 'most capable' (joined lines)"
+  for s in 'Dispatch final-reviewer for the whole branch' 'superpowers:final-reviewer' \
+    'Final review: self subagent (bundled agent unavailable)' 'Final: Ruling: <behavior the reviewer set aside>' \
+    '{DEFERRED_MINORS}' 'RequestFeedback: false' \
+    'It asks for nothing: superpowers:finishing-a-development-branch presents the choices.'; do must_have "$sdd" "$s"; done
   verdict E7 "executors keep their restored lines and ledger strings and never say 'most capable'"
 }
 check_E9() {
   local t
   for t in list_dir grep_search find_by_name define_subagent; do must_lack skills/executing-plans/SKILL.md "$t"; done
+  for t in list_dir grep_search find_by_name define_subagent; do must_lack skills/subagent-driven-development/SKILL.md "$t"; done
   verdict E9 'no executor names a retired or excluded tool'
 }
 check_E10() {

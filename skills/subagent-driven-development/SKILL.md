@@ -83,7 +83,7 @@ digraph process {
 
     "Read plan, extract all tasks, create task.md artifact" [shape=box];
     "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent for entire implementation" [shape=box];
+    "Dispatch final-reviewer for the whole branch" [shape=box];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, extract all tasks, create task.md artifact" -> "invoke_subagent TypeName: implementer";
@@ -102,8 +102,8 @@ digraph process {
     "Code quality reviewer subagent approves?" -> "Update task.md artifact" [label="yes"];
     "Update task.md artifact" -> "More tasks remain?";
     "More tasks remain?" -> "invoke_subagent TypeName: implementer" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
+    "More tasks remain?" -> "Dispatch final-reviewer for the whole branch" [label="no"];
+    "Dispatch final-reviewer for the whole branch" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
 
@@ -188,20 +188,18 @@ implementation.
 
 ## Model Selection
 
-Model tiers are set in each agent file's frontmatter (`model: flash|pro|inherit`). The four bundled roles live in the plugin's `agents/` directory and all ship `model: inherit` — the session's model governs. To differentiate tiers, add a workspace-scoped variant at `.agents/agents/<name>.md` first — this is the primary escalation path — or edit the plugin's bundled agent files directly; editing plugin (or global) agent files may require the user's Agent Non-Workspace File Access setting to be enabled. Neither `define_subagent` nor `invoke_subagent` takes a model argument.
+No documented dispatch argument sets the model, so an implementer's tier comes from the bundled agent's frontmatter: you choose the tier by choosing the TypeName — `implementer-flash` (`model: flash`), `implementer` (your session's model) or `implementer-pro` (`model: pro`). `flash` and `pro` are tiers; which models they are is not documented. If you cannot tell which model your session runs, treat it as Flash. Use the least powerful tier that can handle each role to conserve cost and increase speed.
 
-Use the least powerful tier that can handle each role to conserve cost and increase speed.
+- **Transcription** — the task's plan text contains the complete code to write — **and single-file mechanical fixes:** `implementer-flash`.
+- **Tasks worked from prose, integration and judgment tasks** (multi-file coordination, pattern matching, debugging): `implementer`.
+- **Architecture and design tasks** (design judgment or broad codebase understanding): `implementer-pro` if your session runs a Flash model; otherwise `implementer`.
+- **BLOCKED on reasoning, and fix-loop rounds 4-5:** one tier above the implementer that got stuck. Stuck on `implementer-flash`: `implementer` if your session runs above Flash, else `implementer-pro`. Stuck on `implementer`: `implementer-pro` if your session runs Flash; on a Pro-tier or non-Gemini session no TypeName is a step up, so re-dispatch `implementer` with more context or a smaller task. Stuck on `implementer-pro`: a fresh `implementer-pro`.
+- **Per-task reviews:** `spec-reviewer`, `code-reviewer` and `re-reviewer` run on your session's model.
+- **The final whole-branch review** goes to `final-reviewer`, which ships at the Pro tier (`model: pro`), not your session's model.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a flash-tier agent type. Most implementation tasks are mechanical when the plan is well-specified.
+**Always pick the tier; without one, the implementer inherits your session's model.**
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
-
-**Architecture, design, and review tasks**: use a pro-tier agent type.
-
-**Task complexity signals:**
-- Touches 1-2 files with a complete spec → flash-tier agent type
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → pro-tier agent type
+**Turn count beats token price.** Wall-clock and context cost scale with how many turns a subagent takes, and the cheapest models routinely take 2-3× the turns on multi-step work — costing more overall.
 
 ## The Task Loop
 
@@ -240,7 +238,7 @@ An implementer — a task's, a fix round's, or the final fixer — that reports 
 
 **BLOCKED:** The implementer cannot complete the task. Assess the blocker:
 1. If it's a context problem, resume or re-dispatch with more context
-2. If the task requires more reasoning, raise the agent's tier — add a workspace-scoped variant at `.agents/agents/<name>.md` first, or edit the bundled agent's frontmatter to `model: pro` (may require Agent Non-Workspace File Access) — and re-dispatch
+2. If the task requires more reasoning, re-dispatch one tier up (Model Selection)
 3. If the task is too large, break it into smaller pieces
 4. If the plan itself is wrong, rule on the correction, ledger it, and re-dispatch with the ruling carried in the dispatch
 
@@ -314,7 +312,7 @@ Out-of-scope observations go to the ledger, never back into the loop.
 
 **Rounds 4–5 — fresh implementer, takeover framing.** If three resumed
 rounds haven't converged, the original implementer's approach may be the
-problem. Kill it (`manage_subagents`, ledgering the kill as Setup says), dispatch a fresh `implementer`
+problem. Kill it (`manage_subagents`, ledgering the kill as Setup says), dispatch a fresh implementer one tier up (Model Selection)
 whose Prompt carries: the task text, the open findings, and this framing:
 "A prior implementer attempted this task [N] times; you own it now."
 followed by the prior implementer's last report. The task's commits are
@@ -378,7 +376,7 @@ Use `send_message` to communicate with subagents — running or idle. An idle (f
 **When to use `send_message` vs. re-dispatch:**
 - Subagent (running or idle) needs info → `send_message` — an idle subagent resumes with its context intact
 - Subagent reported NEEDS_CONTEXT → send the missing context via `send_message`; re-dispatch a fresh subagent only if the original was killed or in an error state
-- Subagent reported BLOCKED → assess blocker, possibly resume with more context via `send_message`, break the task into smaller pieces, or dispatch a more capable custom agent type
+- Subagent reported BLOCKED → assess blocker, possibly resume with more context via `send_message`, break the task into smaller pieces, or re-dispatch one tier up (Model Selection)
 
 **If subagent asks questions:**
 - Answer clearly and completely
@@ -426,22 +424,9 @@ Don't poll in a loop — the system notifies you when subagents complete. Use `m
 
 ## Final Review
 
-After all tasks are complete, dispatch a final code-reviewer subagent for
-the entire implementation — the one whole-branch review that per-task
-reviews don't cover.
+The final whole-branch review gets a checked range too: compute MERGE_BASE (the commit the branch started from, e.g. `git merge-base main HEAD`) and check MERGE_BASE...HEAD as in The Task Loop. Dispatch the bundled `final-reviewer` (see Model Selection) with `Workspace: "inherit"`, using superpowers:requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md) filled for a whole-branch review: MERGE_BASE and HEAD as `{BASE_SHA}` and `{HEAD_SHA}`, the plan and spec paths as `{PLAN_OR_REQUIREMENTS}`, the plan's Review Focus section verbatim as `{REVIEW_FOCUS}` if it has one, the ledger's `Ruling:` lines — parked ones included — as `{RULINGS}`, and its deferred-minor lines as `{DEFERRED_MINORS}`, so it can triage which must be fixed before merge. If `final-reviewer` is rejected as unknown, dispatch it once more as `superpowers:final-reviewer`; if that is rejected too, dispatch the built-in `self` with the plugin's [`agents/final-reviewer.md`](../../agents/final-reviewer.md) body pasted ahead of the same filled template, and ledger `Final review: self subagent (bundled agent unavailable)`. Its "Declined to judge" list is yours: every line there is a ruling you make and ledger — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`.
 
-- If the final whole-branch review returns findings, dispatch ONE fix
-  subagent (`implementer`, `Workspace: "inherit"`) with the complete
-  findings list — not one fixer per finding.
-- Then run exactly one scoped re-review of the fix wave: dispatch the
-  `re-reviewer` (see `re-review-prompt.md`) with the findings and the fix
-  range FIX_BASE..HEAD, where FIX_BASE is the HEAD the final review saw.
-  The fix wave's commits, nothing earlier.
-  Adjudicate any residual findings as in the task loop's breaker: park with
-  rulings, or rule on the load-bearing ones and ledger what you decided.
-  Only the four classes above stop you here. There is no second fix wave —
-  residual load-bearing findings surface to your human partner when
-  **superpowers:finishing-a-development-branch** presents the options.
+If the final whole-branch review returns findings, dispatch ONE fix subagent (`implementer`, `Workspace: "inherit"`) with the complete findings list — not one fixer per finding. Per-finding fixers each rebuild context and re-run suites; a real session's final-review fix wave cost more than all its tasks combined. Then run exactly one scoped re-review of the fix wave: FIX_BASE is the HEAD the final review saw; check FIX_BASE...HEAD and dispatch the `re-reviewer` ([re-review-prompt.md](re-review-prompt.md)) over it. Adjudicate any residual findings as in the task loop's breaker: park with rulings, or rule on the load-bearing ones and ledger what you decided. Only the four classes above stop you here. There is no second fix wave — residual load-bearing findings surface to your human partner when finishing-a-development-branch presents the options.
 
 ## Finish
 
@@ -449,10 +434,12 @@ Before you delete anything, collect every ledger line containing `Ruling:` —
 preflight rulings, parked findings, breaker adjudications, all of them — into
 your final message under "Rulings I made", in the order you made them, each
 with what it costs if wrong. The list is exhaustive: if the ledger holds a
-ruling, the list holds it. That list is the only place the decisions you
-took on your human partner's behalf reach them — they read it and rework
-whatever you got wrong. A ruling that dies with the workspace was a decision
-made in secret.
+ruling, the list holds it. That list, and the walkthrough artifact that
+copies it, are the only places the decisions you took on your human
+partner's behalf reach them — they read it and rework whatever you got
+wrong. A ruling that dies with the workspace was a decision made in secret.
+
+Then, still before you delete anything, write the walkthrough: `write_to_file` as an artifact — with your other artifacts, never into the repository — with `IsArtifact: true` and, in `ArtifactMetadata`, `ArtifactType: "walkthrough"`, `RequestFeedback: false` and `UserFacing: true`. It holds what was built (one line per task, from the ledger's completion lines), how the final review ran (the bundled reviewer or a `self` subagent) and what the final review and its fix wave fixed, and the list above, copied verbatim; embed screenshots or recordings and link key changed files where they help. It asks for nothing: superpowers:finishing-a-development-branch presents the choices.
 
 When the final whole-branch review is clean and its fixes are merged,
 delete this plan's workspace — the git history is the record now. Sibling
@@ -481,7 +468,7 @@ the branch.
 - `spec-reviewer-prompt.md` (located in the `subagent-driven-development` skill directory) — dynamic dispatch template — the static role lives in `agents/spec-reviewer.md`
 - `code-quality-reviewer-prompt.md` (located in the `subagent-driven-development` skill directory) — dynamic dispatch template — the static role lives in `agents/code-reviewer.md`
 - `re-review-prompt.md` (located in the `subagent-driven-development` skill directory) — dynamic dispatch template — the static role lives in `agents/re-reviewer.md`
-- `code-reviewer.md` (located in the `requesting-code-review` skill directory) — dynamic dispatch template — the static role lives in `agents/code-reviewer.md`
+- `code-reviewer.md` (located in the `requesting-code-review` skill directory) — dynamic dispatch template, also the final review's template (dispatched to the bundled `final-reviewer`) — the static roles live in `agents/code-reviewer.md` and `agents/final-reviewer.md`
 
 ## Example Workflow
 
@@ -495,7 +482,8 @@ You: I'm using Subagent-Driven Development to execute this plan.
 Task 1: Hook installation script
 
 [Get Task 1 text and context (already extracted)]
-[invoke_subagent TypeName: "implementer" with task text + context in Prompt]
+[Record BASE; invoke_subagent TypeName: "implementer" with task + context in Prompt]
+[Ledger: Task 1: dispatched implementer 3f9a2c1e (base a1b2c3d)]
 
 Implementer: "Before I begin - should the hook be installed at user or system level?"
 
@@ -508,18 +496,21 @@ Implementer: "Got it. Implementing now..."
   - Self-review: Found I missed --force flag, added it
   - Committed
 
+[Range check BASE...HEAD → 0 1]
 [invoke_subagent TypeName: "spec-reviewer"]
 Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
 
 [invoke_subagent TypeName: "code-reviewer"]
 Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
 
+[Ledger: Task 1: complete (commits a1b2c3d..d4e5f6a, review clean)]
 [Update task.md: mark Task 1 complete]
 
 Task 2: Recovery modes
 
 [Get Task 2 text and context (already extracted)]
-[invoke_subagent TypeName: "implementer" with task text + context in Prompt]
+[Record BASE; invoke_subagent TypeName: "implementer" with task + context in Prompt]
+[Ledger: Task 2: dispatched implementer 7d41b0aa (base d4e5f6a)]
 
 Implementer: [No questions, proceeds]
 Implementer:
@@ -528,6 +519,7 @@ Implementer:
   - Self-review: All good
   - Committed
 
+[Range check BASE...HEAD → 0 1]
 [invoke_subagent TypeName: "spec-reviewer"]
 Spec reviewer: ❌ Issues:
   - Missing: Progress reporting (spec says "report every 100 items")
@@ -537,7 +529,7 @@ Spec reviewer: ❌ Issues:
 Implementer (resumed): Removed --json flag, added progress reporting. Re-ran test_recovery.py: 9/9 passing.
 [invoke_subagent TypeName: "re-reviewer" — findings + fix range]
 Re-reviewer: Both findings ADDRESSED. No new breakage in fix diff.
-[Ledger: Task 2: fix round 1/5 (spec: json flag + progress reporting)]
+[Ledger: Task 2: fix round 1/5 (spec: 2 addressed, 0 open — json flag, progress reporting; commits d4e5f6a..b7c8d9e)]
 
 [invoke_subagent TypeName: "code-reviewer"]
 Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
@@ -546,15 +538,19 @@ Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
 Implementer (resumed): Extracted PROGRESS_INTERVAL constant. Re-ran full suite: 9/9 passing.
 [invoke_subagent TypeName: "re-reviewer" — findings + fix range]
 Re-reviewer: Finding ADDRESSED. No new breakage in fix diff.
-[Ledger: Task 2: fix round 2/5 (quality: magic number extraction)]
+[Ledger: Task 2: fix round 2/5 (quality: 1 addressed, 0 open — magic number; commits b7c8d9e..c0ffee1)]
 
+[Ledger: Task 2: complete (commits d4e5f6a..c0ffee1, review clean)]
 [Update task.md: mark Task 2 complete]
 
 ...
 
 [After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
+[Range check MERGE_BASE...HEAD → 0 7; dispatch final-reviewer]
+Final reviewer: All requirements met. Deferred minors triaged: none block merge.
 
-Done!
+[Write walkthrough artifact]
+[Delete this plan's workspace — the record now lives in git]
+
+Done! Using superpowers:finishing-a-development-branch.
 ```
