@@ -1,231 +1,50 @@
-# Antigravity 2.0 Test Suite
+# Superpowers-Antigravity Test Suite
 
-Testing Superpowers skills on the Antigravity 2.0 platform (Google DeepMind's agentic coding assistant).
-
-## Overview
-
-This test suite validates that Superpowers skills work correctly on Antigravity 2.0, covering:
-
-- **Plugin discovery** — Verifies Antigravity loads the superpowers plugin and exposes skills
-- **Skill triggering** — Tests that naive prompts trigger the correct skill
-- **Subagent dispatch** — Validates the `subagent-driven-development` workflow using `invoke_subagent`
-- **Skill tool purity** — Static validation that skill files contain no legacy tool names or platform references
-- **Purity hook (behavioral)** — Fixture-driven validation that the `PreToolUse` purity gate denies banned-vocabulary writes into `skills/` at edit time and allows everything else
-- **Rule/skill mirror sync** — Static validation that the Always-On rule bootstrap mirrors `skills/using-superpowers/SKILL.md` exactly
-- **Workspace isolation** — Confirms worktree/branch workspace guidance works
+Tests for this fork's skills, agents, bootstrap rule and packaging on Antigravity: the 2.0 app, the IDE and the CLI (`agy`). Run them through `tests/run-tests.sh`; each test also runs on its own as `bash <path>`.
 
 ## Prerequisites
 
-1. **Antigravity CLI** (`agy`) must be installed and available on `$PATH`
-2. **Superpowers plugin** must be symlinked or copied into `~/.gemini/config/plugins/superpowers/`
-3. **bash** 4.0+ with standard GNU utils (`grep`, `sed`, `timeout`, `jq`)
-   - `jq` is genuinely exercised now, not just listed: `find_transcript`'s
-     cache lookup and `test-skill-triggering/run-test.sh`'s event-based
-     Check 3 both prefer it, falling back to `python3`/`python` and then a
-     best-effort `grep`/`awk` extraction if neither is present -- the
-     suite never hard-fails on a machine without `jq`.
+- **bash:** Git Bash on Windows. From PowerShell or cmd, bare `bash` is often WSL, and the runner refuses to run the gate there against a Windows checkout.
+- **node 18 or later:** every JSON read goes through `tests/antigravity/lib/json-tool.mjs`. No `jq` or `python` is needed.
+- **Graphviz** (`dot` on `PATH`) for the render assertions in `tests/writing-skills/test-render-graphs.sh`.
+- **agy**, signed in, for the live tiers only.
 
-### Environment Variables
+## Exit codes and tiers
 
-Two optional env vars pin model/effort for a whole test run:
+Every test exits `0` PASS, `1` FAIL or `77` SKIP; any other code counts as FAIL. A SKIP is never a pass. `[N/A]` marks a single fixture that does not apply on this platform, never a whole test.
 
-| Variable | Passed as | Values |
-|----------|-----------|--------|
-| `AGY_TEST_MODEL`  | `--model`  | A model slug (see `agy models`) |
-| `AGY_TEST_EFFORT` | `--effort` | `low`, `medium`, or `high` |
+| Tier | Runs | Tests |
+|---|---|---|
+| gate | always; anything but PASS fails the run | `test-skill-tool-purity.sh`, `test-plugin-layout.sh`, `test-agent-frontmatter.sh`, `test-purity-hook.sh`, `test-rule-sync.sh`, `test-plugin-packaging.sh`, `test-execution-skills.sh`, `tests/diagnosing-superpowers/test-skill-structure.sh`, `tests/skill-size/test-skill-size.sh`, `tests/skill-layout/test-no-dev-files-in-skills.sh` |
+| unit | always | `tests/writing-skills/test-render-graphs.sh`, `tests/systematic-debugging/test-find-polluter.sh` |
+| live | `--live` | `test-plugin-discovery.sh`, `test-tool-roster.sh`, `test-bundled-dispatch.sh`, `test-skill-triggering/run-all.sh`, `test-subagent-dispatch.sh`, `test-inline-execution.sh`, `test-worktree-workspace.sh`, `test-spec-gate-stream.sh` |
+| live-extra | `--live-extra` | `test-hooks-introspection.sh` (CLI only) |
 
-### Headless Invocation Flags
+`bash tests/run-tests.sh` exits `1` on any FAIL or any gate test that did not pass, `2` ("INCOMPLETE") when a requested test was skipped, and `0` otherwise. Every `test-*.sh` belongs to exactly one tier, except the library `test-helpers.sh`; the runner fails on a test it does not know.
 
-Every `agy --print` call in this suite (`run_antigravity` in
-`test-helpers.sh`, and the direct invocation in `test-subagent-dispatch.sh`)
-always passes:
+## Live tiers
 
-- **`--print-timeout <N>m`** — headless `agy --print` self-terminates after
-  agy's own documented default of 5 minutes if this isn't raised. The
-  documented flag reference shows only whole-minute durations (default
-  `5m`, example `--print-timeout 15m`), so this suite rounds requested
-  second-based budgets up to the nearest minute rather than passing seconds
-  directly. The external `timeout` wrapper is kept as a backstop for hangs
-  that occur before agy's own timeout can engage, widened so it's never
-  tighter than the internal budget it backstops.
-- **`--dangerously-skip-permissions`** — without it, agy's default
-  permission mode pauses for interactive diff review, which hangs
-  indefinitely for any test that writes files.
+The live tests run `agy` headless with `--output-format stream-json`, an explicit `--print-timeout` and `--dangerously-skip-permissions`. They read tool calls, subagent dispatches and the final `result` from the stream, never from transcripts. A run that ends without a result, on an infrastructure error (`AGY_ERROR`, exit 3), at the print timeout, cancelled, or with denied actions is a SKIP. `ERROR`, `INVALID` and `WAITING` are FAILs. `AGY_TEST_MODEL` and `AGY_TEST_EFFORT` pass `--model` and `--effort` to every run.
 
-Source: https://antigravity.google/docs/cli/headless ("Flag reference" table).
+The live tests exercise the superpowers that `agy` has installed, and SKIP when none is. `test-plugin-discovery.sh` is the exception, because it certifies the working tree. It SKIPs over an existing install. With `SUPERPOWERS_AGY_INSTALL=1` and no install, it runs `agy plugin install <native path of this repository>` and uninstalls on exit. Never symlink the repository into a plugin folder. After editing a skill, `/skills reload` refreshes a running `agy` session.
 
-### Plugin Installation
+Headless runs and the review gates: a `-p` run that starts in brainstorming stops at the spec review message, because the agent's turn ends there. A run that reaches writing-plans does not stop at the plan: `-p` proceeds through plan review automatically (CLI 1.1.28), and the agent settles the execution-method question itself (CLI 1.1.12). To stop at the plan, say so in the prompt; to make the method your choice rather than the agent's, name it in the prompt. The trigger tests check skill loading only. `test-spec-gate-stream.sh` observes the spec gate over `--input-format stream-json`.
 
-```bash
-# Symlink from repo root:
-ln -sfn "$(pwd)" ~/.gemini/config/plugins/superpowers
-```
+## Transcript tier
 
-## How to Run Tests
+`bash tests/run-tests.sh --transcript <product>:<conversation id> --scenario <scenario>` applies the live assertions to a session you ran yourself. This matters most on the 2.0 app, which has no headless mode. `<product>` is `2.0`, `ide` or `cli`. Use `<product>:token:<text>` to find the conversation whose first message contains `<text>` instead of giving an id.
 
-### All skill-triggering tests
+| Scenario | Passes when |
+|---|---|
+| `trigger:<skill>` | the session read `skills/<skill>/SKILL.md` (from under `--install-root <dir>` when given) and read no skill from a `zz-` copy |
+| `sdd` | it dispatched an implementer, `spec-reviewer` and `code-reviewer`; with `--project <dir>`, the project gained two commits and `npm test` passes |
+| `inline` | it read executing-plans' `SKILL.md` and dispatched no implementer or per-task reviewer; `--project` as for `sdd` |
+| `worktree` | with `--project <dir>`, the project shows the isolation `WORKSPACE_VARIANT` expects, as in `test-worktree-workspace.sh` |
 
-```bash
-cd tests/antigravity/test-skill-triggering
-./run-all.sh
-```
+Create the project with `bash tests/antigravity/lib/fixture-plan-project.sh <dir>`, open it, and paste the prompt that `bash tests/antigravity/lib/fixture-plan-project.sh --print-prompt sdd|inline|worktree` prints. The trigger scenarios use the prompts in `test-skill-triggering/prompts/`.
 
-### Individual skill-triggering test
+A conversation's transcript is `<app_data_dir>/brain/<conversationId>/.system_generated/logs/transcript.jsonl`. `<app_data_dir>` is `~/.gemini/antigravity` for the 2.0 app, `~/.gemini/antigravity-ide` for the IDE and `~/.gemini/antigravity-cli` for the CLI (https://antigravity.google/docs/hooks). A CLI example in the docs places a CLI transcript under the 2.0 root, so `cli` looks in its own root first and the 2.0 root second. Always look a transcript up by its id, never by modification time. For a headless run, take the id from the `conversation_id` of the `result` or `step_update` payloads, not from the `init` event. The record fields are maintainer-observed, not documented. If no record carries tool calls, the tier fails with "transcript schema not recognised". A missing transcript means it was not written on that product, so `ide` and `cli` report SKIP. `skills/diagnosing-superpowers/references/session-discovery.md` is where the rest of this fork's transcript knowledge lives.
 
-```bash
-cd tests/antigravity/test-skill-triggering
-./run-test.sh systematic-debugging ../../../tests/skill-triggering/prompts/systematic-debugging.txt
-```
+Observed root: `ide` transcripts were found under `~/.gemini/antigravity-ide` [MO IDE 2.5.5, Live check 7], and the tier looks there first. A missing `ide` transcript fails instead of skipping.
 
-### Plugin discovery
-
-```bash
-cd tests/antigravity
-./test-plugin-discovery.sh
-```
-
-### Subagent dispatch
-
-```bash
-cd tests/antigravity
-./test-subagent-dispatch.sh
-```
-
-### Skill tool purity (static, no agy required)
-
-```bash
-cd tests/antigravity
-./test-skill-tool-purity.sh
-```
-
-### Workspace isolation
-
-```bash
-cd tests/antigravity
-./test-worktree-workspace.sh
-```
-
-## Session Transcript Format
-
-> **Not documented API.** The `brain/` directory layout, `transcript.jsonl`,
-> and the field names below were learned by watching the filesystem while
-> using the CLI — none of it appears on https://antigravity.google/docs.
-> Treat this section as empirically observed behavior that could change
-> without notice, not a stable, published contract. (Contrast with
-> `last_conversations.json` below, which the CLI's docs do describe.)
-
-Antigravity 2.0 stores session transcripts as **JSONL** files at:
-
-```
-~/.gemini/antigravity/brain/<conversation-id>/.system_generated/logs/transcript.jsonl
-```
-
-Each line is a JSON object with these key fields:
-
-| Field | Description |
-|-------|-------------|
-| `step_index` | Sequential index of the step in the trajectory |
-| `source` | Origin of the action: `USER_EXPLICIT`, `MODEL`, `SYSTEM` |
-| `type` | Step type: `USER_INPUT`, `PLANNER_RESPONSE`, `VIEW_FILE`, etc. |
-| `status` | Outcome: `DONE`, `ERROR` |
-| `content` | Text content (user request or model response) |
-| `tool_calls` | Array of tool invocations with their arguments |
-
-### Example transcript entry
-
-```json
-{
-  "step_index": 5,
-  "source": "MODEL",
-  "type": "PLANNER_RESPONSE",
-  "status": "DONE",
-  "content": "I'll use the subagent-driven-development skill...",
-  "tool_calls": [
-    {
-      "name": "invoke_subagent",
-      "arguments": {
-        "TypeName": "self",
-        "Role": "Implementer",
-        "Prompt": "Implement Task 1..."
-      }
-    }
-  ]
-}
-```
-
-### Finding transcripts
-
-`find_transcript` (in `test-helpers.sh`) now resolves the transcript
-deterministically first, via the CLI's *documented*
-`~/.gemini/antigravity-cli/cache/last_conversations.json` — "A JSON map
-associating absolute workspace directory paths with their most recently
-active conversation ID" per the CLI's Resume Command guide — before falling
-back to the mtime scan below (which isn't workspace-scoped and can pick up
-an unrelated, concurrently-running conversation):
-
-```bash
-# Primary (documented): cache keyed by absolute workspace path
-jq -r --arg ws "$PWD" '.[$ws] // empty' ~/.gemini/antigravity-cli/cache/last_conversations.json
-
-# Fallback (not documented): most-recently-modified transcript in a window
-find ~/.gemini/antigravity/brain -name "transcript.jsonl" -mmin -60
-
-# Search for specific tool calls in a transcript
-grep '"invoke_subagent"' ~/.gemini/antigravity/brain/<id>/.system_generated/logs/transcript.jsonl
-```
-
-## Troubleshooting
-
-### `agy` command not found
-
-Ensure the Antigravity CLI is installed and on your `$PATH`:
-
-```bash
-which agy
-```
-
-If not installed, the test scripts will detect this and print a helpful error message.
-
-### Plugin not loading
-
-1. Check the plugin symlink exists:
-   ```bash
-   ls -la ~/.gemini/config/plugins/superpowers/
-   ```
-2. Verify `plugin.json` is present in the plugin directory
-3. Look for plugin loading errors in Antigravity output
-
-### Skills not triggering
-
-- Skills auto-load in Antigravity; there's no explicit `Skill` tool call to grep for
-- Instead, look for evidence the skill was read (`view_file` on `SKILL.md`) or skill name mentions in output
-- Check that the plugin directory structure is correct: `skills/<skill-name>/SKILL.md`
-- `run-test.sh`'s authoritative check parses a `view_file` tool-call event
-  from an `--output-format stream-json` NDJSON capture — tool calls are not
-  reliably visible in plain `text` output at all, so if you're debugging a
-  triggering failure, inspect `agy-stream.jsonl` in the test's output
-  directory, not `agy-output.txt`
-
-### Transcript not found
-
-`find_transcript` tries the documented `last_conversations.json` cache
-first (see "Finding transcripts" above); if that cache file is missing, has
-no entry for the current workspace, or `jq`/`python3`/`python` are all
-unavailable, it falls back to the empirically-observed
-`~/.gemini/antigravity/brain/` layout. Each conversation gets a UUID
-directory:
-
-```bash
-# List recent conversations
-ls -lt ~/.gemini/antigravity/brain/ | head -10
-
-# Find transcript files
-find ~/.gemini/antigravity/brain -name "transcript.jsonl" -mmin -60
-```
-
-### Test timeouts
-
-- Default timeout is 300 seconds (5 minutes) for simple tests
-- Subagent dispatch tests use 1800 seconds (30 minutes)
-- Increase via the timeout parameter if needed
-- Check for network issues if Antigravity is slow to respond
+Observed root: `cli` transcripts were found under `~/.gemini/antigravity-cli` [MO CLI 1.2.17, Live check 7], and the tier looks there first. A missing `cli` transcript fails instead of skipping.

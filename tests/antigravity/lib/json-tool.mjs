@@ -7,6 +7,7 @@
 // unknown command prints `json-tool: unknown command <name>` to stderr and exits 2.
 // Later tasks add entries to this table.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -426,7 +427,231 @@ function namesJson(argv) {
     return 0;
 }
 
+const TRANSCRIPT_USAGE =
+    'usage: json-tool.mjs transcript --product 2.0|ide|cli (--id <uuid> | --token <text>) ' +
+    '--view tool-calls|skill-reads|subagents [--root <dir>] [--field <key>]';
+
+// Products whose transcripts the S7.9-roots ruling observed: a missing file there is a FAIL, not a SKIP.
+const OBSERVED_ROOT_PRODUCTS = ['ide', 'cli'];
+
+function transcriptRoots(product, home) {
+    const g = (name) => path.join(home, '.gemini', name);
+    if (product === '2.0') return [g('antigravity')];
+    if (product === 'ide') return [g('antigravity-ide')];
+    return [g('antigravity-cli'), g('antigravity')];
+}
+
+const transcriptFile = (root, id) => path.join(root, 'brain', id, '.system_generated', 'logs', 'transcript.jsonl');
+
+// firstUserContent: the content of a transcript's first USER_EXPLICIT record, read chunk by chunk.
+function firstUserContent(file) {
+    let fd;
+    try {
+        fd = fs.openSync(file, 'r');
+    } catch {
+        return undefined;
+    }
+    try {
+        const buf = Buffer.alloc(65536);
+        let carry = '';
+        for (;;) {
+            const n = fs.readSync(fd, buf, 0, buf.length, null);
+            if (n === 0) break;
+            const parts = (carry + buf.toString('utf8', 0, n)).split('\n');
+            carry = parts.pop();
+            for (const line of parts) {
+                const rec = parseRecord(line);
+                if (rec && rec.source === 'USER_EXPLICIT') return String(rec.content);
+            }
+        }
+        const rec = parseRecord(carry);
+        if (rec && rec.source === 'USER_EXPLICIT') return String(rec.content);
+    } finally {
+        fs.closeSync(fd);
+    }
+    return undefined;
+}
+
+function parseRecord(line) {
+    const t = line.trim();
+    if (t === '' || t[0] !== '{') return undefined;
+    try {
+        return JSON.parse(t);
+    } catch {
+        return undefined;
+    }
+}
+
+// decodeArgs: every value of a tool call's args is a JSON-encoded string; kept as is when it does not parse.
+function decodeArgs(args) {
+    let obj = args;
+    if (typeof obj === 'string') {
+        try {
+            obj = JSON.parse(obj);
+        } catch {
+            return {};
+        }
+    }
+    if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) return {};
+    const out = {};
+    for (const k of Object.keys(obj)) {
+        const v = obj[k];
+        if (typeof v === 'string') {
+            try {
+                out[k] = JSON.parse(v);
+            } catch {
+                out[k] = v;
+            }
+        } else {
+            out[k] = v;
+        }
+    }
+    return out;
+}
+
+function findConversationIds(value, out) {
+    if (Array.isArray(value)) value.forEach((v) => findConversationIds(v, out));
+    else if (value !== null && typeof value === 'object') {
+        for (const k of Object.keys(value)) {
+            if (k === 'conversationId' && typeof value[k] === 'string') out.push(value[k]);
+            else findConversationIds(value[k], out);
+        }
+    }
+}
+
+// transcript: views over one conversation's transcript.jsonl (see tests/antigravity/README.md).
+function transcript(argv) {
+    const opt = {};
+    for (let i = 0; i < argv.length; i++) {
+        const flag = argv[i];
+        if (!['--product', '--id', '--token', '--view', '--root', '--field'].includes(flag)) {
+            return usage(TRANSCRIPT_USAGE, `unknown flag ${flag}`);
+        }
+        if (i + 1 >= argv.length) return usage(TRANSCRIPT_USAGE, `${flag} needs a value`);
+        opt[flag.slice(2)] = argv[++i];
+    }
+    if (!['2.0', 'ide', 'cli'].includes(opt.product)) return usage(TRANSCRIPT_USAGE, 'transcript needs --product 2.0|ide|cli');
+    if ((opt.id === undefined) === (opt.token === undefined)) return usage(TRANSCRIPT_USAGE, 'transcript needs one of --id, --token');
+    if (!['tool-calls', 'skill-reads', 'subagents'].includes(opt.view)) return usage(TRANSCRIPT_USAGE, 'transcript needs --view tool-calls|skill-reads|subagents');
+    const fail = (message, code = 1) => {
+        process.stderr.write(`json-tool: transcript: ${message}\n`);
+        return code;
+    };
+
+    const home = process.env.SP_TRANSCRIPT_HOME || os.homedir();
+    const roots = transcriptRoots(opt.product, home);
+    const label = opt.id !== undefined ? opt.id : opt.token;
+    const missing = () =>
+        OBSERVED_ROOT_PRODUCTS.includes(opt.product) || opt.product === '2.0'
+            ? fail(`no transcript for ${label}`)
+            : fail(`not written on ${opt.product} (X18)`, 77);
+
+    let file;
+    if (opt.id !== undefined) {
+        file = roots.map((r) => transcriptFile(r, opt.id)).find((f) => fs.existsSync(f));
+    } else {
+        const ids = new Set();
+        for (const r of roots) {
+            let dirs = [];
+            try {
+                dirs = fs.readdirSync(path.join(r, 'brain'));
+            } catch { /* no brain folder in this root */ }
+            for (const d of dirs) {
+                const f = transcriptFile(r, d);
+                if (ids.has(d) || !fs.existsSync(f)) continue;
+                const content = firstUserContent(f);
+                if (content !== undefined && content.includes(opt.token)) {
+                    ids.add(d);
+                    if (file === undefined) file = f;
+                }
+            }
+        }
+        if (ids.size > 1) return fail(`token matches ${ids.size} conversations`);
+    }
+    if (file === undefined) return missing();
+
+    const records = fs.readFileSync(file, 'utf8').split('\n').map(parseRecord).filter(Boolean);
+    if (!records.some((r) => Array.isArray(r.tool_calls))) return fail('transcript schema not recognised');
+
+    const norm = (p) => p.replace(/\\/g, '/');
+    const win = process.platform === 'win32';
+    const key = (p) => (win ? p.toLowerCase() : p);
+    const under = (p, dir) => key(p) === key(dir) || key(p).startsWith(`${key(dir)}/`);
+    const rootDir = opt.root === undefined ? undefined : norm(path.resolve(opt.root));
+    const homeDir = norm(path.resolve(home));
+    const fmt = (p) => {
+        if (typeof p !== 'string') return null;
+        const n = norm(p);
+        if (rootDir !== undefined && under(n, rootDir)) return `.${n.slice(rootDir.length)}`;
+        if (under(n, homeDir)) return `~${n.slice(homeDir.length)}`;
+        return n;
+    };
+
+    const calls = [];
+    for (const r of records) {
+        if (!Array.isArray(r.tool_calls)) continue;
+        for (const c of r.tool_calls) {
+            if (c && typeof c.name === 'string') calls.push({ name: c.name, args: decodeArgs(c.args) });
+        }
+    }
+
+    const items = [];
+    if (opt.view === 'tool-calls') {
+        for (const c of calls) {
+            const p = c.args.AbsolutePath ?? c.args.TargetFile ?? c.args.Cwd;
+            items.push({ shown: { name: c.name, path: fmt(p) }, args: c.args });
+        }
+    } else if (opt.view === 'skill-reads') {
+        for (const c of calls) {
+            const p = c.args.AbsolutePath;
+            if (c.name !== 'view_file' || typeof p !== 'string' || !/\/SKILL\.md$/.test(norm(p))) continue;
+            const shown = { skill: norm(p).split('/').slice(-2)[0], path: fmt(p), IsSkillFile: c.args.IsSkillFile };
+            items.push({ shown, args: shown });
+        }
+    } else {
+        for (const c of calls) {
+            if (c.name !== 'invoke_subagent') continue;
+            let list = c.args.Subagents;
+            if (typeof list === 'string') {
+                try {
+                    list = JSON.parse(list);
+                } catch {
+                    list = [];
+                }
+            }
+            for (const s of Array.isArray(list) ? list : []) {
+                const shown = { TypeName: s.TypeName, Workspace: s.Workspace, Model: s.Model };
+                items.push({ shown, args: shown });
+            }
+        }
+        for (const r of records) {
+            if (typeof r.type !== 'string' || !r.type.includes('INVOKE_SUBAGENT')) continue;
+            let content = r.content;
+            if (typeof content === 'string') {
+                try {
+                    content = JSON.parse(content);
+                } catch {
+                    content = {};
+                }
+            }
+            const ids = [];
+            findConversationIds(content, ids);
+            for (const child of ids) items.push({ shown: { child }, args: { child } });
+        }
+    }
+
+    for (const item of items) {
+        if (opt.field === undefined) {
+            process.stdout.write(`${JSON.stringify(item.shown)}\n`);
+        } else if (item.args[opt.field] !== undefined) {
+            process.stdout.write(`${printField(item.args[opt.field])}\n`);
+        }
+    }
+    return 0;
+}
+
 export const commands = {
+    transcript,
     payload,
     'hooks-config': hooksConfig,
     keys,

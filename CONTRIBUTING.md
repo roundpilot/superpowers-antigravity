@@ -122,6 +122,22 @@ Install the branch from your local repository; never push it to test it.
 - **2.0 app and IDE:** first move every other `superpowers` copy out of `~/.gemini/config/plugins/` and out of the test workspace's `.agents/plugins/`; with two copies of the same name you cannot tell which one is read. Then either update the global clone with `git -C ~/.gemini/config/plugins/superpowers fetch <path-to-your-local-repo> <branch>` and `git -C ~/.gemini/config/plugins/superpowers checkout FETCH_HEAD`, or run `git clone -b <branch> <path-to-your-local-repo> <scratch-ws>/.agents/plugins/superpowers`.
 - The `view_file` paths in the conversation's transcript show which copy was read.
 
+## Testing your change
+
+Run `bash tests/run-tests.sh` from the repository root in Git Bash. From PowerShell, run `& "$env:ProgramFiles\Git\bin\bash.exe" tests/run-tests.sh` instead: bare `bash` in PowerShell or cmd is often WSL, and the runner refuses it. Paste the result table into your PR. The default run covers the gate and unit tiers; `--live` and `--live-extra` add the tests that need a signed-in `agy`. A skipped test is not a pass: the runner exits 2 ("INCOMPLETE") and lists it.
+
+**The edit-time purity gate.** `hooks/purity-check.mjs` denies a file-tool write that would put banned vocabulary into `skills/`, `agents/` or `rules/`, or another agent product's name into `.github/`. The release gate, `bash tests/antigravity/test-skill-tool-purity.sh`, enforces the same law. To use the hook while you work:
+
+1. Check `node --version` in Antigravity's command shell first. The hook needs node 18 or later.
+2. Run `node hooks/purity-check.mjs --print-global-entry` and add the `superpowers-purity-gate` entry it prints to `~/.gemini/config/hooks.json`, which the 2.0 app, the IDE and the CLI share.
+3. Remove the entry when you stop contributing.
+
+**Editing skills with the CLI.** After you edit a skill, run `/skills reload` in a running `agy` session before you test again.
+
+**No hook for users.** No hook ships to plugin users, agent `hooks:` entries included. The skill disciplines (the Iron Law, ledger evidence lines, test-first) stay prose. A future user-facing enforcement hook needs all four of these: it is documented on all three products; Live check 6(b) shows that a hook that cannot run neither denies nor blocks; its interpreter is guaranteed on users' machines; and it does not fight subagent-driven development's four stops, `ask_question` or a BLOCKED report.
+
+**Release checklist.** Delete the `hooks/purity-check.sh` stub, and its entry in `tests/antigravity/test-plugin-layout.sh`, in the release after v7.0.2.
+
 ## General
 
 - Read `.github/PULL_REQUEST_TEMPLATE.md` before submitting

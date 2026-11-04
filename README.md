@@ -82,7 +82,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 - 💰 **Token-saving subagents** — reviewers are read-only bundled agents
 - ✅ **Review gates** — design docs and plans end with an `ask_question` your partner answers before work goes on
 - 🔀 **Workspace mode guidance** — decision tables for `branch` and `inherit` per role; `share` is not recommended (semantics unverified)
-- 🛡️ **Edit-time purity gate** — a `PreToolUse` hook blocks banned legacy vocabulary from entering this plugin's `skills/` before a write ever lands (opt-in for contributors: rename `hooks.example.json` → `hooks.json`; requires `bash` available to the hook runner)
+- 🛡️ **Edit-time purity gate** — contributors can enable a `PreToolUse` hook (`hooks/purity-check.mjs`, needs `node`) through their global `hooks.json`; the release gate `tests/antigravity/test-skill-tool-purity.sh` enforces the same law. See CONTRIBUTING.
 - 🔍 **Web research integration** — `search_web` woven into debugging, brainstorming, and planning
 
 ## 🚀 The Workflow

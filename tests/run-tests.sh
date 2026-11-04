@@ -21,6 +21,7 @@
 set -uo pipefail
 
 unset CDPATH
+ORIG_PWD="$PWD"
 cd "$(dirname "$0")/.." || exit 1
 ROOT="$(pwd)"
 
@@ -35,20 +36,130 @@ LIB_FILES=(tests/antigravity/test-helpers.sh tests/antigravity/lib/*)
 
 usage() {
   echo "Usage: bash tests/run-tests.sh [--live] [--live-extra]" >&2
+  echo "       bash tests/run-tests.sh --transcript <product>:<uuid>|<product>:token:<text> --scenario trigger:<skill>|sdd|inline|worktree [--project <dir>] [--install-root <dir>]" >&2
   echo "  default       gate and unit tiers" >&2
   echo "  --live        also the live tier (needs a signed-in agy)" >&2
   echo "  --live-extra  also the live-extra tier" >&2
+  echo "  --transcript  check a session you ran yourself; runs no tiers (exit 0 PASS, 1 FAIL, 2 SKIP)" >&2
 }
 
 RUN_LIVE=0
 RUN_LIVE_EXTRA=0
-for arg in "$@"; do
-  case "$arg" in
+TRANSCRIPT="" SCENARIO="" PROJECT="" INSTALL_ROOT=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
     --live) RUN_LIVE=1 ;;
     --live-extra) RUN_LIVE_EXTRA=1 ;;
-    *) echo "run-tests.sh: unknown argument: $arg" >&2; usage; exit 1 ;;
+    --transcript|--scenario|--project|--install-root)
+      if [ "$#" -lt 2 ]; then echo "run-tests.sh: $1 needs a value" >&2; usage; exit 1; fi
+      case "$1" in
+        --transcript) TRANSCRIPT="$2" ;;
+        --scenario) SCENARIO="$2" ;;
+        --project) PROJECT="$2" ;;
+        --install-root) INSTALL_ROOT="$2" ;;
+      esac
+      shift ;;
+    *) echo "run-tests.sh: unknown argument: $1" >&2; usage; exit 1 ;;
   esac
+  shift
 done
+
+# Transcript mode: apply a live scenario's assertions to a session's transcript. No tiers run.
+if [ -n "$TRANSCRIPT$SCENARIO" ]; then
+  if [ -z "$TRANSCRIPT" ] || [ -z "$SCENARIO" ]; then
+    echo "run-tests.sh: --transcript and --scenario go together" >&2; usage; exit 1
+  fi
+  JT="$ROOT/tests/antigravity/lib/json-tool.mjs"
+  # shellcheck source=antigravity/test-helpers.sh
+  . "$ROOT/tests/antigravity/test-helpers.sh"
+  for var in PROJECT INSTALL_ROOT; do
+    dir="${!var}"
+    [ -n "$dir" ] || continue
+    if [ ! -d "$dir" ] && [ ! -d "$ORIG_PWD/$dir" ]; then echo "[FAIL] no such directory: $dir"; exit 1; fi
+    if [ -d "$dir" ]; then resolved="$(cd "$dir" && node -p "process.cwd()")"; else resolved="$(cd "$ORIG_PWD/$dir" && node -p "process.cwd()")"; fi
+    printf -v "$var" '%s' "$resolved"
+  done
+  product="${TRANSCRIPT%%:*}"
+  spec="${TRANSCRIPT#*:}"
+  case "$spec" in
+    token:*) id_args=(--token "${spec#token:}") ;;
+    *) id_args=(--id "$spec") ;;
+  esac
+  verdict() { echo "[$1] $SCENARIO on $TRANSCRIPT: $2"; case "$1" in PASS) exit 0 ;; SKIP) exit 2 ;; *) exit 1 ;; esac; }
+  # tx <view> [--field k]: the view's lines in TX_OUT; a json-tool failure ends the run
+  tx() {
+    local view="$1" err rc
+    shift
+    local -a extra=("$@")
+    [ -z "$INSTALL_ROOT" ] || extra+=(--root "$INSTALL_ROOT")
+    err="$(mktemp)"
+    TX_OUT="$(node "$JT" transcript --product "$product" "${id_args[@]}" --view "$view" ${extra[@]+"${extra[@]}"} 2>"$err")"
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+      msg="$(tr -d '\r' < "$err" | head -n 1)"
+      rm -f "$err"
+      if [ "$rc" -eq 77 ]; then verdict SKIP "$msg"; fi
+      verdict FAIL "$msg"
+    fi
+    rm -f "$err"
+  }
+  project_checks() {
+    [ -n "$PROJECT" ] || return 0
+    local n
+    n="$(git -C "$PROJECT" rev-list --count HEAD 2>/dev/null || echo 0)"
+    [ "$n" -ge 3 ] || verdict FAIL "$n commits in the project, expected at least 3"
+    (cd "$PROJECT" && npm test >/dev/null 2>&1) || verdict FAIL "npm test fails in the project"
+  }
+  has_type() { # has_type <member...>: some TypeName in TX_OUT equals a member or ends in :<member>
+    local t
+    while IFS= read -r t; do
+      [ -n "$t" ] || continue
+      type_in_set "$t" "$@" && return 0
+    done <<< "$TX_OUT"
+    return 1
+  }
+  case "$SCENARIO" in
+    trigger:*)
+      skill="${SCENARIO#trigger:}"
+      tx skill-reads --field path
+      if printf '%s\n' "$TX_OUT" | grep -q '/zz-'; then verdict FAIL "skill read from a /zz- path"; fi
+      if [ -n "$INSTALL_ROOT" ]; then pat="^\./skills/$skill/SKILL\.md$"; else pat="/skills/$skill/SKILL\.md$"; fi
+      printf '%s\n' "$TX_OUT" | grep -q "$pat" || verdict FAIL "no read of skills/$skill/SKILL.md${INSTALL_ROOT:+ under the install root}"
+      verdict PASS "read skills/$skill/SKILL.md" ;;
+    sdd)
+      tx subagents --field TypeName
+      missing=""
+      has_type $IMPL_FAMILY || missing="$missing implementer"
+      has_type spec-reviewer || missing="$missing spec-reviewer"
+      has_type code-reviewer || missing="$missing code-reviewer"
+      [ -z "$missing" ] || verdict FAIL "no dispatch of:$missing"
+      project_checks
+      verdict PASS "implementer, spec-reviewer and code-reviewer dispatched" ;;
+    inline)
+      tx skill-reads --field path
+      printf '%s\n' "$TX_OUT" | grep -q '/skills/executing-plans/SKILL\.md$' || verdict FAIL "no read of skills/executing-plans/SKILL.md"
+      tx subagents --field TypeName
+      has_type $IMPL_FAMILY spec-reviewer code-reviewer re-reviewer && verdict FAIL "per-task dispatch found"
+      project_checks
+      verdict PASS "executing-plans read, no per-task dispatch" ;;
+    worktree)
+      [ -n "$PROJECT" ] || verdict FAIL "worktree needs --project <dir>"
+      variant="${WORKSPACE_VARIANT:-A}"
+      branch="$(git -C "$PROJECT" rev-parse --abbrev-ref HEAD 2>/dev/null)"
+      trees="$(git -C "$PROJECT" worktree list --porcelain 2>/dev/null | grep -c '^worktree ')"
+      case "$variant" in
+        A)
+          { [ "$branch" != main ] && [ "$trees" -eq 1 ]; } || verdict FAIL "WORKSPACE_VARIANT=A: branch $branch, $trees worktree(s); wants a branch other than main and one worktree"
+          verdict PASS "WORKSPACE_VARIANT=A: on branch $branch, one worktree" ;;
+        B)
+          tx subagents --field Workspace
+          if [ "$trees" -gt 1 ] || printf '%s\n' "$TX_OUT" | grep -qx branch; then verdict PASS "WORKSPACE_VARIANT=B: isolated workspace found"; fi
+          verdict FAIL "WORKSPACE_VARIANT=B: one worktree and no Workspace of branch" ;;
+        *) verdict FAIL "WORKSPACE_VARIANT must be A or B, not '$variant'" ;;
+      esac ;;
+    *) echo "run-tests.sh: unknown scenario: $SCENARIO" >&2; usage; exit 1 ;;
+  esac
+fi
 
 # The result table: three parallel arrays, one row per precondition or test.
 ROW_RESULT=()
