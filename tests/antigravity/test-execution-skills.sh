@@ -44,6 +44,42 @@ check_E14() {   # the share MODE, never the substring: 'shared state' lines do n
   verdict E14 'the share mode is not recommended'
 }
 
+check_E1() {
+  local d; d="$(sed -n 's/^description: //p' "$ROOT/skills/executing-plans/SKILL.md" | head -n 1)"
+  [ "$d" = 'Use when executing an implementation plan in the current session as the implementer yourself — your human partner chose inline execution, or no subagent tool is available' ] || problem "description is: $d"
+  verdict E1 "executing-plans description is upstream v6.4.1's"
+}
+check_E2() {
+  local d s
+  for d in executing-plans subagent-driven-development; do
+    [ ! -d "$ROOT/skills/$d/scripts" ] || problem "skills/$d/scripts/ exists"
+    for s in sdd-workspace task-brief task-start task-done review-package; do must_lack "skills/$d/SKILL.md" "$s"; done
+  done
+  verdict E2 'neither executor has a scripts/ directory or names an upstream script'
+}
+check_E3() {
+  local t
+  for t in 'mkdir -p' 'printf' 'rm -rf' '2>&1' ' && ' '$('; do must_lack skills/executing-plans/SKILL.md "$t"; done
+  verdict E3 'no executor contains a banned shell token'
+}
+check_E6() {
+  local ep=skills/executing-plans/SKILL.md s
+  for s in 'Never fabricate a dispatch' 'Read a brief, not the whole plan.' 'git rev-list --left-right --count' \
+    'A failing run records nothing; the task is not complete.' \
+    '`Task <N>: complete (commits <base7>..<head7>, tests: <command> → <result>)`' \
+    'Task <N>: partner instruction: <one-liner>' 'Plan map: Task 1 L<first>-<last>'; do must_have "$ep" "$s"; done
+  verdict E6 'executing-plans carries its ledger and task-loop strings'
+}
+check_E9() {
+  local t
+  for t in list_dir grep_search find_by_name define_subagent; do must_lack skills/executing-plans/SKILL.md "$t"; done
+  verdict E9 'no executor names a retired or excluded tool'
+}
+check_E10() {
+  must_lack skills 'using-superpowers/references'
+  verdict E10 'no using-superpowers/references under skills/'
+}
+
 CHECKS=$(declare -F | sed 's/^declare -f //' | grep -E '^check_E[0-9]+$' | sort -t E -k2,2n)
 for c in $CHECKS; do "$c"; done
 
