@@ -1,4 +1,25 @@
 {
   "name": "superpowers",
-  "description": "Core skills library for Google Antigravity (2.0 app, IDE and CLI): TDD, debugging, collaboration patterns, and proven techniques"
+  "displayName": "Superpowers",
+  "description": "Core skills library for Google Antigravity (2.0 app, IDE and CLI): TDD, debugging, collaboration patterns, and proven techniques",
+  "version": "6.3.0",
+  "logo": "assets/antigravity-logo.png",
+  "suggestedPrompts": [
+    "I've got an idea for something I'd like to build",
+    "Let's figure out why this broke"
+  ],
+  "author": {
+    "name": "roundpilot",
+    "url": "https://github.com/roundpilot"
+  },
+  "homepage": "https://github.com/roundpilot/superpowers-antigravity",
+  "repository": "https://github.com/roundpilot/superpowers-antigravity",
+  "keywords": [
+    "skills",
+    "tdd",
+    "debugging",
+    "collaboration",
+    "best-practices",
+    "workflows"
+  ]
 }

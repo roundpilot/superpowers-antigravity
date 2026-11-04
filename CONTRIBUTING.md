@@ -91,11 +91,12 @@ The body is upstream's session-start wrapper (`<EXTREMELY_IMPORTANT>`, "You have
 
 A release bumps all of these together, and `tests/antigravity/test-plugin-packaging.sh` checks that they match:
 
-- `package.json` `version` (canonical);
+- `plugin.json` `version` (canonical);
+- `package.json` `version`;
 - the README badge: the URL (`Version-X.Y.Z-green`) and the alt text (`Version X.Y.Z`);
 - the first `## vX.Y.Z` heading in `RELEASE-NOTES.md`.
 
-`plugin.json` carries no `version`, as the published manifest schema requires (it allows only `name` and `description`); after Live check 8, `package.json` holds the version (register E13). Do not add `$schema`: its URL returns 404.
+`plugin.json` carries the manifest fields Antigravity documents (`name`, `displayName`, `description`, `version`, `logo`, `suggestedPrompts`, `author`, `homepage`, `repository`, `keywords`) and no others; the packaging test rejects any other key. Do not add `$schema`.
 
 ### Rule-walk hygiene
 

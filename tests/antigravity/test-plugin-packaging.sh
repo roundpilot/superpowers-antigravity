@@ -14,7 +14,8 @@
 #   Callers grep "^\[FAIL\] check N". Every check always runs.
 # Exit: 0 PASS; 1 FAIL; 77 SKIP (no node: a blocking SKIP in the gate tier).
 #
-#   check 1  plugin.json keys are within PLUGIN_KEYS (so no `$schema`); its name is
+#   check 1  plugin.json keys are within PLUGIN_KEYS (so no `$schema`) and include REQUIRED_KEYS;
+#            logo names a file, suggestedPrompts has at most 3 items, keywords are lowercase; its name is
 #            `superpowers` and a legal plugin name; plugin.json, package.json and, if present,
 #            gemini-extension.json all carry DESCRIPTION
 #   check 2  one version: plugin.json `version` if it has one, else package.json's; every
@@ -39,7 +40,8 @@ ROOT="${ROOT:-$REPO_ROOT}"
 JT="$SCRIPT_DIR/lib/json-tool.mjs"
 
 # The keys plugin.json may carry (a space-separated word list). Later tasks edit this line.
-PLUGIN_KEYS="name description"
+PLUGIN_KEYS="name displayName description version logo suggestedPrompts author homepage repository keywords"
+REQUIRED_KEYS="version displayName logo"
 DESCRIPTION='Core skills library for Google Antigravity (2.0 app, IDE and CLI): TDD, debugging, collaboration patterns, and proven techniques'
 
 # The Environment-table labels bug_report.md must carry (check 7), one array element each.
@@ -112,7 +114,7 @@ expect_version() {
 }
 
 check_1() {
-    local before=$FAILURES f key re='^[a-zA-Z0-9_-]+$'
+    local before=$FAILURES f key n re='^[a-zA-Z0-9_-]+$'
     if ! jt_keys "$ROOT/plugin.json"; then
         fail 1 "plugin.json is missing or is not a JSON object"
     else
@@ -135,6 +137,20 @@ check_1() {
         elif [ "$GOT" != "$DESCRIPTION" ]; then
             fail 1 "$f description is \"$GOT\", expected \"$DESCRIPTION\""
         fi
+    done
+    for key in $REQUIRED_KEYS; do
+        jt_get "$ROOT/plugin.json" "$key" || fail 1 "plugin.json has no $key"
+    done
+    if jt_get "$ROOT/plugin.json" logo; then
+        [ -f "$ROOT/$GOT" ] || fail 1 "plugin.json logo \"$GOT\" is not a file in the repository"
+    fi
+    if jt_get "$ROOT/plugin.json" suggestedPrompts.3; then
+        fail 1 "plugin.json suggestedPrompts has more than 3 items"
+    fi
+    n=0
+    while jt_get "$ROOT/plugin.json" "keywords.$n"; do
+        [ "$GOT" = "${GOT,,}" ] || fail 1 "plugin.json keyword \"$GOT\" is not lowercase"
+        n=$((n + 1))
     done
     if [ "$FAILURES" -eq "$before" ]; then
         pass 1 "plugin.json keys, name and description are right"
