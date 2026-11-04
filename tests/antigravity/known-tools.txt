@@ -31,8 +31,8 @@ code_search	one-product	S1.9
 command_status	one-product	S1.9
 manage_inbox	one-product	S1.9
 read_resource	one-product	S1.9
-create_issue	not-a-tool	skills/writing-skills/anthropic-best-practices.md
-bigquery_schema	not-a-tool	skills/writing-skills/anthropic-best-practices.md
+create_issue	not-a-tool	skills/writing-skills/references/anthropic-best-practices.md
+bigquery_schema	not-a-tool	skills/writing-skills/references/anthropic-best-practices.md
 created_at	not-a-tool	S6.9
 duration_seconds	not-a-tool	S6.9
 error_code	not-a-tool	S6.9
