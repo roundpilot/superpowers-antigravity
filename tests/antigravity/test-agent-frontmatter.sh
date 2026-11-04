@@ -17,11 +17,12 @@ TOOLS_DATA="$SCRIPT_DIR/known-tools.txt"
 FAILURES=0
 
 # The policy. Later tasks extend these arrays in the same form. VARIANTS (the tier
-# variants of the implementer, spec D5 fallback) is empty; check_5_implementer reads it.
+# variants of the implementer, spec D5 fallback) are v=base pairs; check_5_implementer and check_7a read them.
 POLICY_KEYS=(name description subagent mainAgent model tools)
 WRITE_AGENTS=(implementer bundle-scrubber)  # bundle-scrubber: rewrites files inside BUNDLE (S3.6)
+WRITE_AGENTS+=(implementer-flash implementer-pro)  # tier variants of implementer (S3.4)
 DISPATCH_AGENTS=()
-VARIANTS=()
+VARIANTS=(implementer-flash=implementer implementer-pro=implementer)
 # The read-only class (S3.2): agents whose body must state that the review is read-only.
 READONLY_AGENTS=(spec-reviewer code-reviewer re-reviewer final-reviewer session-analyst)
 
@@ -41,6 +42,7 @@ NEGATIVE_FIXTURES=(
   "misspelled TypeName|skills/subagent-driven-development/spec-reviewer-prompt.md|sub|TypeName: \"spec-reviewer\"=>TypeName: \"spec-reviwer\"|unknown TypeName 'spec-reviwer' under skills/ (7e)"
   "final-reviewer byte|final-reviewer.md|byte|x|not code-reviewer.md minus its SDD section (7b)"
   "scrubber shell|bundle-scrubber.md|tool|run_command|bundle-scrubber.md: must not list run_command (S3.6)"
+  "changed variant byte|implementer-pro.md|byte|x|differs from implementer.md beyond name/description/model/hidden (7a)"
 )
 
 fail() { echo "  [FAIL] $1"; FAILURES=$((FAILURES + 1)); }
@@ -394,7 +396,7 @@ check_5_readonly() {
 # Reads FM_TOOLS after fm_load, which is what tools_of prints, without the fork.
 check_5_implementer() {
   local root="$1" name file bad
-  for name in implementer ${VARIANTS[@]+"${VARIANTS[@]}"}; do
+  for name in implementer ${VARIANTS[@]+"${VARIANTS[@]%%=*}"}; do
     file="$root/agents/$name.md"
     [ -f "$file" ] || continue
     fm_load "$file"
@@ -435,6 +437,28 @@ check_5_diagnosing() {
       bad=1
     fi
     if [ "$bad" -eq 0 ]; then pass "$name.md: diagnosing role tools ok"; fi
+  done
+  return 0
+}
+
+# 7(a). Each VARIANTS entry v=b: v.md equals b.md except the frontmatter lines name:, description:,
+# model: and hidden: (S3.4); the bodies are byte-identical. A missing file fails the same way.
+fm_rest() {
+  awk '/^---[[:space:]]*$/ { seen++; print; next } seen < 2 && /^(name|description|model|hidden):/ { next } seen < 2 { print }' "$1"
+}
+check_7a() {
+  local root="$1" entry v b msg
+  for entry in ${VARIANTS[@]+"${VARIANTS[@]}"}; do
+    v="${entry%%=*}"; b="${entry#*=}"
+    msg="$v.md: differs from $b.md beyond name/description/model/hidden (7a)"
+    if [ ! -f "$root/agents/$v.md" ] || [ ! -f "$root/agents/$b.md" ]; then
+      fail "$msg"
+    elif cmp -s <(body_of "$root/agents/$v.md") <(body_of "$root/agents/$b.md") \
+      && cmp -s <(fm_rest "$root/agents/$v.md") <(fm_rest "$root/agents/$b.md"); then
+      pass "$v.md: same as $b.md beyond name/description/model/hidden"
+    else
+      fail "$msg"
+    fi
   done
   return 0
 }
@@ -566,6 +590,7 @@ done
 check_5_readonly "$LINT_ROOT"
 check_5_implementer "$LINT_ROOT"
 check_5_diagnosing "$LINT_ROOT"
+check_7a "$LINT_ROOT"
 check_7b "$LINT_ROOT"
 check_7c "$LINT_ROOT"
 check_7d "$LINT_ROOT"
