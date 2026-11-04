@@ -60,7 +60,30 @@ check_E2() {
 check_E3() {
   local t
   for t in 'mkdir -p' 'printf' 'rm -rf' '2>&1' ' && ' '$('; do must_lack skills/executing-plans/SKILL.md "$t"; done
+  for t in 'mkdir -p' 'printf' 'rm -rf' '2>&1' ' && ' '$('; do must_lack skills/subagent-driven-development/SKILL.md "$t"; done
   verdict E3 'no executor contains a banned shell token'
+}
+MKDIR_SENTENCE="If a directory is missing, create each level with the shell's own command and retry."
+e4_block() { awk '/^- Each plan owns a workspace:/{p=1; print; next} p && (/^- / || /^$/){exit} p{print}' "$ROOT/$1"; }
+check_E4() {
+  local ep=skills/executing-plans/SKILL.md sdd=skills/subagent-driven-development/SKILL.md a b
+  a="$(e4_block "$ep")"; b="$(e4_block "$sdd")"
+  [ "$(printf '%s
+' "$a" | grep -cE '^  [1-4]. ')" = 4 ] || problem "$ep: workspace block does not have four sub-items"
+  [ "$(printf '%s
+' "$a" | grep -cF -- "$MKDIR_SENTENCE")" = 1 ] || problem "$ep: MKDIR_SENTENCE not exactly once in the workspace block"
+  [ "$a" = "$b" ] || problem "$sdd: workspace block differs from $ep's"
+  [ "$(grep -cF -- "$MKDIR_SENTENCE" "$ROOT/skills/diagnosing-superpowers/references/session-discovery.md")" = 1 ] || problem "session-discovery.md: MKDIR_SENTENCE not exactly once"
+  verdict E4 'plan-workspace block identical in both executors, MKDIR_SENTENCE once in it and in session-discovery.md'
+}
+check_E5() {
+  local ep=skills/executing-plans/SKILL.md sdd=skills/subagent-driven-development/SKILL.md o
+  for o in 'Approvals can pause an unattended run.' 'Your human partner may steer while the plan runs'; do
+    [ "$(grep -cF -- "$o" "$ROOT/$ep")" = 1 ] || problem "$ep: not exactly one '$o' line"
+    [ "$(grep -F -- "$o" "$ROOT/$ep")" = "$(grep -F -- "$o" "$ROOT/$sdd")" ] || problem "$sdd: '$o' line differs from $ep's"
+  done
+  grep -qE '^Approvals can pause an unattended run..* Never change their permission settings yourself. This is a notice, not a stop: start Task 1.$' "$ROOT/$ep" || problem "$ep: block C does not end with the pinned sentence"
+  verdict E5 'block C and the steering line: one line each, identical in both executors'
 }
 check_E6() {
   local ep=skills/executing-plans/SKILL.md s

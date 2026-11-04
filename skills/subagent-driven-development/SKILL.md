@@ -27,6 +27,8 @@ that norms say you ask about first (a merge, a push to a shared branch, a
 publish); and a plan so broken that every path forward is a guess. For those,
 stop and ask.
 
+Your human partner may steer while the plan runs — a message, a comment on the plan or another artifact, stopping a subagent you dispatched, or, in subagent-driven development, an instruction sent straight to an implementer (a CLI `@` message) that its report mentions. That is their instruction, not your ruling: apply it, ledger it as `Task <N>: partner instruction: <one-liner>`, and rule only where it conflicts with work already finished. One that changes scope or asks you to stop — a stopped subagent is one — is handled like the four stops.
+
 ## When to Use
 
 ```dot
@@ -94,26 +96,39 @@ digraph process {
 
 ## Setup
 
-1. Ensure an isolated workspace: use superpowers:using-git-worktrees to create one or verify the existing one
+Ensure the work happens in an isolated workspace: use
+superpowers:using-git-worktrees to create one or verify the existing one.
+Never start implementation on a main/master branch without your human
+partner's explicit consent.
 
-**Never:**
-- Start implementation on main/master branch without explicit user consent
+Approvals can pause an unattended run. If your commands run in a terminal sandbox, a commit may need to run outside it — the sandbox can keep `.git` read-only — and that waits for your human partner's approval unless an allow rule covers it; where their settings review commands or edits, more waits. Before Task 1, tell your human partner in one line what may wait for approval: the git commands you and your reviewers run on every task (`git rev-parse`, `git rev-list`, `git merge-base`, `git diff`, `git log`, `git status`), the plan's test commands, `git add` and `git commit`, and — where edits pause for review — every file edit. Never change their permission settings yourself. This is a notice, not a stop: start Task 1.
 
-- At skill start, resolve this plan's workspace:
-  `<repo-root>/.superpowers/sdd/<plan-basename>/` (plan filename without
-  `.md`). Create it and the self-ignore rule in one command:
-  `mkdir -p .superpowers/sdd/<plan-basename> && printf '*\n' > .superpowers/.gitignore`
+Conversation memory does not survive compaction. In real sessions,
+controllers that lost their place have re-dispatched entire completed task
+sequences — the single most expensive failure observed. Track progress in
+a ledger file, not only in the task.md artifact.
 
-Then open the ledger:
+- Each plan owns a workspace: a git-ignored directory under `<repo-root>/.superpowers/sdd/`, home to every file for THIS plan — its ledger. Another plan's directory is never yours to read or write. Resolve it at skill start:
+  1. Write the plan's path the way the ledger names it: relative to the repository root (`git rev-parse --show-toplevel`), with forward slashes, or absolute if the plan lives outside the repository. Normalize a ledger's first line the same way before you compare it, and on Windows compare without regard to case.
+  2. Try `.superpowers/sdd/<plan-basename>/`, then `<plan-basename>-<name of the plan's parent directory>/`, then that name with `-2`, `-3`, … appended. A candidate is yours if it has no `progress.md`, or if its `progress.md` first line names your plan; one whose first line names another plan belongs to that plan — try the next.
+  3. Create and extend files here with your file tools, never with shell redirection: create `progress.md` with `write_to_file`, and append each ledger line with `replace_file_content` anchored on the ledger's current last line — never rewrite the whole ledger. If a directory is missing, create each level with the shell's own command and retry. Then, if `<repo-root>/.superpowers/.gitignore` does not exist, create it with the single line `*`.
+  4. If the platform refuses to read or write the ledger (the IDE's strict mode hides git-ignored files), keep the ledger in the task.md artifact instead; if that is refused too, keep the ledger lines in your messages. Either way, tell your human partner at the start that another executor, or another conversation, cannot resume from it.
+- Check for this plan's ledger at `<workspace>/progress.md`. If its first
+  line names your plan file, tasks with a `Task <N>: complete` line are DONE
+  — do not re-dispatch them; resume at the first task without one. A task
+  whose last line is a fix round is mid-loop: resume the loop at the next
+  round. A ledger whose first line names a different plan file — or a stray
+  ledger at the old flat path `.superpowers/sdd/progress.md` — is another
+  plan's progress: leave it in place and start your own, fresh.
+- Create the ledger with its identity as the first line:
+  `# SDD ledger — plan: <plan file path>`.
+- The ledger is your recovery map: the commits it names exist in git even
+  when your context no longer remembers creating them. After compaction,
+  trust the ledger and `git log` over your own recollection.
+- `git clean -fdx` will destroy the workspace (it's git-ignored scratch); if
+  that happens, recover from `git log`.
 
-- If `progress.md` exists in this plan's directory, read it — tasks it marks complete are DONE; resume at the first task not marked complete.
-- If it does not exist, create it now with its header line: `# SDD ledger — plan: <plan file path>`.
-
-The four roles ship as bundled agents — `implementer`, `spec-reviewer`,
-`code-reviewer`, `re-reviewer` (defined in the plugin's `agents/`
-directory). No registration step: dispatch them by TypeName. If a dispatch
-fails with an unknown TypeName, the plugin's agents are not being
-discovered — verify the plugin installation before working around it.
+The roles ship as bundled agents — `implementer`, `implementer-flash`, `implementer-pro`, `spec-reviewer`, `code-reviewer`, `re-reviewer` and `final-reviewer` (defined in the plugin's `agents/` directory). No registration step: dispatch them by TypeName. Bundled agents are documented on Antigravity 2.0 and the CLI and observed working on 2.0; they are unverified in the IDE. If a dispatch is rejected with an unknown TypeName, dispatch it once more as `superpowers:<name>`. If that is rejected too, the plugin's agents are not being discovered — verify the plugin installation, then read the plugin's `agents/<name>.md` (`../../agents/<name>.md` from this skill's folder), dispatch the built-in `self` subagent with that file's body, below its closing `---`, pasted ahead of the prompt, and ledger `Setup: self subagent for <name> (bundled agent unavailable)`. If you have no subagent tool, or you cannot read the plugin's agent file, this skill cannot run here, and the method was your human partner's choice. Ask once with `ask_question` — at Setup if you have no subagent tool, or at the first dispatch that exhausts these steps, before any work on that task — whether to run the plan inline with superpowers:executing-plans (same workspace and ledger, one final review) or to stop so they can fix the installation. Ledger the answer as `Setup: <answer>`; for inline, load superpowers:executing-plans and continue from this ledger. A running plan never switches executors on its own.
 
 **Workspace isolation per role:**
 
@@ -126,7 +141,7 @@ discovered — verify the plugin installation before working around it.
 | Final reviewer | `Workspace: "inherit"` | Read-only — reviews the whole branch |
 
 Read the plan once, extract all tasks with full text and context, and
-create a `task.md` artifact tracking each task's status. If the plan names
+create a `task.md` artifact tracking each task's status — it belongs with your other artifacts, never in the repository or under `scratch/`. If the plan names
 a Spec, read that too: the spec is the authority the plan argues from, and
 conflicts inside the plan resolve against it. A plan with no reachable spec
 gets a ledger note saying so — rulings made without one are provisional.
@@ -386,29 +401,6 @@ Use `manage_subagents` to track running subagents:
 
 Don't poll in a loop — the system notifies you when subagents complete. Use `manage_subagents` only when you need an explicit status check (e.g., before cleanup or when a timer fires).
 
-## Durable Progress
-
-Conversation memory does not survive compaction. In real sessions, controllers
-that lost their place have re-dispatched entire completed task sequences — the
-single most expensive failure observed. Track progress in a ledger file, not
-only in todos.
-
-- The ledger is `progress.md` inside this plan's workspace directory (resolved in Setup). Its first line names
-  the plan: `# SDD ledger — plan: <plan file path>`. A ledger whose first
-  line names a different plan — or a stray ledger at the old flat
-  `.superpowers/sdd/progress.md` — is another plan's progress: leave it and
-  start fresh.
-- Tasks listed in this plan's ledger as complete are DONE — do not
-  re-dispatch them; resume at the first task not marked complete.
-- When a task's review comes back clean, append one line to the ledger in
-  the same message as your other bookkeeping:
-  `Task N: complete (commits <base7>..<head7>, review clean)`.
-- The ledger is your recovery map: the commits it names exist in git even
-  when your context no longer remembers creating them. After compaction,
-  trust the ledger and `git log` over your own recollection.
-- `git clean -fdx` will destroy the ledger (it's git-ignored scratch); if
-  that happens, recover from `git log`.
-
 ## Final Review
 
 After all tasks are complete, dispatch a final code-reviewer subagent for
@@ -439,9 +431,9 @@ took on your human partner's behalf reach them — they read it and rework
 whatever you got wrong. A ruling that dies with the workspace was a decision
 made in secret.
 
-- When the final whole-branch review is clean, delete this plan's
-  directory (`rm -rf .superpowers/sdd/<plan-basename>`) — git history is
-  the durable record. Leave sibling plan directories alone.
+When the final whole-branch review is clean and its fixes are merged,
+delete this plan's workspace — the git history is the record now. Sibling
+directories belong to other plans; leave them alone.
 
 Then hand off to **superpowers:finishing-a-development-branch** to complete
 the branch.
