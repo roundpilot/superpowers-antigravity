@@ -105,7 +105,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 ```
 
 1. **brainstorming** — Classifies the request (spike / bounded / architectural), then refines it through questions, explores alternatives, generates visual mockups
-2. **using-git-worktrees** — Creates isolated workspace via native `Workspace: "branch"`
+2. **using-git-worktrees** — Isolates the session on a feature branch; concurrent writing subagents get native `Workspace: "branch"`
 3. **writing-plans** — Breaks work into bite-sized tasks with exact file paths and verification steps
 4. **subagent-driven-development** - Fresh subagent per task with two-stage review (spec compliance + code quality)
 5. **test-driven-development** — RED-GREEN-REFACTOR: write failing test → minimal code → pass → commit

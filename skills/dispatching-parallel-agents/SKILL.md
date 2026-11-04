@@ -78,9 +78,11 @@ invoke_subagent(Subagents: [
 
 | Agent role | Workspace mode | When |
 |-----------|---------------|------|
-| Editing different files | `Workspace: "share"` | Agents work in same repo without conflicts |
-| Editing same files | `Workspace: "branch"` | Each agent gets isolated copy |
-| Read-only investigation | `Workspace: "inherit"` | No write access needed |
+| Editing files another agent also edits | `Workspace: "branch"` | Each agent gets an isolated worktree; integrate its commits before you kill it |
+| Editing different files, no commits | `Workspace: "inherit"` | Same checkout as yours — tell each agent not to commit; you commit after all return |
+| Read-only investigation | `Workspace: "inherit"` | Same checkout as yours |
+
+`Workspace: "share"` is documented only as 'share directory storage'; its semantics are unverified, so it is not recommended.
 
 ### 4. Review and Integrate
 

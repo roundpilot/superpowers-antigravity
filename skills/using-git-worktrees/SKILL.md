@@ -9,7 +9,7 @@ description: Use when starting feature work that needs isolation from current wo
 
 Ensure work happens in an isolated workspace using Antigravity 2.0's native workspace isolation.
 
-**Core principle:** Detect existing isolation first. Then use `Workspace: "branch"` on `invoke_subagent`. Never use manual `git worktree add`.
+**Core principle:** Detect existing isolation first. Then isolate the session on a feature branch; give `Workspace: "branch"` only to subagents that write alongside other writers. Never use manual `git worktree add`.
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
 
@@ -17,28 +17,18 @@ Ensure work happens in an isolated workspace using Antigravity 2.0's native work
 
 **Before creating anything, check if you are already in an isolated workspace.**
 
-**Verify Git Repository Existence:**
+**Verify Git Repository Existence:** run `git rev-parse --is-inside-work-tree`. It prints `true` inside a repository. Anything else means you are not in one — you cannot use worktrees; check whether you need to run `git init` first.
 
-If not inside a git repository, you cannot use worktrees. Check if you need to run `git init` first.
+Then run each of these on its own and note what it prints:
 
-```bash
-if ! git rev-parse --is-inside-work-tree &>/dev/null; then
-    echo "ERROR: Not inside a Git repository."
-    exit 1
-fi
+```
+git rev-parse --path-format=absolute --git-dir --git-common-dir
+git branch --show-current
 ```
 
-```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-BRANCH=$(git branch --show-current)
-```
+The first prints `GIT_DIR`, then `GIT_COMMON`; the two differ in a linked worktree. The second prints `BRANCH`, or nothing on a detached HEAD. (Git older than 2.31 lacks `--path-format`: resolve each printed path to an absolute one before comparing.)
 
-**Submodule guard:** `GIT_DIR != GIT_COMMON` is also true inside git submodules. Verify:
-
-```bash
-git rev-parse --show-superproject-working-tree 2>/dev/null
-```
+**Submodule guard:** `GIT_DIR != GIT_COMMON` is also true inside git submodules. Verify with `git rev-parse --show-superproject-working-tree`: it prints a path inside a submodule, and nothing otherwise.
 
 **If `GIT_DIR != GIT_COMMON` (and not a submodule):** Already isolated. Skip to Step 2.
 
@@ -46,28 +36,21 @@ git rev-parse --show-superproject-working-tree 2>/dev/null
 
 ## Step 1: Create Isolated Workspace
 
-**For subagent tasks:** Use `Workspace: "branch"` parameter on `invoke_subagent`. This creates an isolated workspace on a new git branch automatically. The platform handles directory placement, branch creation, and cleanup.
+**For subagents that write concurrently** (parallel agents editing overlapping files): `Workspace: "branch"` on `invoke_subagent`. The platform handles directory placement, branch creation, and cleanup. **For plan implementers**, which run one at a time: `Workspace: "inherit"` — they commit on your feature branch.
 
-**For parent orchestrator feature branches:** Use `git checkout -b <branch>` directly. No worktree needed — the orchestrator works in place on a feature branch.
+**For parent orchestrator feature branches:** Use `git checkout -b <branch>` directly. No worktree needed — the orchestrator works in place on a feature branch. On 2.0, a conversation started in a Project's New Worktree Mode already runs in its own worktree; Step 0 detects it.
 
 ## Step 2: Project Setup
 
-Auto-detect and run appropriate setup:
+Auto-detect and run appropriate setup — if the repository root has one of these files, run its command:
 
-```bash
-# Node.js
-if [ -f package.json ]; then npm install; fi
-
-# Rust
-if [ -f Cargo.toml ]; then cargo build; fi
-
-# Python
-if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-if [ -f pyproject.toml ]; then poetry install; fi
-
-# Go
-if [ -f go.mod ]; then go mod download; fi
-```
+| File | Command |
+|------|---------|
+| `package.json` | `npm install` |
+| `Cargo.toml` | `cargo build` |
+| `requirements.txt` | `pip install -r requirements.txt` |
+| `pyproject.toml` | `poetry install` |
+| `go.mod` | `go mod download` |
 
 ## Step 3: Verify Clean Baseline
 
@@ -86,7 +69,8 @@ npm test / cargo test / pytest / go test ./...
 |-----------|--------|
 | Already in linked worktree | Skip creation (Step 0) |
 | In a submodule | Treat as normal repo (Step 0 guard) |
-| Subagent task | `Workspace: "branch"` on `invoke_subagent` |
+| Concurrent writing subagents | `Workspace: "branch"` on `invoke_subagent` |
+| Plan implementer (one at a time) | `Workspace: "inherit"` on your feature branch |
 | Parent orchestrator | `git checkout -b <branch>` |
 | Tests fail during baseline | Report failures + ask |
 
@@ -96,14 +80,13 @@ Antigravity 2.0 supports three workspace modes for subagents. Choose based on th
 
 | Mode | Syntax | Use for | Example |
 |------|--------|---------|----------|
-| `branch` | `Workspace: "branch"` | Agents that need isolated write access | Implementers, fixers |
-| `inherit` | `Workspace: "inherit"` | Read-only agents | Reviewers, analyzers |
-| `share` | `Workspace: "share"` | Agents editing different files in same repo | Parallel fixers on separate test files |
+| `branch` | `Workspace: "branch"` | Agents that write concurrently with other writers | Parallel fixers on overlapping files |
+| `inherit` | `Workspace: "inherit"` | Agents that work in your checkout: reviewers, and writers that run one at a time | Reviewers, plan implementers |
+| `share` | `Workspace: "share"` | Documented only as 'share directory storage'; its path, lifetime and git state are unverified — not recommended | — |
 
 **Rules of thumb:**
-- If the agent writes code → `branch`
-- If the agent only reads and reports → `inherit`
-- If multiple agents edit non-overlapping files → `share`
+- If agents write code at the same time → `branch`
+- If one agent at a time writes, or agents only read → `inherit`
 
 ## Red Flags
 
