@@ -43,6 +43,7 @@ NEGATIVE_FIXTURES=(
   "final-reviewer byte|final-reviewer.md|byte|x|not code-reviewer.md minus its SDD section (7b)"
   "scrubber shell|bundle-scrubber.md|tool|run_command|bundle-scrubber.md: must not list run_command (S3.6)"
   "changed variant byte|implementer-pro.md|byte|x|differs from implementer.md beyond name/description/model/hidden (7a)"
+  "README tier drift|re-reviewer.md|set|model: pro|README Bundled agents table"
 )
 
 fail() { echo "  [FAIL] $1"; FAILURES=$((FAILURES + 1)); }
@@ -567,6 +568,67 @@ check_7e() {
   return 0
 }
 
+# 7(f). The README `### Bundled agents` table (the rows after that heading, blank lines
+# skipped, header and separator dropped) names exactly the stems of agents/*.md, and each
+# row's second column equals that agent's `model:`. README overrides the path (fixtures).
+check_7f() {
+  local root="$1" readme="${README:-$1/README.md}" line a t n state=0
+  local rows=" " missing="" extra="" tier="" f
+  if [ ! -f "$readme" ]; then
+    fail "7(f): README Bundled agents table: README.md missing"
+    return 0
+  fi
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%$'\r'}"
+    case "$state" in
+      0) [ "$line" = '### Bundled agents' ] && state=1 ;;
+      1) case "$line" in '') ;; '|'*) state=2 ;; *) break ;; esac ;;
+    esac
+    if [ "$state" -eq 2 ]; then
+      case "$line" in
+        '|'*) ;;
+        *) break ;;
+      esac
+      IFS='|' read -r _ a t _ <<< "$line"
+      a="${a#"${a%%[![:space:]]*}"}"; a="${a%"${a##*[![:space:]]}"}"
+      t="${t#"${t%%[![:space:]]*}"}"; t="${t%"${t##*[![:space:]]}"}"
+      case "$a" in
+        '`'*'`')
+          a="${a#\`}"; a="${a%\`}"
+          rows="$rows$a=$t "
+          ;;
+      esac
+    fi
+  done < "$readme"
+  if [ "$rows" = " " ]; then
+    fail "7(f): README Bundled agents table: no table after '### Bundled agents'"
+    return 0
+  fi
+  shopt -s nullglob
+  for f in "$root"/agents/*.md; do
+    n="${f##*/}"; n="${n%.md}"
+    case "$rows" in
+      *" $n="*)
+        t="${rows#* $n=}"; t="${t%% *}"
+        fm_load "$f"; fm_get model
+        [ "$t" = "$FM_VALUE" ] || tier="$tier$n "
+        ;;
+      *) missing="$missing$n " ;;
+    esac
+  done
+  for t in $rows; do
+    n="${t%%=*}"
+    [ -f "$root/agents/$n.md" ] || extra="$extra$n "
+  done
+  shopt -u nullglob
+  if [ -z "$missing$extra$tier" ]; then
+    pass "README Bundled agents table matches agents/ (names and tiers)"
+  else
+    fail "7(f): README Bundled agents table: missing ${missing% }, extra ${extra% }, tier ${tier% }"
+  fi
+  return 0
+}
+
 # ---------------------------------------------------------------------------
 # The lint over <LINT_ROOT>/agents/*.md.
 # ---------------------------------------------------------------------------
@@ -595,6 +657,7 @@ check_7b "$LINT_ROOT"
 check_7c "$LINT_ROOT"
 check_7d "$LINT_ROOT"
 check_7e "$LINT_ROOT"
+check_7f "$LINT_ROOT"
 
 # ---------------------------------------------------------------------------
 # Negative fixtures: each copies agents/, skills/ and README.md to a scratch ROOT (so the

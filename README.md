@@ -68,7 +68,7 @@ The abstraction layer costs tokens on every interaction, and those costs compoun
 | **Plan formatting** | Plain markdown | Mermaid diagrams, file links, diff blocks, GitHub alerts |
 | **Background tasks** | Not documented | `manage_task`, `send_message`, `schedule` (incl. cron) |
 | **UI verification** | Not available | `browser-testing` skill with screenshot evidence |
-| **Read-only subagents** | Full tool set for all | Bundled read-only reviewer agents (plus `TypeName: "research"` ad-hoc) |
+| **Read-only subagents** | Full tool set for all | Bundled read-only reviewer agents: `spec-reviewer`, `re-reviewer`, `code-reviewer` (one task or a small range) and `final-reviewer` (whole branch, Pro tier) |
 | **Web research** | Not guided | `search_web` + `read_url_content` integrated |
 
 ### Core Enhancements
@@ -79,7 +79,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 - 📐 **Rich plan formatting** — Mermaid architecture diagrams, clickable `file:///` links, diff blocks
 - 🔄 **Async subagent coordination** — `manage_task` for builds, `send_message` mid-flight, `schedule` for timeouts
 - 🌐 **Browser-testing skill** — evidence-before-assertions discipline for UI work
-- 💰 **Token-saving subagents** — reviewers are read-only bundled agents (`TypeName: "research"` for ad-hoc review)
+- 💰 **Token-saving subagents** — reviewers are read-only bundled agents
 - ✅ **Automatic feedback loops** — `RequestFeedback: true` (in `ArtifactMetadata`) on design docs and plans
 - 🔀 **Workspace mode guidance** — decision tables for `branch` and `inherit` per role; `share` is not recommended (semantics unverified)
 - 🛡️ **Edit-time purity gate** — a `PreToolUse` hook blocks banned legacy vocabulary from entering this plugin's `skills/` before a write ever lands (opt-in for contributors: rename `hooks.example.json` → `hooks.json`; requires `bash` available to the hook runner)
@@ -300,7 +300,7 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 | **writing-plans** | Detailed plans with Mermaid diagrams, rich formatting, `RequestFeedback`, and a `Spec:` pointer so the spec travels with the plan |
 | **executing-plans** | Inline plan execution: one context, one final review |
 | **dispatching-parallel-agents** | Concurrent workflows with `Workspace: "branch"` / `"inherit"` and monitoring |
-| **requesting-code-review** | Bundled `code-reviewer` dispatches with severity classification (`research` for lightweight ad-hoc reviews) |
+| **requesting-code-review** | Bundled `code-reviewer` (one task or a small range) and Pro-tier `final-reviewer` (whole branch), with severity classification |
 | **receiving-code-review** | Responding to feedback with technical rigor |
 | **using-git-worktrees** | Workspace isolation with mode decision table |
 | **finishing-a-development-branch** | Merge/PR decision workflow |
@@ -311,6 +311,22 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 |-------|---------|
 | **writing-skills** | Create new skills following best practices |
 | **using-superpowers** | Introduction to the skills system |
+
+### Bundled agents
+
+| Agent | Tier | Role |
+|-------|------|------|
+| `implementer` | inherit | Implements one plan task in subagent-driven development, and fixes review findings |
+| `implementer-flash` | flash | The same, for tasks whose plan gives the complete code and for single-file mechanical fixes |
+| `implementer-pro` | pro | The same, for escalations and design work when your session runs below Pro |
+| `spec-reviewer` | inherit | Read-only: checks one task's implementation against its task text |
+| `code-reviewer` | inherit | Read-only: reviews code quality for one task or a small range |
+| `re-reviewer` | inherit | Read-only: verifies a fix round |
+| `final-reviewer` | pro | Read-only: reviews the whole branch before merge, for both executors |
+| `session-analyst` | inherit | Read-only: analyses session transcripts for diagnosing-superpowers |
+| `bundle-scrubber` | inherit | Redacts an exported diagnosis bundle for diagnosing-superpowers |
+
+`inherit` runs your session's model. `final-reviewer` ships at the Pro tier; which model that is, is not documented. It may run a different model family from your session's.
 
 ## 🧭 Philosophy
 
