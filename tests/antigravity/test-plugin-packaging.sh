@@ -149,7 +149,7 @@ check_1() {
     fi
     n=0
     while jt_get "$ROOT/plugin.json" "keywords.$n"; do
-        [ "$GOT" = "${GOT,,}" ] || fail 1 "plugin.json keyword \"$GOT\" is not lowercase"
+        [ "$GOT" = "$(printf %s "$GOT" | tr "[:upper:]" "[:lower:]")" ] || fail 1 "plugin.json keyword \"$GOT\" is not lowercase"
         n=$((n + 1))
     done
     if [ "$FAILURES" -eq "$before" ]; then
