@@ -89,6 +89,9 @@ async function gitInit(directory: string) {
 npm test 2>&1 | grep 'DEBUG git init'
 ```
 
+Run the tests with `run_command` and search the output it returns for `DEBUG git init` — no
+redirect or pipe is needed.
+
 **Analyze stack traces:**
 - Look for test file names
 - Find the line number triggering the call
@@ -101,10 +104,23 @@ If something appears during tests but you don't know which test:
 Use the bisection script `find-polluter.sh` in this directory:
 
 ```bash
-./find-polluter.sh '.git' 'src/**/*.test.ts'
+bash ./find-polluter.sh '.git' 'src/**/*.test.ts'
 ```
 
-Runs tests one-by-one, stops at first polluter. See script for usage.
+Runs tests one-by-one, stops at first polluter. Run it with `--help` for usage.
+
+On this platform, do the bisection yourself first: with `run_command` and `Cwd` set to the project
+root, run each matching test file on its own with the project's test command (the script uses
+`npm test <file>`), and after each run check whether the pollution now exists. Stop at the first
+file that creates it. That needs no `bash` and nothing outside the project.
+
+The script does the same in one command where `bash` is a POSIX shell that sees your project's
+tools (not the Windows WSL launcher): run it by its absolute path — `./` is this file's directory —
+with `Cwd` set to the project root. In a sandboxed session the script's directory may be invisible
+to commands: ask for read access to it (`ask_permission` with `Action: "read_file"` and that
+directory as the target), which mounts it read-only inside the sandbox. Run the script outside the
+sandbox only as a last resort, with your human partner's approval — it would run the project's
+tests on the host with full privileges.
 
 ## Real Example: Empty projectDir
 

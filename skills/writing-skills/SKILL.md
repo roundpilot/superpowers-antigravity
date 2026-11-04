@@ -9,7 +9,7 @@ description: Use when creating new skills, editing existing skills, or verifying
 
 **Writing skills IS Test-Driven Development applied to process documentation.**
 
-**Personal (global) skills live in `~/.gemini/config/skills/<skill-name>/`; workspace skills live in `.agents/skills/<skill-name>/`.** (This plugin's own skills ship inside the plugin install directory — that is the install convention, not where you create new personal skills.)
+**Personal (global) skills live in `~/.gemini/config/skills/<skill-name>/` in 2.0 and the IDE (the IDE also reads the legacy `~/.gemini/antigravity/skills/`), and in `~/.gemini/antigravity-cli/skills/<skill-name>/` in the CLI; workspace skills live in `.agents/skills/<skill-name>/` on all three.** Writing a personal skill is a write outside the workspace: it may need your human partner's approval, or their non-workspace file access setting (Agent Non-Workspace File Access in 2.0 on Windows and in the IDE, `allowNonWorkspaceAccess` in the CLI). (This plugin's own skills ship inside the plugin install directory — that is the install convention, not where you create new personal skills.)
 
 You write test cases (pressure scenarios with subagents), watch them fail (baseline behavior), write the skill (documentation), watch tests pass (agents comply), and refactor (close loopholes).
 
@@ -285,9 +285,9 @@ Use skill name only, with explicit requirement markers:
 - ✅ Good: `**REQUIRED SUB-SKILL:** Use superpowers:test-driven-development`
 - ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand superpowers:systematic-debugging`
 - ❌ Bad: `See skills/testing/test-driven-development` (unclear if required)
-- ❌ Bad: `@skills/testing/test-driven-development/SKILL.md` (force-loads, burns context)
+- ❌ Bad: `@skills/testing/test-driven-development/SKILL.md` (loads nothing in a skill; inlines the whole file from a rule)
 
-**Why no @ links:** `@` syntax force-loads files immediately, consuming 200k+ context before you need them.
+**Why no @ links:** in a skill, `@` loads nothing — the path is just an unclear pointer. In a rule file (`AGENTS.md`, `GEMINI.md`, `.agents/rules/`), an `@` include can inline the whole target file into every prompt, consuming context before you need it.
 
 ## Flowchart Usage
 
@@ -319,9 +319,15 @@ See graphviz-conventions.dot for graphviz style rules.
 
 **Visualizing for your human partner:** Use `render-graphs.js` in this directory to render a skill's flowcharts to SVG:
 ```bash
-./render-graphs.js ../some-skill           # Each diagram separately
-./render-graphs.js ../some-skill --combine # All diagrams in one SVG
+node ./render-graphs.js ../some-skill           # Each diagram separately
+node ./render-graphs.js ../some-skill --combine # All diagrams in one SVG
 ```
+
+Run it through `run_command` with `Cwd` set to this skill's directory, giving the target skill's
+absolute path when it is not a sibling of this one. It needs Graphviz (`dot`) on PATH and writes
+the SVGs to the target's `diagrams/` directory. In a sandboxed session this skill's directory may
+be invisible to commands: ask for read access to it (`ask_permission` with `Action: "read_file"`),
+and run outside the sandbox only as a last resort, with your human partner's approval.
 
 ## Code Examples
 
@@ -373,13 +379,17 @@ pptx/
 ```
 When: Reference material too large for inline
 
+Invoke bundled scripts through their interpreter in the prose (`bash scripts/tool.sh`, `node scripts/tool.js`), never by bare path: some harness plugin packagers strip executable bits, and a bare `scripts/tool.sh` fails there with `Permission denied`.
+
+Prefer `node` for a new bundled helper: `bash` may be missing on Windows installs.
+
 ## The Iron Law (Same as TDD)
 
 ```
 NO SKILL WITHOUT A FAILING TEST FIRST
 ```
 
-This applies to NEW skills AND EDITS to existing skills.
+This applies to NEW skills AND EDITS to existing skills. That includes a skill drafted by the `/learn` command: it is an untested draft until it has been through this cycle.
 
 Write skill before testing? Delete it. Start over.
 Edit skill without testing? Same violation.

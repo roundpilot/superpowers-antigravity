@@ -1,6 +1,6 @@
 # Skill Creation Checklist (TDD Adapted)
 
-**IMPORTANT: Create a task.md artifact (using `write_to_file` with `IsArtifact: true` and the task type in `ArtifactMetadata`) to track EACH checklist item below.**
+**IMPORTANT: Create a task.md artifact (using `write_to_file` with `IsArtifact: true`) to track EACH checklist item below.**
 
 **RED Phase - Write Failing Test:**
 - [ ] Create pressure scenarios (3+ combined pressures for discipline skills)
