@@ -2,7 +2,7 @@
   "name": "superpowers",
   "displayName": "Superpowers",
   "description": "Core skills library for Google Antigravity (2.0 app, IDE and CLI): TDD, debugging, collaboration patterns, and proven techniques",
-  "version": "6.3.0",
+  "version": "7.0.2",
   "logo": "assets/antigravity-logo.png",
   "suggestedPrompts": [
     "I've got an idea for something I'd like to build",
