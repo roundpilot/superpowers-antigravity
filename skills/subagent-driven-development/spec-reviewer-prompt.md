@@ -16,4 +16,15 @@ Review spec compliance for Task {N}: {TASK_NAME}
 ## What Implementer Claims They Built
 
 {IMPLEMENTER_REPORT}
+
+## Git Range to Review
+
+**Base:** {BASE_SHA}
+**Head:** {HEAD_SHA}
+
+Fetch the diff yourself: `git diff --stat {BASE_SHA}..{HEAD_SHA}` and `git diff {BASE_SHA}..{HEAD_SHA}`.
 ```
+
+**Placeholders:**
+- `{BASE_SHA}` — the BASE you recorded before dispatching the implementer
+- `{HEAD_SHA}` — your checkout's HEAD after the implementer reported DONE, or after you committed its reported work

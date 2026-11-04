@@ -29,6 +29,20 @@ check_E8() {
   verdict E8 'no Workspace: "branch" under skills/subagent-driven-development/'
 }
 
+check_E11() {
+  local f=skills/subagent-driven-development/spec-reviewer-prompt.md s
+  for s in '## Git Range to Review' '{BASE_SHA}' '{HEAD_SHA}'; do must_have "$f" "$s"; done
+  verdict E11 'the spec-reviewer prompt carries the git range'
+}
+check_E12() {
+  local f=skills/subagent-driven-development/SKILL.md edges
+  edges=$(grep -F '"Answer questions, provide context" ->' "$ROOT/$f" || true)
+  [ -n "$edges" ] || problem "no edge leaves \"Answer questions, provide context\""
+  if printf '%s
+' "$edges" | grep -qF invoke_subagent; then problem "answer edge dispatches: $edges"; fi
+  verdict E12 'no answer edge leads to invoke_subagent'
+}
+
 check_E13() {
   local p
   for p in '&>' '2>/dev/null' '$(' 'pwd -P' 'if ['; do must_lack skills/using-git-worktrees/SKILL.md "$p"; done
@@ -97,6 +111,8 @@ check_E6() {
 check_E7() {
   local ep=skills/executing-plans/SKILL.md
   [ "$(tr -s '[:space:]' ' ' < "$ROOT/$ep" | grep -cF 'most capable')" = 0 ] || problem "$ep says 'most capable' (joined lines)"
+  local sdd=skills/subagent-driven-development/SKILL.md s
+  for s in '**Narration:**' 'Partner chose inline, or no subagent tool?' '**vs. Executing Plans (inline):**'     '- Both run in this session, share the same plan workspace and ledger, and never pause between tasks'     'whose last line is a fix round is mid-loop: resume the loop at the next'     'Task <N>: dispatched implementer <conversation ID> (base <base7>[, round <R>])'     'Task <N>: killed implementer <conversation ID> (round <R> takeover)'     'your human partner stopped it' 'Setup: self subagent for <name> (bundled agent unavailable)'     'git rev-list --left-right --count <BASE>...<HEAD>'; do must_have "$sdd" "$s"; done
   verdict E7 "executors keep their restored lines and ledger strings and never say 'most capable'"
 }
 check_E9() {

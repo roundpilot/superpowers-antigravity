@@ -11,6 +11,9 @@ Execute plan by dispatching fresh subagent per task, with two-stage review after
 
 **Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
 
+**Narration:** between tool calls, narrate at most one short line — the
+ledger and the tool results carry the record.
+
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are the four named below, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
 **Rulings, not stalls.** A running plan does not wait on a human. Conflicts,
@@ -35,15 +38,25 @@ Your human partner may steer while the plan runs — a message, a comment on the
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
+    "Partner chose inline, or no subagent tool?" [shape=diamond];
     "subagent-driven-development" [shape=box];
+    "executing-plans" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
     "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "subagent-driven-development" [label="yes"];
+    "Tasks mostly independent?" -> "Partner chose inline, or no subagent tool?" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
+    "Partner chose inline, or no subagent tool?" -> "executing-plans" [label="yes"];
+    "Partner chose inline, or no subagent tool?" -> "subagent-driven-development" [label="no"];
 }
 ```
+
+**vs. Executing Plans (inline):**
+- Fresh subagent per task (no context pollution) instead of one context doing every task
+- Review after each task (spec compliance + code quality) instead of only at the end
+- Costs a fresh context per task and per review; inline costs one context plus one final reviewer
+- Both run in this session, share the same plan workspace and ledger, and never pause between tasks
 
 Plans come from **superpowers:writing-plans**. This skill executes one.
 
@@ -76,7 +89,7 @@ digraph process {
     "Read plan, extract all tasks, create task.md artifact" -> "invoke_subagent TypeName: implementer";
     "invoke_subagent TypeName: implementer" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
-    "Answer questions, provide context" -> "invoke_subagent TypeName: implementer";
+    "Answer questions, provide context" -> "Implementer subagent implements, tests, commits, self-reviews";
     "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
     "Implementer subagent implements, tests, commits, self-reviews" -> "invoke_subagent TypeName: spec-reviewer";
     "invoke_subagent TypeName: spec-reviewer" -> "Spec reviewer subagent confirms code matches spec?";
@@ -127,6 +140,7 @@ a ledger file, not only in the task.md artifact.
   trust the ledger and `git log` over your own recollection.
 - `git clean -fdx` will destroy the workspace (it's git-ignored scratch); if
   that happens, recover from `git log`.
+- Each implementer dispatch gets a ledger line, in the same step as your other bookkeeping: `Task <N>: dispatched implementer <conversation ID> (base <base7>[, round <R>])` — the bracketed part only for a rounds 4-5 dispatch. When you kill an implementer yourself (rounds 4-5), ledger `Task <N>: killed implementer <conversation ID> (round <R> takeover)` in the same step as the new dispatch line. If a dispatch result shows no conversation ID, write `(id unavailable)` in its place; that task resumes by a fresh dispatch. A task whose last line is `dispatched` is in flight: list your subagents (`manage_subagents`, `Action: "list"`) and find that conversation. Running — wait for its report. Idle — its report was lost with your context, so ask it to repeat the report (`send_message`). Errored — dispatch a fresh implementer with the task text, telling it that commits after BASE are its predecessor's and that its first action is `git status`. Killed, with no kill line of yours for it — your human partner stopped it: that is their instruction, not a failure. Ledger `Task <N>: partner instruction: stopped implementer` and handle it like the four stops; never re-dispatch it on your own.
 
 The roles ship as bundled agents — `implementer`, `implementer-flash`, `implementer-pro`, `spec-reviewer`, `code-reviewer`, `re-reviewer` and `final-reviewer` (defined in the plugin's `agents/` directory). No registration step: dispatch them by TypeName. Bundled agents are documented on Antigravity 2.0 and the CLI and observed working on 2.0; they are unverified in the IDE. If a dispatch is rejected with an unknown TypeName, dispatch it once more as `superpowers:<name>`. If that is rejected too, the plugin's agents are not being discovered — verify the plugin installation, then read the plugin's `agents/<name>.md` (`../../agents/<name>.md` from this skill's folder), dispatch the built-in `self` subagent with that file's body, below its closing `---`, pasted ahead of the prompt, and ledger `Setup: self subagent for <name> (bundled agent unavailable)`. If you have no subagent tool, or you cannot read the plugin's agent file, this skill cannot run here, and the method was your human partner's choice. Ask once with `ask_question` — at Setup if you have no subagent tool, or at the first dispatch that exhausts these steps, before any work on that task — whether to run the plan inline with superpowers:executing-plans (same workspace and ledger, one final review) or to stop so they can fix the installation. Ledger the answer as `Setup: <answer>`; for inline, load superpowers:executing-plans and continue from this ledger. A running plan never switches executors on its own.
 
@@ -199,9 +213,11 @@ judgment, its own tests, or its own review surface.
 
 For each task, in plan order:
 
-1. Fill `implementer-prompt.md`'s dynamic template with the task's full text and scene-setting context, then dispatch: `invoke_subagent(Subagents: [{TypeName: "implementer", Role: "Implement Task <N>", Prompt: <filled template>, Workspace: "inherit"}])`.
-2. Record the implementer's agent identity from the dispatch result (its conversation ID) — fix-loop rounds 1-3 resume this agent.
-3. When the implementer reports DONE, run the two review stages in order: `spec-reviewer` first, then `code-reviewer` (dispatch templates in Prompt Templates below). Findings from either stage enter The Fix Loop.
+1. Record BASE (`git rev-parse HEAD`) before dispatching — the review range and fix-round diffs need it. Fill `implementer-prompt.md`'s dynamic template with the task's full text and scene-setting context, choose the implementer's tier by Model Selection (it sets the TypeName or the `Model` key), and dispatch: `invoke_subagent(Subagents: [{TypeName: "implementer", Role: "Implement Task <N>", Prompt: <filled template>, Workspace: "inherit"}])`.
+2. Record the implementer's agent identity from the dispatch result (its conversation ID) — fix-loop rounds 1-3 resume this agent — and ledger the dispatch line (Setup).
+3. When the implementer reports DONE, check the range (below), then run the two review stages in order: `spec-reviewer` first, then `code-reviewer` (dispatch templates in Prompt Templates below). Findings from either stage enter The Fix Loop.
+
+**Check the range before every review dispatch** — each stage, each re-review, the final review: run `git rev-list --left-right --count <BASE>...<HEAD>` (`Cwd`: the repository root). `<HEAD>` is your checkout's `git rev-parse HEAD` once the implementer reports, or once you have committed its reported work. It must print `0` and then a number above `0`: a first number above `0` means HEAD does not descend from BASE; a second number of `0` means the range is empty. Either way, do not dispatch: find where the commits went first. In a fix round whose implementer committed nothing, the check fails by design: count the round with its findings NOT ADDRESSED and do not dispatch the re-review. A reviewer's `RANGE INVALID` reply is the same failure.
 
 **Never:**
 - Dispatch multiple implementation subagents in parallel (conflicts)
@@ -226,13 +242,14 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 
 **Never** ignore an escalation or force the same agent to retry without changes. If the implementer said it's stuck, something needs to change.
 
-**Terminal error:** if `manage_subagents` `Action: "list"` shows the subagent in an error state (terminal failure — distinct from idle), it cannot be resumed; treat it as killed: dispatch a fresh implementer with the task text and the last known state.
+**Terminal error:** if `manage_subagents` `Action: "list"` shows the subagent in an error state (terminal failure — distinct from idle), it cannot be resumed: dispatch a fresh implementer with the task text and the last known state. A subagent shown as killed that you did not kill was stopped by your human partner — handle it as Setup's dispatch-identity rule says; do not re-dispatch it.
 
 ### Constructing Reviewer Prompts
 
 Per-task reviews are task-scoped gates. The broad review happens once, at the
 final whole-branch review. When you fill a reviewer template:
 
+- Every reviewer prompt carries the range it reviews: BASE and HEAD (the fix base and HEAD for a re-review).
 - Do not add open-ended directives like "check all uses" or "run race tests
   if useful" without a concrete, task-specific reason
 - Do not ask a reviewer to re-run tests the implementer already ran on the
@@ -287,7 +304,7 @@ Out-of-scope observations go to the ledger, never back into the loop.
 
 **Rounds 4–5 — fresh implementer, takeover framing.** If three resumed
 rounds haven't converged, the original implementer's approach may be the
-problem. Kill it (`manage_subagents`), dispatch a fresh `implementer`
+problem. Kill it (`manage_subagents`, ledgering the kill as Setup says), dispatch a fresh `implementer`
 whose Prompt carries: the task text, the open findings, and this framing:
 "A prior implementer attempted this task [N] times; you own it now."
 followed by the prior implementer's last report. The task's commits are
@@ -320,25 +337,7 @@ session — controller fixes pollute your context and skip review.
 
 ### Background Task Management
 
-When implementers run long-running operations (builds, test suites, deployments), use `manage_task` instead of blocking:
-
-**For operations expected to take >30 seconds:**
-- Implementer should use `run_command` with a short `WaitMsBeforeAsync` (e.g., 500ms) to background it
-- Check completion with `manage_task` `Action: "status"`, paced by a `schedule` timer rather than a tight loop
-- Use `manage_task` with `kill` to terminate stuck processes
-
-**When to background vs. wait:**
-
-```dot
-digraph background_decision {
-    "Operation expected >30s?" [shape=diamond];
-    "Background with manage_task" [shape=box];
-    "Wait synchronously" [shape=box];
-
-    "Operation expected >30s?" -> "Background with manage_task" [label="yes"];
-    "Operation expected >30s?" -> "Wait synchronously" [label="no"];
-}
-```
+Implementers wait for their own long runs and collect them before they report (see `agents/implementer.md`, Long-Running Commands); an implementer's turn ending is what reaches you as its report.
 
 ### Agent Communication
 
