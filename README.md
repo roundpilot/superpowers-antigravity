@@ -62,7 +62,7 @@ The abstraction layer costs tokens on every interaction, and those costs compoun
 | **Platforms** | 9+ (Claude Code, Codex, Cursor, etc.) | Antigravity 2.0 only |
 | **Tool names in skills** | Claude Code names + mapping files | Native Antigravity names |
 | **Subagent dispatch** | `Task tool (general-purpose)` | Bundled custom agents + `invoke_subagent` |
-| **Workspace isolation** | `git worktree` with fallback | Native `Workspace: "branch"` / `"share"` / `"inherit"` |
+| **Workspace isolation** | `git worktree` with fallback | Native `Workspace: "branch"` / `"inherit"` (`"share"` not recommended: its semantics are unverified) |
 | **Task tracking** | `TodoWrite` tool | `task.md` artifacts |
 | **Visual brainstorming** | Browser-based server | Native `generate_image` (no server needed) |
 | **Plan formatting** | Plain markdown | Mermaid diagrams, file links, diff blocks, GitHub alerts |
@@ -81,7 +81,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 - 🌐 **Browser-testing skill** — evidence-before-assertions discipline for UI work
 - 💰 **Token-saving subagents** — reviewers are read-only bundled agents (`TypeName: "research"` for ad-hoc review)
 - ✅ **Automatic feedback loops** — `RequestFeedback: true` (in `ArtifactMetadata`) on design docs and plans
-- 🔀 **Workspace mode guidance** — decision tables for `branch` / `inherit` / `share` per role
+- 🔀 **Workspace mode guidance** — decision tables for `branch` and `inherit` per role; `share` is not recommended (semantics unverified)
 - 🛡️ **Edit-time purity gate** — a `PreToolUse` hook blocks banned legacy vocabulary from entering this plugin's `skills/` before a write ever lands (opt-in for contributors: rename `hooks.example.json` → `hooks.json`; requires `bash` available to the hook runner)
 - 🔍 **Web research integration** — `search_web` woven into debugging, brainstorming, and planning
 
@@ -112,7 +112,24 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 6. **requesting-code-review** — Reviews against plan, reports issues by severity
 7. **finishing-a-development-branch** — Verifies tests, presents merge/PR/keep options
 
+**Where each executor runs.** subagent-driven-development needs `invoke_subagent` and the plugin's bundled agents — documented for 2.0 and the CLI, not available in the IDE (it has no `invoke_subagent`). executing-plans runs on all three; its final review uses a subagent where one is available.
+
 **Skills trigger automatically.** Mandatory workflows, not suggestions.
+
+## Running long plans
+
+Both executors run a plan to the end without pausing, but approval settings can still park a run on a prompt. What may wait: the read-only git commands the executors and reviewers run on every task (`git rev-parse`, `git rev-list`, `git merge-base`, `git diff`, `git log`, `git status`), the plan's test commands, `git add` and `git commit`, and — where edits need review — every file edit.
+
+- **Allow rules per subcommand, never a blanket `command(git)`**, which also lets `git push` through — and a push is one of the stops a run asks you about. Allow `command(git rev-parse)`, `command(git rev-list)`, `command(git merge-base)`, `command(git diff)`, `command(git log)`, `command(git status)`, `command(git add)`, `command(git commit)` and the plan's test command.
+- **2.0 on macOS/Linux, Default preset:** sandboxed commands already run without prompting, so `command(git add)`, `command(git commit)` and the test command matter most; under Request Review add the read-only rules too.
+- **2.0 on Windows:** the Default preset reviews every command, so add the same rules. Enabling the sandbox is not the lever: a command that must run outside it still asks first.
+- **CLI:** `request-review` (the default) prompts before shell commands, so add the same rules. On Windows shells use the `regex:` form, one token per regex: `command(regex:git (rev-parse|rev-list|merge-base|diff|log|status|add|commit).*)`. `default` mode also pauses on every file edit; `accept-edits` removes those pauses and subagents inherit it — it is your choice, and the plugin never sets it. `unsandboxed` rules are deprecated in favour of `command` rules. Headless runs (`agy -p`) soft-deny shell commands you have not granted, so grant them under `permissions.allow` first.
+- **IDE:** add the same git subcommands and the test command to the terminal allowlist under Request Review. In strict mode the allowlist is ignored, so every command asks.
+- **Least invasive:** answer the first prompt with "Yes, and always allow in this conversation" (CLI), or rely on 2.0 remembering an approval for the rest of the conversation. Each subagent runs in its own conversation; subagents inherit your allowed command prefixes, but whether a per-conversation approval reaches a subagent is not documented.
+- **Remote Control** (2.0 and the CLI) lets you answer approvals and questions from another device and notifies you when an agent needs input. It is optional; the skills never name it.
+- **`/goal` is not recommended for plan runs:** it runs "without intermediate pauses", which overrides the executors' stops and the finishing menu. The executors already run continuously.
+
+When a subagent's commit approval times out — the CLI gives subagent interactions 60 seconds — the implementer reports `commit not made`, and the controller commits its reported files in your conversation, where no such limit applies.
 
 ## 📦 Installation
 
@@ -257,7 +274,7 @@ The always-loaded footprint is a single compressed bootstrap (~55 lines); indivi
 | **brainstorming** | Three-path router (spike / bounded / architectural) so ceremony scales to the task; Socratic refinement with `generate_image` mockups and `search_web` for prior art |
 | **writing-plans** | Detailed plans with Mermaid diagrams, rich formatting, `RequestFeedback`, and a `Spec:` pointer so the spec travels with the plan |
 | **executing-plans** | Inline plan execution with walkthrough generation |
-| **dispatching-parallel-agents** | Concurrent workflows with `Workspace: "share"` and monitoring |
+| **dispatching-parallel-agents** | Concurrent workflows with `Workspace: "branch"` / `"inherit"` and monitoring |
 | **requesting-code-review** | Bundled `code-reviewer` dispatches with severity classification (`research` for lightweight ad-hoc reviews) |
 | **receiving-code-review** | Responding to feedback with technical rigor |
 | **using-git-worktrees** | Workspace isolation with mode decision table |
