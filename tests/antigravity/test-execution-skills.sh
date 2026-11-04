@@ -74,7 +74,7 @@ check_E2() {
 check_E3() {
   local t
   for t in 'mkdir -p' 'printf' 'rm -rf' '2>&1' ' && ' '$('; do must_lack skills/executing-plans/SKILL.md "$t"; done
-  for t in 'mkdir -p' 'printf' 'rm -rf' '2>&1' ' && ' '$('; do must_lack skills/subagent-driven-development/SKILL.md "$t"; done
+  for t in 'mkdir -p' 'printf' 'rm -rf' '2>&1' ' && ' '$('; do must_lack skills/subagent-driven-development "$t"; done
   verdict E3 'no executor contains a banned shell token'
 }
 MKDIR_SENTENCE="If a directory is missing, create each level with the shell's own command and retry."
@@ -121,23 +121,24 @@ check_E7() {
     'Task <N>: killed implementer <conversation ID> (round <R> takeover)' \
     'your human partner stopped it' 'Setup: self subagent for <name> (bundled agent unavailable)' \
     'git rev-list --left-right --count <BASE>...<HEAD>'; do must_have "$sdd" "$s"; done
+  local refs=skills/subagent-driven-development/references
+  for s in 'Task <N>: complete (commits <base7>..<head7>, review clean)' \
+    'Task <N>: complete (commits <base7>..<head7>, <K> parked)' 'Never move to the next task while' \
+    'Dispatch final-reviewer for the whole branch'; do must_have "$sdd" "$s"; done
   for s in 'commit not made' \
-    'Task <N>: fix round <R>/5 (<stage>: <X> addressed, <Y> open — <one-liners>; commits <a7>..<b7>)' \
-    'Task <N>: complete (commits <base7>..<head7>, review clean)' \
-    'Task <N>: complete (commits <base7>..<head7>, <K> parked)' 'Never move to the next task while'; do
-    must_have "$sdd" "$s"; done
-  must_have "$sdd" "Task <N>: Ruling: controller committed <files> — implementer's commit could not run — cost if wrong: one amend"
-  [ "$(tr -s '[:space:]' ' ' < "$ROOT/$sdd" | grep -cF 'most capable')" = 0 ] || problem "$sdd says 'most capable' (joined lines)"
-  for s in 'Dispatch final-reviewer for the whole branch' 'superpowers:final-reviewer' \
-    'Final review: self subagent (bundled agent unavailable)' 'Final: Ruling: <behavior the reviewer set aside>' \
-    '{DEFERRED_MINORS}' 'RequestFeedback: false' \
-    'It asks for nothing: superpowers:finishing-a-development-branch presents the choices.'; do must_have "$sdd" "$s"; done
+    "Task <N>: Ruling: controller committed <files> — implementer's commit could not run — cost if wrong: one amend"; do must_have "$refs/handling-reports.md" "$s"; done
+  must_have "$refs/fix-loop.md" 'Task <N>: fix round <R>/5 (<stage>: <X> addressed, <Y> open — <one-liners>; commits <a7>..<b7>)'
+  for s in 'superpowers:final-reviewer' 'Final review: self subagent (bundled agent unavailable)' \
+    'Final: Ruling: <behavior the reviewer set aside>' '{DEFERRED_MINORS}'; do must_have "$refs/final-review.md" "$s"; done
+  for s in 'RequestFeedback: false' \
+    'It asks for nothing: superpowers:finishing-a-development-branch presents the choices.'; do must_have "$refs/finish.md" "$s"; done
+  [ "$(cat "$ROOT/$sdd" "$ROOT/$refs"/*.md | tr -s '[:space:]' ' ' | grep -cF 'most capable')" = 0 ] || problem "$sdd or its references say 'most capable' (joined lines)"
   verdict E7 "executors keep their restored lines and ledger strings and never say 'most capable'"
 }
 check_E9() {
   local t
   for t in list_dir grep_search find_by_name define_subagent; do must_lack skills/executing-plans/SKILL.md "$t"; done
-  for t in list_dir grep_search find_by_name define_subagent; do must_lack skills/subagent-driven-development/SKILL.md "$t"; done
+  for t in list_dir grep_search find_by_name define_subagent; do must_lack skills/subagent-driven-development "$t"; done
   verdict E9 'no executor names a retired or excluded tool'
 }
 check_E10() {
