@@ -171,7 +171,7 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 - **T2:** `ArtifactMetadata` inner keys; the `Model` key once LC3's model leg shows each child's `modelName` following `flash` and `pro` on every product dispatched (S3 3a-M); until then T4, and S3.4's variant files ship (D5).
 - **T3:** `Workspace` `inherit`/`branch` (S4 uses `inherit`, D4); bundled agents via S3.7's chain; `research` for exploration, never called read-only; explicit artifact paths; slash forms and `/plan`; Idle re-awakening and `send_message` by conversation id (fallback: fresh dispatch); the child conversation id; `manage_task` status (secondary to the foreground wait); `ask_question` write-in; the `ask_permission` read/write Actions; non-workspace access (pre-emptive `ask_permission` grants only before a subagent fan-out or a sandbox mount).
 - **T4:** bare-`TargetFile` routing, `share`, `@path`, hook runtime, `unsandboxed`, `/boost`, `/teamwork-preview`.
-- `plugin.json` carries no `version`; `package.json` holds it (Live check 8, S2.5).
+- `plugin.json` carries the documented manifest fields, `version` included (Antigravity build-plugins; S2.5 superseded by spec Addendum D.1).
 
 ## §1 Products, roots and identifiers
 
@@ -390,11 +390,15 @@ Each changelog-only agent key, with its product and version (S3.1 decides which 
 
 `inheritCustomizations` governs "skills, rules, plugins, subagents, and MCP servers" [CL CLI 1.1.14], not `tools:` (§3.9).
 
+`excludeDefaultComponents`: weighed after LC3 3i found send_message and manage_task in spec-reviewer, code-reviewer, re-reviewer and final-reviewer on 2.0 2.19.1 and CLI 1.2.17; not adopted — send_message and manage_task are harmless defaults and the stripped prompt sections were never measured. [MO 2.0 2.19.1 2026-10-05 LC3; MO CLI 1.2.17 2026-10-05 LC3]
+
 ### §3.9 Inheritance does not grant tools
 
 Tools are the explicit list [D 2.0 subagents:47]; `inheritCustomizations` adopts skills, rules, plugins, subagents and MCP servers [CL CLI 1.1.14] (2.0: skills, rules, subagents [CL 2.0 2.9.1]); neither list includes built-in tools; CLI Markdown agents inherit ambient skills, rules and subagents by default [CL CLI 1.1.25]; rosters reach only agents listing `invoke_subagent` [CL CLI 1.2.5]; the default toolset is `[U]`, and its one documented member, `manage_task`, cannot dispatch; `self` shares its caller's tools [D 2.0 subagents:23]. Hence [I, pending LC3 S1-e] no bundled agent can open a review seat but `self` can, so `self` is the last subagent step: bare TypeName, `superpowers:` TypeName, `self`, then the consumer's own path, each fallback ledgered (D6). Skipped in v6.3.0; reversed in d58690c and reverted in 1f9860d (2026-08-24): "this is a native port, the skip stands" (maintainer instruction). Accepted residuals (D15): a duplicated review seat via `self` (cost, not correctness); a bundled agent reached by the bootstrap rule reviews inline at worst (`<SUBAGENT-STOP>`). Re-open if LC3 S1-e or S3 3i finds an unlisted dispatch tool, a skill uses `self` earlier, or a changelog adds dispatch tools to the defaults.
 
 **Gate.** LC3 S1-e. Default: keep the skip. Fallback: d58690c's Task 8 verbatim at its placements (three reviewer blocks, `implementer.md`, both SDD hunks; placement-only divergence), plus the reviewer block in `final-reviewer.md` and the implementer block in any S3.4 variants (`session-analyst`, `bundle-scrubber`: none); record it in §3.9 and weigh `excludeDefaultComponents`.
+
+Fallback applied: LC3 S1-e found send_message and manage_task in the bundled reviewers (spec-reviewer, code-reviewer, re-reviewer, final-reviewer) on 2.0 2.19.1 and CLI 1.2.17; d58690c's Task 8 blocks ship at their placements (placement-only divergence). [MO 2.0 2.19.1 2026-10-05 LC3; MO CLI 1.2.17 2026-10-05 LC3]
 
 ### §3.10 Models
 

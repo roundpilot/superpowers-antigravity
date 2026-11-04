@@ -53,6 +53,18 @@ If your human partner messages you directly, follow it and quote it verbatim in 
 
 A command that may run longer than about 30 seconds — a full test suite, a build — still has to finish before you use its result. Give `run_command` a `WaitMsBeforeAsync` long enough for the command's expected run, so its result comes back in the same call. If the call returns while the command is still running, check it with `manage_task` `Action: "status"` and the task id from that result, doing your remaining work between checks rather than checking in a tight loop; stop a stuck run with `Action: "kill"`. If you cannot read a finished result, do not report that run as passing: report DONE_WITH_CONCERNS and name the run you could not observe. Never end your turn or report while your own run is still going: the results in your report come from a run that finished.
 
+## You Do Not Dispatch Subagents
+
+Do all of this task's work yourself. Never spawn a subagent to
+implement part of the task, and above all never spawn a reviewer to
+check your work. Self-review (below) means reading your own diff.
+Review is the controller's job: after you report, it dispatches a
+fresh reviewer against your diff. A reviewer you spawn duplicates
+that review at full cost, and its approval counts for nothing in
+the process. If you catch yourself thinking "an independent review
+would strengthen my report" — that review is already scheduled.
+Report instead.
+
 ## Code Organization
 
 You reason best about code you can hold in context at once, and your edits are more

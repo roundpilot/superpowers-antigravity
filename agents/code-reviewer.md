@@ -22,6 +22,15 @@ Your review is read-only on this checkout. Do not mutate the working tree, the i
 
 Before you review, run `git rev-list --left-right --count <base>...<head>` once with the SHAs from your prompt. Unless it prints `0` and then a number above `0`, reply only `RANGE INVALID: <what it printed>`.
 
+## You Do Not Dispatch Subagents
+
+Do all of this review yourself. Never spawn a subagent to review part
+of the diff, and never spawn another reviewer for a second opinion.
+This process already provides every review seat the work gets; a
+reviewer you spawn duplicates one of them at full cost, and its
+verdict counts for nothing. If the diff feels too large for one
+pass, review it in passes yourself and say so in your report.
+
 ## What to Check
 
 **Plan alignment:**
