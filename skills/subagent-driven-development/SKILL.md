@@ -160,6 +160,8 @@ a Spec, read that too: the spec is the authority the plan argues from, and
 conflicts inside the plan resolve against it. A plan with no reachable spec
 gets a ledger note saying so — rulings made without one are provisional.
 
+Ledger a `Plan map:` of the task-heading lines — each task's first and last line, taken from your read or from `git grep -n --no-index -E "^#+[[:space:]]+Task[[:space:]]+[0-9]+" -- <plan>` — and remap it if the plan changes. Implementers and spec reviewers get their task as that line range of the plan's absolute path, not as pasted text; interfaces from earlier tasks, rulings and parked-finding pointers are still pasted. Paste the task's full text instead when the plan lives outside the repository or `git check-ignore <plan>` prints its path.
+
 ### Pre-Flight Plan Review
 
 Before dispatching Task 1, scan the plan once for conflicts, writing down
@@ -213,7 +215,7 @@ judgment, its own tests, or its own review surface.
 
 For each task, in plan order:
 
-1. Record BASE (`git rev-parse HEAD`) before dispatching — the review range and fix-round diffs need it. Fill `implementer-prompt.md`'s dynamic template with the task's full text and scene-setting context, choose the implementer's tier by Model Selection (it sets the TypeName or the `Model` key), and dispatch: `invoke_subagent(Subagents: [{TypeName: "implementer", Role: "Implement Task <N>", Prompt: <filled template>, Workspace: "inherit"}])`.
+1. Record BASE (`git rev-parse HEAD`) before dispatching — the review range and fix-round diffs need it. Fill `implementer-prompt.md`'s dynamic template with the task's plan range (Setup's `Plan map:`) and scene-setting context, choose the implementer's tier by Model Selection (it sets the TypeName or the `Model` key), and dispatch: `invoke_subagent(Subagents: [{TypeName: "implementer", Role: "Implement Task <N>", Prompt: <filled template>, Workspace: "inherit"}])`.
 2. Record the implementer's agent identity from the dispatch result (its conversation ID) — fix-loop rounds 1-3 resume this agent — and ledger the dispatch line (Setup).
 3. When the implementer reports DONE, check the range (below), then run the two review stages in order: `spec-reviewer` first, then `code-reviewer` (dispatch templates in Prompt Templates below). Findings from either stage enter The Fix Loop.
 
@@ -221,7 +223,7 @@ For each task, in plan order:
 
 **Never:**
 - Dispatch multiple implementation subagents in parallel (conflicts)
-- Make subagent read plan file (provide full text instead)
+- Make a subagent read the whole plan file — hand it its task's line range (Setup)
 - **Start code quality review before spec compliance is ✅** (wrong order)
 
 ### Handling Implementer Status
@@ -231,6 +233,8 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 **DONE:** Proceed to spec compliance review.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
+
+An implementer — a task's, a fix round's, or the final fixer — that reports `commit not made` left its work uncommitted in your checkout. Run `git status`: if it shows changed files the report does not name, commit nothing and ask the implementer about them (`send_message`). Otherwise stage exactly the reported files and commit them yourself with the plan's commit message — committing reported work is not a code fix. Ledger `Task <N>: Ruling: controller committed <files> — implementer's commit could not run — cost if wrong: one amend`, then run the range check.
 
 **NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Send the missing context via `send_message` — the idle implementer resumes with its context intact.
 
@@ -278,6 +282,12 @@ final whole-branch review. When you fill a reviewer template:
   ledger the ruling before you act on it. Do not dismiss the finding because
   the plan mandates it, and do not dispatch a fix that contradicts the plan
   without a recorded ruling.
+- The dispatch carries the no-subagents contract (it is in the
+  implementer template): the implementer never dispatches subagents —
+  not helpers, and never a reviewer. Review arrives from you, after the
+  report. In real sessions, every reviewer a worker spawned duplicated
+  the task review the controller dispatched anyway — a full extra
+  review seat per task.
 - When a later dispatch touches an area with a parked finding, carry a
   one-line pointer to that ledger entry in the dispatch prompt.
 
@@ -312,9 +322,9 @@ already on the working branch, so it continues from them. Its first action
 is `git status`: a killed implementer can leave uncommitted edits, which it
 builds on or reports — it never discards them.
 
-**Round counting is shared per task, across both stages.** Append
-`Task <N>: fix round <R>/5 (<stage>: <one-line summary>)` to the ledger
-each round.
+**Round counting is shared per task, across both stages.** After each
+round, append to the ledger:
+`Task <N>: fix round <R>/5 (<stage>: <X> addressed, <Y> open — <one-liners>; commits <a7>..<b7>)`
 
 **At the cap — adjudicate.** After round 5, stop dispatching. For each
 open finding, rule:
@@ -332,6 +342,20 @@ open finding, rule:
 
 Adjudicate only at the cap. Never fix findings yourself in the controller
 session — controller fixes pollute your context and skip review.
+
+### Complete the task
+
+When the review comes back clean — or every open finding is parked with a
+ruling at the cap — append the completion line to the ledger in the same
+message as your other bookkeeping:
+
+- `Task <N>: complete (commits <base7>..<head7>, review clean)`
+- `Task <N>: complete (commits <base7>..<head7>, <K> parked)` after a
+  tripped breaker
+
+Then mark the task complete in the task.md artifact and move on. Never move to the next task while
+the review has open Critical/Important issues that are neither fixed nor
+parked-with-ruling at the cap.
 
 ## Async Operations
 
@@ -449,6 +473,7 @@ the branch.
 | "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. Every round ends with a scoped re-review. |
 | "Reviews slow the loop down" | The loop without reviews is just unverified churn. Reviews are the loop's brakes and steering. |
 | "Ledger bookkeeping is overhead" | The ledger is what survives compaction. Controllers without one have re-dispatched entire completed task sequences. |
+| "The implementer spawned its own reviewer — free extra assurance" | It's a duplicate seat reviewing the same diff; the task review is the gate. A worker-spawned reviewer is a defect to flag, not rigor. |
 
 ## Prompt Templates
 

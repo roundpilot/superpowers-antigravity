@@ -13,7 +13,7 @@ You are implementing Task {N}: {TASK_NAME}
 
 ## Task Description
 
-{FULL_TASK_TEXT}
+Your task is `{PLAN_PATH}` lines {START}-{END}. Read exactly that range with `view_file` before anything else — it is your requirements, with the exact values to use verbatim. Its first line is the `Task {N}` heading; if it is not, stop and report NEEDS_CONTEXT.
 
 ## Context
 
@@ -25,6 +25,8 @@ Work from: {WORKING_DIRECTORY}
 **Placeholders:**
 - `{N}` — Task number
 - `{TASK_NAME}` — Task name from plan
-- `{FULL_TASK_TEXT}` — Complete task text from plan (paste it, don't make subagent read file)
+- `{PLAN_PATH}` — the plan's absolute path
+- `{START}`, `{END}` — the task's first and last line, from the ledger's `Plan map:`
+- For a plan outside the repository, or one `git check-ignore <plan>` prints, replace the range paragraph with the task's complete text, pasted
 - `{SCENE_SETTING_CONTEXT}` — Where this fits, dependencies, architectural context
 - `{WORKING_DIRECTORY}` — Working directory path

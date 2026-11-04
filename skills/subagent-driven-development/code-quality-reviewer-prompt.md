@@ -10,7 +10,7 @@ The code-reviewer's static system prompt includes an "Additional Checks (Subagen
 invoke_subagent(Subagents: [{
   TypeName: "code-reviewer",
   Role: "Code quality reviewer for Task N",
-  Prompt: <fill from code-reviewer.md dynamic template>,
+  Prompt: <fill from code-reviewer.md's base dynamic template — per-task reviews leave out every whole-branch block>,
   Workspace: "inherit"
 }])
 ```

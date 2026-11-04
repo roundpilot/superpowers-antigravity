@@ -121,6 +121,12 @@ check_E7() {
     'Task <N>: killed implementer <conversation ID> (round <R> takeover)' \
     'your human partner stopped it' 'Setup: self subagent for <name> (bundled agent unavailable)' \
     'git rev-list --left-right --count <BASE>...<HEAD>'; do must_have "$sdd" "$s"; done
+  for s in 'commit not made' \
+    'Task <N>: fix round <R>/5 (<stage>: <X> addressed, <Y> open — <one-liners>; commits <a7>..<b7>)' \
+    'Task <N>: complete (commits <base7>..<head7>, review clean)' \
+    'Task <N>: complete (commits <base7>..<head7>, <K> parked)' 'Never move to the next task while'; do
+    must_have "$sdd" "$s"; done
+  must_have "$sdd" "Task <N>: Ruling: controller committed <files> — implementer's commit could not run — cost if wrong: one amend"
   verdict E7 "executors keep their restored lines and ledger strings and never say 'most capable'"
 }
 check_E9() {

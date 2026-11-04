@@ -11,7 +11,7 @@ Review spec compliance for Task {N}: {TASK_NAME}
 
 ## What Was Requested
 
-{FULL_TASK_REQUIREMENTS}
+The requirements are `{PLAN_PATH}` lines {START}-{END}. Read exactly that range with `view_file` before anything else. Its first line is the `Task {N}` heading; if it is not, stop and report NEEDS_CONTEXT.
 
 ## What Implementer Claims They Built
 
@@ -28,3 +28,6 @@ Fetch the diff yourself: `git diff --stat {BASE_SHA}..{HEAD_SHA}` and `git diff 
 **Placeholders:**
 - `{BASE_SHA}` — the BASE you recorded before dispatching the implementer
 - `{HEAD_SHA}` — your checkout's HEAD after the implementer reported DONE, or after you committed its reported work
+- `{PLAN_PATH}` — the plan's absolute path
+- `{START}`, `{END}` — the task's first and last line, from the ledger's `Plan map:`
+- For a plan outside the repository, or one `git check-ignore <plan>` prints, replace the range paragraph with the task's complete text, pasted
