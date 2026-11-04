@@ -16,6 +16,11 @@ Write implementation plans for an engineer who has not seen this codebase or thi
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
+**If your human partner started with `/plan`, or the CLI is in plan mode:** that mode asks for an
+implementation plan, and this skill writes it. Write one plan — this skill's format, at this
+skill's save path — and finish with this skill's handoff. Never draft a second, built-in plan
+beside it.
+
 ## Scope Check
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
@@ -57,7 +62,7 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -207,14 +212,53 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan (using `write_to_file` with `IsArtifact: true`, with the implementation-plan type and `RequestFeedback: true` in `ArtifactMetadata`), confirm execution:
+After saving and self-reviewing the plan, link it for your human partner
+to read. If they have already explicitly supplied an execution method, ask
+them to review the plan and confirm it captures what they want; wait for that
+review before implementation, then use the preserved method. Otherwise, ask
+them to review the plan and choose an execution method before implementation.
 
-**"Plan complete and saved. Ready to execute with subagent-driven-development?"**
+**Linking it:** request the review on the plan as it stands after the self-review: the save
+that follows the self-review carries
+`ArtifactMetadata: {ArtifactType: "implementation_plan", RequestFeedback: true}`, plus
+`IsArtifact: true` when it is a whole-file write. If the self-review changed nothing, re-save the
+plan unchanged. Always request this review; their review setting decides only whether
+the platform pauses, and where it leaves the call to you, a plan always gets one. In 2.0, the IDE and the CLI, save it as a plain markdown artifact instead — `IsArtifact: true` on a whole-file write, with no `ArtifactType` and no `RequestFeedback`. Proceed approves
+the plan, not an execution method, and in the CLI approving the write only lets the file reach
+disk — so ask the question below either way, after the write returns.
 
-Use `ask_question` to present the confirmation.
+Ask with `ask_question`: one single-select question whose text is the message below, with short
+options, the recommended method first. Choosing a method answers "does the plan capture what you
+want?" with yes.
 
-User feedback may arrive as inline artifact comments — treat each comment as a change request against that section and confirm resolution in the artifact.
+**When no execution method has already been supplied:**
 
-**REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Fresh subagent per task + two-stage review (spec compliance + code quality)
-- Define implementer/spec-reviewer/code-reviewer types upfront
+**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Please review the plan. Which execution approach would you prefer?**
+
+- **Subagent-driven** - A fresh subagent implements each task and a fresh reviewer checks it before the next one starts, then a whole-branch review at the end. Most thorough; costs a fresh context per task and per review.
+- **Native** - I implement every task myself in this session, the way this harness runs work, then one fresh reviewer at the Pro model tier — which model that is, is not documented — checks the whole branch. Cheapest and fastest; no independent review until the end. Runs well with a mid-tier session model, since the plan carries the design.
+
+**For this plan I recommend <one of the two>, because <one sentence from the plan: how much the tasks depend on each other's interfaces, how many there are, what a shipped mistake would cost>. Does the plan capture what you want, and which approach should we use?"**
+
+Options: "<recommended method> (recommended)", "<the other method>",
+"The plan needs changes — I'll comment on it or tell you". If you cannot dispatch subagents in
+this session, recommend Native and say that is why — and say that the final review is then your
+own review of the whole branch, not a fresh reviewer's.
+
+**When an execution method has already been supplied:**
+
+**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Please review the plan. Does it capture what you want?"**
+
+Options: "Yes — go ahead with <method>", "The plan needs changes — I'll comment on it or tell you".
+
+**Whichever question you asked:** ask it even when your partner already pressed Proceed. A
+cancelled question is no answer: wait for their message, and never fall back to your
+recommendation. Comments on the plan, a submitted review, a rejected write, or "The plan needs
+changes" are change requests: read their comments or reply, revise that section, re-run the
+self-review, save again the same way, and ask again.
+
+**If Subagent-driven chosen:**
+- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+
+**If Native chosen:**
+- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
