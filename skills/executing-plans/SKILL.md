@@ -217,7 +217,7 @@ Run the test command the brief names for the whole task with `run_command` (`Cwd
 
 `Task <N>: complete (commits <base7>..<head7>, tests: <command> → <result>)`
 
-`<base7>` and `<head7>` are the first seven characters of BASE and of the HEAD you just read; `<result>` is the runner's final summary line.
+`<base7>` and `<head7>` are the first seven characters of BASE and of the HEAD you just read; `<result>` is the runner's final summary line. A test command that passes and prints nothing is recorded as tests: <command> → (no output); never leave it unrecorded.
 
 A failing run records nothing; the task is not complete. When it records, mark the task complete in the task.md artifact and take the next task.
 
