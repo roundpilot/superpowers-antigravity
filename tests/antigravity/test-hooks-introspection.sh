@@ -50,6 +50,10 @@ fi
 EMPTY="$WORK/empty"
 mkdir -p "$EMPTY"
 (cd "$EMPTY" && agy_run "$WORK/without.json" "$WORK/without.err" 120 -p "/hooks" --output-format json)
+if [ $? -ne 0 ] || [ ! -s "$WORK/without.json" ]; then
+    echo "[SKIP] empty-directory run failed or printed nothing (inconclusive)"
+    exit 77
+fi
 if grep -qF 'skill-purity-gate' "$WORK/without.json"; then
     echo "[FAIL] listed outside the enabling repository"
     exit 1

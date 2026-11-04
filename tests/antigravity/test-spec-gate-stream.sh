@@ -32,7 +32,9 @@ else
     [ -z "${AGY_TEST_MODEL:-}" ] || AGY_ARGS+=(--model "$AGY_TEST_MODEL")
     [ -z "${AGY_TEST_EFFORT:-}" ] || AGY_ARGS+=(--effort "$AGY_TEST_EFFORT")
     coproc agy "${AGY_ARGS[@]}" 2> "$WORK/stderr.txt"
-    trap 'kill "$COPROC_PID" 2>/dev/null; rm -rf "$WORK"' EXIT
+    # COPROC_PID is unset once bash reaps the coprocess
+    stop_agy() { [ -z "${COPROC_PID:-}" ] || kill "$COPROC_PID" 2>/dev/null; }
+    trap 'stop_agy; rm -rf "$WORK"' EXIT
 
     # turn <text>: send one user message, append agy's output to the stream until its result event
     turn() {
@@ -44,7 +46,7 @@ else
             case "$line" in *'"event":"result"'*) return 0 ;; esac
         done
         rc=$?
-        kill "$COPROC_PID" 2>/dev/null
+        stop_agy
         if [ "$rc" -gt 128 ]; then echo "[SKIP] turn timed out"; else echo "[SKIP] agy exited without a result"; fi
         exit 77
     }
@@ -62,7 +64,8 @@ else
         exit 77
     fi
     eval "exec ${COPROC[1]}>&-"
-    wait "$COPROC_PID" 2>/dev/null
+    for _ in 1 2 3 4 5 6 7 8 9 10; do [ -n "${COPROC_PID:-}" ] && kill -0 "$COPROC_PID" 2>/dev/null || break; sleep 1; done
+    stop_agy
 fi
 
 BAD=""
