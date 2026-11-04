@@ -118,9 +118,9 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 | 7 | `ArtifactMetadata` inner keys: `ArtifactType` (`task`, `implementation_plan`, `walkthrough`, `other`), `RequestFeedback`, `Summary`, `UserFacing` | MO (re-observe: 2.13.0) | U | U | T2; no gate depends on the effect | LC1, LC5, LC1 S1-k |
 | 8a | The agent writes artifacts to an explicit path in its own artifact directory | MO: in 199 of 217 `ArtifactMetadata` writes the agent itself passed an absolute `brain/<id>/` path; 18 targeted workspace paths | U | U; D settings:256 (the app-data directory "contains artifacts") | T3 | LC5 S1-g |
 | 8b | A bare `TargetFile` with `IsArtifact` is routed to the artifact directory | U (the probe classified the path the agent passed, not routing) | U | U | T4: skills never rely on routing | LC5 S1-g |
-| 9 | `invoke_subagent` `Workspace` values `inherit`/`branch` | D 2.0 subagents:12; MO both used; CL 2.18.1 | argument D·s hooks:167; `branch` worktrees CL 1.1.26; `inherit` U; CL 1.2.10 | argument D·s; values U | T3 (the argument is D·s; the values are named with a runtime fallback) | LC1, LC4 |
+| 9 | `invoke_subagent` `Workspace` values `inherit`/`branch` | D 2.0 subagents:12; MO both used; CL 2.18.1; MO 2.19.1 | argument D·s hooks:167; `branch` worktrees CL 1.1.26; `inherit` MO 1.2.17; CL 1.2.10 | argument D·s; values U | T3 (the argument is D·s; the values are named with a runtime fallback) | LC1, LC4 |
 | 10 | `Workspace: "share"` semantics | D 2.0 subagents:12, the phrase "share directory storage" only | U | U | T4 | LC4 S1-f |
-| 11 | `invoke_subagent` spec key `Model` | MO accepted (`inherit`, `flash`); effect unverified | U | U | T4; T2 once LC3's model leg (3a-M) shows each child's `modelName` following `flash` and `pro` on every product dispatched (D5) | LC3 |
+| 11 | `invoke_subagent` spec key `Model` | MO accepted (`inherit`, `flash`); effect unverified; MO 2.19.1 | MO 1.2.17 | U | T4; T2 once LC3's model leg (3a-M) shows each child's `modelName` following `flash` and `pro` on every product dispatched (D5) | LC3 |
 | 12 | Child conversation id visible to the parent | MO (`INVOKE_SUBAGENT` results, 96/96) | D cli/headless:191 `subagent_info.conversation_id` (print mode) | U | T3; row 46 is the listing route | LC7 |
 | 13 | Plugin `agents/` discovered; bundled TypeNames dispatched by bare name | D 2.0 subagents:37; MO `implementer`, `spec-reviewer`, `code-reviewer` | D cli/commands/agents:68; CL 1.0.1; the TypeName form is U (CL 1.1.24's de-duplication suggests no prefix) | X8 | T3 (runtime detection; S3.7's resolution chain) | LC3, LC8 |
 | 14 | Documented agent keys: `name`, `description`, `tools`, `mainAgent`, `subagent`, `model`, `commandExecutionPolicy`, `mcpServers`, `skills`/`plugins` | D 2.0 subagents:45-53 | D CLI subagents:189 (by link) | U | T3 as a file format; a product that does not load agents falls to S3.7's chain | LC3 |
@@ -134,7 +134,7 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 | 22 | Rule frontmatter required; invalid rules silently discarded | D·s rules:37-41 (worded for `.agents/rules`) | D·s | D·s | Fact (S2.1) | LC2 |
 | 23 | `@[label](path)` inlines; `@filename` does not | D·s rules:98-103 | D·s | D·s | T1 (not used today; S2.2 gates its adoption) | LC2 |
 | 24 | `@path` inlines | CL 2.11.0 (X4) | U | U | T4 | LC2 |
-| 25 | Plugin `rules/` activated automatically | D·s component; activation U | D rules:160 | D·s component; activation U | Per S2.1's gate | LC2, LC8 |
+| 25 | Plugin `rules/` activated automatically | D·s component; activation U; MO 2.19.1 | D rules:160; MO 1.2.17 | D·s component; activation U; MO 2.5.5 | Per S2.1's gate | LC2, LC8 |
 | 26 | A plugin-level `hooks.json` loads | D·s plugins:13, :82 (X7) | D hooks:26 | D·s (X7) | The fork ships none at the plugin root | LC6 |
 | 27 | Workspace `.agents/hooks.json` and global `~/.gemini/config/hooks.json` | D hooks:13-14 | D hooks:24-25; loading after folder trust CL 1.1.1 | D hooks:40-41 | T1 (existence; contributor gate only, S7.2) | — |
 | 28 | Hook runtime: shell, cwd, exit codes, what a failure does | U; "fails closed" MO product unrecorded, 2026-08-03 (v6.2.1 release note) (re-observe: 2.0 2.6.0, 2.12.0) | U | U | T4 | LC6, LC6 S1-l |
@@ -299,6 +299,7 @@ Every tool on the Supported Tools list of the hooks page [D shared hooks:123-180
 - `ask_permission` requests scoped permissions. It is not a confirmation dialog.
 - `define_subagent` takes no `model`, `tools` or `Workspace` argument; its capability switches are the three `enable_*` flags [D shared hooks:169].
 - A misspelled name in `tools:` may hang the subagent [D 2.0 subagents:55].
+- `multi_replace_file_content` was absent from the main agent's tools on 2.0 and the CLI [MO 2.0 2.19.1 2026-10-05 LC1 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC1 probe 20261005-1426]. Prose never requires it (R13).
 
 ## §3 Subagents and custom agents
 
@@ -315,6 +316,7 @@ The `subagents` page is tabbed throughout (§0.2): its 2.0 tab documents the dis
 - Killing a subagent cleans up its worktrees [D 2.0 subagents:110]. So branch results must be integrated before the kill [I].
 - Parallel `inherit` subagents that each commit share one checkout and race on `.git/index.lock` [I].
 - The CLI tab does not repeat the workspace sentence.
+- Implementer commits made with `inherit` landed in the controller's checkout on 2.0 and the CLI [MO 2.0 2.19.1 2026-10-05 LC4 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC4 probe 20261005-1426].
 
 ### §3.2 Built-in subagents
 
@@ -400,12 +402,15 @@ Tools are the explicit list [D 2.0 subagents:47]; `inheritCustomizations` adopts
 
 Fallback applied: LC3 S1-e found send_message and manage_task in the bundled reviewers (spec-reviewer, code-reviewer, re-reviewer, final-reviewer) on 2.0 2.19.1 and CLI 1.2.17; d58690c's Task 8 blocks ship at their placements (placement-only divergence). [MO 2.0 2.19.1 2026-10-05 LC3; MO CLI 1.2.17 2026-10-05 LC3]
 
+Probe record: send_message and manage_task are default components of every subagent, with inheritance on or off [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426].
+
 ### §3.10 Models
 
 - `model` is `inherit`, `flash` or `pro` [D 2.0 subagents:50].
 - With `inherit`, a subagent whose parent has no model falls back to the fast tier [CL CLI 1.1.16].
 - What `flash` and `pro` map to is undocumented.
 - No per-invocation override is documented (R7). The `invoke_subagent` spec key `Model` is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; effect unverified (R7, D5).
+- The per-dispatch `Model` key was ignored: the child ran the parent's model on 2.0 and the CLI [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC3 probe 20261005-1426]. The agent frontmatter `model` key was honoured on 2.0 under a Claude parent [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426].
 - `/model <name> <prompt>` is a one-shot for the main agent only [CL CLI 1.1.27].
 - Arbitrary model targets per subagent, independent of the root agent, exist only in the SDK [CL SDK 0.1.18]. The product mechanism is the `model` frontmatter key.
 - Current models: Gemini 3.8, 3.7 and 3.6 Flash, Gemini 3.1 Pro, Claude Sonnet 4.6 and Opus 4.6, and GPT-OSS-120b [D unscoped models:9-15]. Skills never name model slugs (X15).
@@ -473,6 +478,7 @@ Fallback applied: LC3 S1-e found send_message and manage_task in the bundled rev
   - workspace and global rule locations per product [D 2.0 rules:151-152; D CLI rules:158-160; D IDE rules:170-171]; the CLI adds `~/.gemini/antigravity-cli/rules/*.md` [D CLI rules:159];
   - plugin rules are activated automatically [D CLI rules:160]. On 2.0 and the IDE activation is unverified [U], although `rules/` is a documented plugin component [D shared plugins:19, :80].
 - Agent `rules:` key: §3.8.
+- The plugin's always-on rule loaded as the bootstrap on all three products, and the legacy `GEMINI.md` context did not [MO IDE 2.5.5 2026-10-05 LC2 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC2 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC2 probe 20261005-1426].
 - `/learn` output location: X10.
 
 ## §6 Plugins
@@ -502,6 +508,7 @@ Fallback applied: LC3 S1-e found send_message and manage_task in the bundled rev
 - A third-party porting guide claims that `agy` keeps a declared `contextFileName` and strips undeclared files [TP].
 - Sidecars: `plugins/<pluginName>/sidecars/` and `builtin: schedule` [D unscoped sidecars:11, :37].
 - Projects: "Reusable skills, MCPs, and hooks are managed globally" under the Project model, and New Worktree Mode isolates concurrent agents [D 2.0 projects:20, :47]. How that interacts with workspace plugin and hook installs is unverified [U] until leg 2d.
+- `agy plugin uninstall` rewrote `~/.gemini/config/config.json` and removed the plugin's `enabled` entry [MO CLI 1.2.17 2026-10-05 LC8 probe 20261005-1426].
 - This fork is installed on the maintainer's 2.0 as a git clone at `~/.gemini/config/plugins/superpowers` (d558e20) whose `plugin.json` carries `version`, and its skills load [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
 
 ## §7 Hooks
@@ -573,6 +580,10 @@ Observed so far:
 
 The 2026-07-29 reference's hook errors (lines 102-108) are listed in §14.
 
+### §7.8 Hooks in use
+
+The plugin ships no hook: no `hooks.json` at the plugin root and no user-facing hook. `hooks/purity-check.sh` is a one-release no-op stub for v6.2.x opt-ins that prints `{"decision":"allow"}`. Contributors enable `hooks/purity-check.mjs` through the global `~/.gemini/config/hooks.json` entry `superpowers-purity-gate` (`node hooks/purity-check.mjs --print-global-entry` prints it); the repository carries no workspace hook entry. The hook is anchored on its own repository, scans only when that repository is mounted, returns `deny` on a law hit, `allow` only inside a workspace or the artifact directory, and `ask` otherwise.
+
 ## §8 Artifacts, planning and review
 
 - Documented kinds: Implementation Plans, code diffs, architecture diagrams, images and browser recordings [D 2.0/CLI artifacts:3]; on the IDE, "rich markdown plans, code diff views, architecture diagrams, images, and browser recordings" [D IDE ide/overview:41-43]. Walkthroughs [D unscoped walkthrough:3].
@@ -587,6 +598,7 @@ The 2026-07-29 reference's hook errors (lines 102-108) are listed in §14.
   - Artifacts in subdirectories now appear in the list [CL 2.0 2.11.0; CL CLI 1.1.15].
   - Scratch files are hidden unless marked user-facing [CL 2.0 2.13.0], so `task.md` is never written under `scratch/` [I].
 - HTML and generative-UI artifacts [CL 2.0 2.11.0].
+- Writes with `IsArtifact` and `ArtifactMetadata` were refused outside `brain/<id>/` on the IDE and 2.0, and rejected on the CLI [MO IDE 2.5.5 2026-10-05 LC5 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC5 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC5 probe 20261005-1426]. Repository files are written plainly.
 - Knowledge Items: 2.0 [D 2.0 agent-settings:35], IDE [D IDE settings:256]. The IDE's records include a `KNOWLEDGE_ARTIFACTS` type [MO IDE ? 2026-09-25 transcript probe].
 - Task Groups:
   - The agent manages them in planning mode [D unscoped tools:3]; no documented tool creates them (§2.1a).
@@ -721,6 +733,34 @@ The 2026-07-29 reference's hook errors (lines 102-108) are listed in §14.
   - the CLI's `--remote-control` [CL CLI 1.2.6].
 - Timers and notices: `schedule` one-shot timers pace status checks, and a subagent that sets a timer and ends its turn goes Idle (S3.5). Completion notices [CL CLI 1.2.5] and a `schedule` early-termination condition [CL CLI 1.1.12] are CLI changelog facts, unverified on 2.0 and the IDE (LC4 S1-j); no skill relies on them (register B14).
 
+## §12 Platform features and fork usage
+
+Each feature, the products and evidence label that carry it, its reliance tier (§0.3) and how this fork uses it.
+
+| Feature | Products and label | Tier | Fork usage |
+|---|---|---|---|
+| sidecars | 2.0 and CLI [D unscoped sidecars:11, :37] | T4 | considered, not used: no skill needs a background process |
+| `mcp_config.json` | CLI and IDE [D CLI mcp:63-64; D IDE mcp:89] | T3 | considered, not used: the plugin ships no MCP server |
+| `/teamwork-preview` and `/boost` | 2.0 and CLI [D 2.0/CLI slash-commands:31-32] | T4 | considered, not used: plan-tier-gated (T4) |
+| `/learn` | 2.0 and CLI [D 2.0/CLI slash-commands:134] | T4 | considered, not used: writing-skills names it only to call a /learn draft untested (S5.12) |
+| `/goal` and `/grill-me` | 2.0 and CLI [D 2.0/CLI slash-commands:29-40] | T3 | considered, not used: not shipped this release |
+| `/plan` | 2.0 and CLI [D 2.0/CLI slash-commands:3, :84-93] | T3 | considered, not used: not shipped this release |
+| Remote Control | 2.0 and CLI [D 2.0 remote-control:23; D CLI remote-control:103] | T3 | considered, not used: partner-facing; README only |
+| `@<subagent>` and `/btw` | 2.0 and CLI [CL CLI 1.2.9; D 2.0/CLI slash-commands:40] | T3 | used by executing-plans and subagent-driven-development (partner steering) |
+| Task Groups | 2.0 [D unscoped artifact-review:5] | T4 | considered, not used: agent-managed; no tool creates them |
+| Generative-UI artifacts | 2.0 [CL 2.0 2.11.0] | T3 | considered, not used: no skill needs rendered UI |
+| 2.0 New Worktree Mode | 2.0 [D 2.0 projects:20, :47] | T3 | used by README installation and using-git-worktrees (detected, never required) |
+| Knowledge Items | 2.0 and IDE [D 2.0 agent-settings:35; D IDE settings:256] | T3 | considered, not used: no skill reads or writes them |
+| Workflows (deprecated) | 2.0, CLI and IDE [D unscoped migration/workflows-to-skills:7; D IDE ide/workflows:7] | T4 | considered, not used: deprecated; retire 2026-11-01 |
+| `antigravity_guide` | 2.0, CLI and IDE [CL CLI 1.0.10; CL 2.0 2.2.1; CL IDE 2.5.2] | T1 | considered, not used: answers are leads, not evidence |
+| SDK hooks | SDK [CL SDK 0.1.18] | T4 | considered, not used: the SDK is not a target product |
+| CLI `/diff` (Turn mode with line comments) and the IDE Review Changes pane | CLI and IDE [D CLI cli/commands/diff:7, :27; D IDE ide/review-changes-editor:3-7] | T3 | considered, not used: partner-facing review surfaces |
+| CLI artifact review (`/artifact` picker, per-file approve and reject, line comments) | CLI [D CLI cli/artifacts:18-56, :144-151] | T3 | considered, not used: partner-facing review picker; the executors write the walkthrough artifact it lists |
+| CLI `/tasks` | CLI [D CLI subagents:200-212] | T3 | considered, not used: partner-facing; skills use manage_task |
+| CLI `/fork` with `/resume` and `--conversation` | CLI [D CLI cli/conversations:19-40; D CLI cli/headless:229] | T3 | used by diagnosing-superpowers (clones settled by a supplied id) |
+| CLI status line (`context_window`, `transcript_path`) | CLI [D CLI cli/statusline:3, :47] | T3 | considered, not used: reaches the partner's script, not the agent |
+| CLI `/codesearch` | CLI [D CLI cli/commands/codesearch:3-7] | T3 | considered, not used: partner-facing; R13 bars code_search |
+
 ## §13 Contradictions
 
 Each entry names both sides, the interim rule that binds every section until the decider reports, and the decider (§0.4). Each interim rule is safe under both sides.
@@ -734,7 +774,7 @@ Each entry names both sides, the interim rule that binds every section until the
 | X5 | `unsandboxed` rules | documented for 2.0 on Windows [D 2.0 permissions:164] and for the CLI [D CLI sandbox:154-204] | deprecated, migrate to `command` [CL CLI 1.2.2] | Never suggest `unsandboxed` rules or request the `unsandboxed` Action. | LC1 |
 | X6 | Review-policy name and values | "Artifact Review Policy", two options [D unscoped artifact-review:8-29] | "Plan Review Policy", three options [CL 2.0 2.17.0]; CLI `artifactReviewPolicy` with three values [D CLI settings:152-155]; IDE strict mode's "Artifact review" [D IDE settings:276] | Describe behaviour, never labels. | LC5 |
 | X7 | Plugin-level `hooks.json` | plugin level listed only in the CLI tab [D CLI hooks:26] | `hooks.json` in the shared component list [D shared plugins:13, :82] | No plugin-level `hooks.json`. | LC6 |
-| X8 | IDE custom agents and `invoke_subagent` | `invoke_subagent` and `agents/` in shared lists [D shared hooks:166; D shared plugins:17]; "Agent & Parallel Subagents" [D IDE ide/overview:33] | the `subagents` page has no IDE tab (§0.2); `/docs/ide/subagents` returned 404 [MO docs ? 2026-09-25 page fetch]; "IDE following shortly", a vendor promise [CL blog 2026-08-12 2.0/CLI] | "Unverified on the IDE; detect at runtime." | LC1, LC3 |
+| X8 | IDE custom agents and `invoke_subagent` | `invoke_subagent` and `agents/` in shared lists [D shared hooks:166; D shared plugins:17]; "Agent & Parallel Subagents" [D IDE ide/overview:33] | the `subagents` page has no IDE tab (§0.2); `/docs/ide/subagents` returned 404 [MO docs ? 2026-09-25 page fetch]; "IDE following shortly", a vendor promise [CL blog 2026-08-12 2.0/CLI] | "Unverified on the IDE; detect at runtime." Decided: the IDE has no `invoke_subagent` [MO IDE 2.5.5 2026-10-05 LC1 probe 20261005-1426]. | LC1, LC3 |
 | X9 | `/browser` as the only entry point | "invoked exclusively via the `/browser` slash command" [D 2.0 subagents:22] | "research, browser and teamwork assistants work again" [CL 2.0 2.6.0]; the IDE Browser Subagent works "as needed" [D IDE ide/browser:9] | `/browser` on 2.0 and the CLI; the IDE may delegate; never name `browser_*` tools. | LC1 S1-a |
 | X10 | `/learn` output | `.antigravity/rules.md` [D 2.0/CLI slash-commands:134] | `.agents/rules/*.md` [D shared rules:9-19] | Not relied on. | none |
 | X11 | Project permission option | "Inherit General" [D 2.0 agent-settings:17] | "Inherit Global" [CL 2.0 2.14.0] | Not relied on. | none |
@@ -788,6 +828,8 @@ The protocols below are those registered on 2026-09-25 (maintainer instruction),
 - **Installs.** Probe plugins are workspace installs: `.agents/plugins/<probe>/` on 2.0 and the IDE, and `agy plugin install <path>` on the CLI, uninstalled after the leg. The exceptions are the real clone, switched to the probe branch and back, and S1-i's global placement, removed after the leg. Probe-branch commits need the maintainer's go-ahead (D16).
 - **Order.** LC6 S1-l; LC1; LC2; LC3, LC4, LC5 and LC7; LC8 and the CLI legs after the 2.0 and IDE collection; the remaining LC6 legs while a hook ships or remains the contributor gate (it does: S7.2). The core probe (IDE, then 2.0) and the CLI legs run before Phase 2 (D2); every gated row has a default.
 
+The probe kit ran on 2026-10-05 (run 20261005-1426) on the IDE 2.5.5, the 2.0 app 2.19.1 and the CLI 1.2.17. Its results files were not kept with the maintainer's rulings, so this reference records only the facts those rulings carry; every other leg reads as before.
+
 ### §15.1 LC1 — Tool-schema dump
 
 **Protocol:**
@@ -817,11 +859,11 @@ The protocols below are those registered on 2026-09-25 (maintainer instruction),
 
 **Result:**
 
-LC1: 2.0 not run
+LC1: 2.0 done 2026-10-05
 
-LC1: IDE not run
+LC1: IDE done 2026-10-05
 
-LC1: CLI not run
+LC1: CLI done 2026-10-05
 
 ### §15.2 LC2 — Bootstrap probe
 
@@ -862,11 +904,11 @@ S2.16 defines the markers the agent lists and the CLI's answer schema.
 
 **Result:**
 
-LC2: 2.0 not run
+LC2: 2.0 done 2026-10-05
 
-LC2: IDE not run
+LC2: IDE done 2026-10-05
 
-LC2: CLI not run
+LC2: CLI done 2026-10-05
 
 ### §15.3 LC3 — Bundled-agent probe
 
@@ -912,11 +954,11 @@ LC2: CLI not run
 
 **Result:**
 
-LC3: 2.0 not run
+LC3: 2.0 done 2026-10-05
 
-LC3: IDE not run
+LC3: IDE done 2026-10-05
 
-LC3: CLI not run
+LC3: CLI done 2026-10-05
 
 ### §15.4 LC4 — Workspace and commit probe
 
@@ -946,11 +988,11 @@ LC3: CLI not run
 
 **Result:**
 
-LC4: 2.0 not run
+LC4: 2.0 done 2026-10-05
 
-LC4: IDE not run
+LC4: IDE done 2026-10-05
 
-LC4: CLI not run
+LC4: CLI done 2026-10-05
 
 ### §15.5 LC5 — Gate probe
 
@@ -992,11 +1034,11 @@ LC4: CLI not run
 
 **Result:**
 
-LC5: 2.0 not run
+LC5: 2.0 done 2026-10-05
 
-LC5: IDE not run
+LC5: IDE done 2026-10-05
 
-LC5: CLI not run
+LC5: CLI done 2026-10-05
 
 ### §15.6 LC6 — Windows shell and hook runtime probe
 
@@ -1034,11 +1076,11 @@ LC5: CLI not run
 
 **Result:**
 
-LC6: 2.0 not run
+LC6: 2.0 done 2026-10-05
 
-LC6: IDE not run
+LC6: IDE done 2026-10-05
 
-LC6: CLI not run
+LC6: CLI done 2026-10-05
 
 ### §15.7 LC7 — Transcript and permission probe
 
@@ -1063,11 +1105,11 @@ LC6: CLI not run
 
 **Result:**
 
-LC7: 2.0 not run
+LC7: 2.0 done 2026-10-05
 
-LC7: IDE not run
+LC7: IDE done 2026-10-05
 
-LC7: CLI not run
+LC7: CLI done 2026-10-05
 
 ### §15.8 LC8 — CLI tooling
 
@@ -1102,7 +1144,7 @@ LC7: CLI not run
 
 **Result:**
 
-LC8: CLI not run
+LC8: CLI done 2026-10-05
 
 ## §16 Standing rules
 
@@ -1141,6 +1183,8 @@ First application: upstream's root `AGENTS.md` (C16) stays out, because the walk
 ### §16.4 R13 — Native tool naming
 
 R13: skill and rule prose names only ref §2.1b tools, including in tool-call examples; arguments follow ref §0 tiers (D-shared unconditional, `[CL]`/`[MO]`-only T2/T3). For the trio, `code_search`, `command_status`, `manage_inbox`, `read_resource` and `browser_*` it uses upstream's action wording. Agent `tools:` allowlists are exempt (S7.5 checks them against §2.1a). S7.1 alone enforces R13: its `non-baseline-tools` group lists those names, and check 6 tests against `known-tools.txt`.
+
+Enforcement landed in this release: the `non-baseline-tools` group of `tests/antigravity/purity-patterns.txt` (over `skills/` and `rules/`) and check 6 of `tests/antigravity/test-skill-tool-purity.sh`, which tests backticked snake_case tokens against `tests/antigravity/known-tools.txt`; both run in the release gate (`bash tests/run-tests.sh`).
 
 ### §16.5 Delivery
 
@@ -1184,3 +1228,4 @@ Decision record changes of this release (id — old — new — part). The ids a
 
 - 2026-10-05 — §0–§6 — created from the 2026-09-25 and 2026-09-29 docs captures and the changelog to 2.0 2.18.1 and CLI 1.2.11; IDE U cells re-checked; 2026-07-29 reference frozen — maintainer instruction
 - 2026-10-05 — §7–§11, §13–§16 — added; live checks not run — maintainer instruction
+- 2026-11-04 — §0.5, §2–§16 — §7.8 and §12 written; live-check results recorded from the rulings (run 20261005-1426) — maintainer instruction
