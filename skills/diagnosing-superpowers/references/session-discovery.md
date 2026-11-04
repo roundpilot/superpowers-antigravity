@@ -64,8 +64,7 @@ These notes are starting points, not conclusions. *Documented* means an Antigrav
 
 The stores, the install root and `~/.superpowers/` sit outside the project, and each product's default file scope differs. Get access in this order, without changing your partner's settings. Readers inherit your grants.
 
-0. Call `list_permissions`, write what it returns under "Sources consulted" in the case file, and skip every directory it already covers.
-1. In the turn that dispatches readers, before the dispatch, request each remaining directory outside the project that you will cite or hand to a reader: `ask_permission({Action: "read_file", Target: "<abs dir>", Reason: "read-only diagnosis of session <id>"})`. These are `brain/<id>/` of the diagnosed conversation and of each child, and `<install root>/skills/`. With no id yet, or for step 7, request the store's `brain/` root, or ask your partner for the id. Grants come first because a permission card raised inside a subagent can time out while nobody answers it (after 60 seconds on the CLI).
+1. In the turn that dispatches readers, before the dispatch, request each directory outside the project that you will cite or hand to a reader: `ask_permission({Action: "read_file", Target: "<abs dir>", Reason: "read-only diagnosis of session <id>"})`. These are `brain/<id>/` of the diagnosed conversation and of each child, and `<install root>/skills/`. With no id yet, or for step 7, request the store's `brain/` root, or ask your partner for the id. Grants come first because a permission card raised inside a subagent can time out while nobody answers it (after 60 seconds on the CLI).
 2. If the request is rejected, the first read raises a permission card: ask your partner to approve the directory, not the single file.
 3. If access is refused (non-workspace access off, or the IDE's strict mode), say so, and ask for a copy inside the project or for the diagnosis to run from another Antigravity product on this machine.
 
@@ -73,7 +72,7 @@ Before dispatch, measure every session file (rule 1 of `references/context-safet
 
 ### Case workspace
 
-- Key the case workspace by the diagnosed session's id. Unless `list_permissions` already covers `~/.superpowers/diagnosing-superpowers/<session-id>/`, request it first: `ask_permission(Action: "write_file", Target: "<absolute case dir>", Reason: "case workspace for this diagnosis")`. Then write `case.md` there with `write_to_file`.
+- Key the case workspace by the diagnosed session's id. Before creating `~/.superpowers/diagnosing-superpowers/<session-id>/`, request it: `ask_permission(Action: "write_file", Target: "<absolute case dir>", Reason: "case workspace for this diagnosis")`. Then write `case.md` there with `write_to_file`.
 - If a directory is missing, create each level with the shell's own command and retry.
 - If the grant is refused or the directory cannot be written, use `<project root>/.superpowers/diagnosing-superpowers/<session-id>/`. First, if `<project root>/.superpowers/.gitignore` is missing, create it with `write_to_file` containing the single line `*`, and tell your partner that the case sits inside the project folder: git ignores it, but anything else that copies the folder does not. If neither location can be written, ask your partner for a directory.
 - Write the path you used on the case file's `Case workspace:` line.
