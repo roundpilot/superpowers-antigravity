@@ -24,21 +24,20 @@
 #   line 11..  the body, then </EXTREMELY_IMPORTANT> as the last line, then a newline.
 # The whole file uses LF line endings (.gitattributes sets `*.md text eol=lf`).
 #
-# Body forms. The default is a mirror: SKILL.md after its frontmatter and the blank line that
-# follows it, byte for byte. SKILL.md stays the source of truth: copy every change to its body
-# or `description` into the rule in the same change. The @-import form
+# Body forms. The shipped form is the include
 #   @[using-superpowers](../skills/using-superpowers/SKILL.md)
-# was avoided because the platform docs are self-contradictory on relative-path resolution for
-# rule files, and @[label](path) inlining is documented only for AGENTS.md, GEMINI.md and
-# `.agents/rules/*.md`. This test accepts either form, so switching between them needs no test
-# edit. Never `@filename` and never a bare `@path`.
+# (ruling S2.2 include, LC2/LC8 on all three products). A mirror (SKILL.md after its frontmatter
+# and the blank line that follows it, byte for byte) is still accepted, so switching between
+# them needs no test edit. SKILL.md stays the source of truth: copy every change to its
+# `description` (and, for a mirror, its body) into the rule in the same change. Never `@filename`
+# and never a bare `@path`.
 #
 # Rules carry no HTML comment (a comment before the frontmatter makes Antigravity discard the
 # whole file, and anywhere else it is noise in every conversation). The notes that used to sit
 # in a 17-line comment at the top of the rule are these header lines and CONTRIBUTING.md,
 # "Packaging and bootstrap". They said: the rule ships through the documented plugin `rules/`
-# channel, in addition to the GEMINI.md + gemini-extension.json `contextFileName` channel kept
-# for the CLI and legacy compatibility; and the Rules docs describe four activation modes
+# channel, the only channel (GEMINI.md and gemini-extension.json are retired, ruling S2.3
+# outcome-A); and the Rules docs describe four activation modes
 # (Manual, Always On, Model Decision, Glob) set at the rule level. The `trigger` frontmatter key
 # is how a rule file declares its mode.
 set -uo pipefail

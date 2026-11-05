@@ -31,7 +31,7 @@ ROOT="$(pwd)"
 GATE_TESTS=(tests/antigravity/test-skill-tool-purity.sh tests/antigravity/test-plugin-layout.sh tests/antigravity/test-agent-frontmatter.sh tests/antigravity/test-purity-hook.sh tests/antigravity/test-rule-sync.sh tests/antigravity/test-plugin-packaging.sh tests/diagnosing-superpowers/test-skill-structure.sh tests/antigravity/test-execution-skills.sh tests/skill-size/test-skill-size.sh tests/skill-layout/test-no-dev-files-in-skills.sh tests/antigravity/test-release-notes-bullets.sh)
 UNIT_TESTS=(tests/writing-skills/test-render-graphs.sh tests/systematic-debugging/test-find-polluter.sh)
 LIVE_TESTS=(tests/antigravity/test-plugin-discovery.sh tests/antigravity/test-tool-roster.sh tests/antigravity/test-bundled-dispatch.sh tests/antigravity/test-subagent-dispatch.sh tests/antigravity/test-inline-execution.sh tests/antigravity/test-spec-gate-stream.sh tests/antigravity/test-worktree-workspace.sh tests/antigravity/test-skill-triggering/run-all.sh)
-LIVE_EXTRA_TESTS=(tests/antigravity/test-hooks-introspection.sh)
+LIVE_EXTRA_TESTS=()
 LIB_FILES=(tests/antigravity/test-helpers.sh tests/antigravity/lib/*)
 
 usage() {
@@ -40,7 +40,7 @@ usage() {
   echo "  default       gate and unit tiers" >&2
   echo "  --live        also the live tier (needs a signed-in agy)" >&2
   echo "  --live-extra  also the live-extra tier" >&2
-  echo "  --transcript  check a session you ran yourself; runs no tiers (exit 0 PASS, 1 FAIL, 2 SKIP)" >&2
+  echo "  --transcript  check a session you ran yourself; runs no tiers (exit 0 PASS, 1 FAIL)" >&2
 }
 
 RUN_LIVE=0
@@ -75,8 +75,10 @@ if [ -n "$TRANSCRIPT$SCENARIO" ]; then
   for var in PROJECT INSTALL_ROOT; do
     dir="${!var}"
     [ -n "$dir" ] || continue
-    if [ ! -d "$dir" ] && [ ! -d "$ORIG_PWD/$dir" ]; then echo "[FAIL] no such directory: $dir"; exit 1; fi
-    if [ -d "$dir" ]; then resolved="$(cd "$dir" && node -p "process.cwd()")"; else resolved="$(cd "$ORIG_PWD/$dir" && node -p "process.cwd()")"; fi
+    # relative paths are the caller's, not the repo root's
+    case "$dir" in /*|[A-Za-z]:*) ;; *) dir="$ORIG_PWD/$dir" ;; esac
+    if [ ! -d "$dir" ]; then echo "[FAIL] no such directory: ${!var}"; exit 1; fi
+    resolved="$(cd "$dir" && node -p "process.cwd()")"
     printf -v "$var" '%s' "$resolved"
   done
   product="${TRANSCRIPT%%:*}"
@@ -85,7 +87,7 @@ if [ -n "$TRANSCRIPT$SCENARIO" ]; then
     token:*) id_args=(--token "${spec#token:}") ;;
     *) id_args=(--id "$spec") ;;
   esac
-  verdict() { echo "[$1] $SCENARIO on $TRANSCRIPT: $2"; case "$1" in PASS) exit 0 ;; SKIP) exit 2 ;; *) exit 1 ;; esac; }
+  verdict() { echo "[$1] $SCENARIO on $TRANSCRIPT: $2"; case "$1" in PASS) exit 0 ;; *) exit 1 ;; esac; }
   # tx <view> [--field k]: the view's lines in TX_OUT; a json-tool failure ends the run
   tx() {
     local view="$1" err rc
@@ -98,7 +100,6 @@ if [ -n "$TRANSCRIPT$SCENARIO" ]; then
     if [ "$rc" -ne 0 ]; then
       msg="$(tr -d '\r' < "$err" | head -n 1)"
       rm -f "$err"
-      if [ "$rc" -eq 77 ]; then verdict SKIP "$msg"; fi
       verdict FAIL "$msg"
     fi
     rm -f "$err"

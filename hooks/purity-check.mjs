@@ -1,24 +1,5 @@
-// PreToolUse purity gate for contributors to this repository (ESM, node >= 18; node:fs,
-// node:path and node:url only). It runs the same law as the release gate,
-// `bash tests/antigravity/test-skill-tool-purity.sh`, at edit time: the law is the data
-// file tests/antigravity/purity-patterns.txt, read from beside this script.
-//
-// Policy: deny a file-tool write that puts banned vocabulary into one of this
-// repository's guarded folders; allow only a write inside a workspacePaths entry or the
-// artifactDirectoryPath, where the engine already allows; otherwise, errors included, ask.
-//
-// Why never `allow` anywhere else: `allow` is an approval ("Automatically allows the
-// tool execution"), so returning it would skip the permission prompt for writes the
-// engine would have asked about. `ask` is a well-formed decision that defers to the user
-// and respects "Always Allow".
-//
-// Which repository: resolved from this script's own location (import.meta.url) and its
-// git common directory, never from the payload. A directory is this repository when its
-// path matches the script's root or its `.git` shares the script's common directory,
-// which covers every checkout and linked worktree and never a foreign repository.
-// workspacePaths is a membership test only: no member, no scan; absent, the script's own
-// root alone; it never widens the scope. A relative TargetFile is joined to a single
-// workspacePaths entry, else the hook asks; there is no cwd fallback.
+// PreToolUse purity gate for contributors (node >= 18, built-ins only); the law is tests/antigravity/purity-patterns.txt.
+// Policy: deny banned vocabulary in guarded folders; allow only inside workspacePaths or the artifact dir; else ask (CONTRIBUTING).
 //
 // Contract (https://antigravity.google/docs/hooks, re-captured 2026-09-29; the 2.0 app,
 // the CLI and the IDE share it):

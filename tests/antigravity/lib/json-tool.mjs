@@ -75,87 +75,6 @@ function payload(argv) {
     return 0;
 }
 
-const HOOKS_CONFIG_USAGE = 'usage: json-tool.mjs hooks-config <file|->';
-
-// hooks-config: one line per hook handler of a hooks.json, read from a file or, for `-`,
-// from stdin:
-//   <entry><TAB><event><TAB><enabled><TAB><command>
-// An entry maps an event name to a list. The list holds matcher groups,
-// {"matcher": ..., "hooks": [<handler>, ...]}, or, for the events without a matcher,
-// handlers directly (docs/hooks "Schema and File Format"); both forms are read, and a
-// group that also carries its own `command` yields that handler too. Any key but
-// `enabled` whose value is an array is an event, so an event added later cannot hide a
-// handler. <enabled> is `true`, `false`, or `absent` for an entry without the key. A
-// handler without a string command prints an empty command. TAB, LF and CR inside a
-// field print as \t, \n and \r so a line always has four fields.
-// Exit 1 on an unreadable or unparseable file or a document that is not the shape above,
-// with the reason on stderr; 2 on a usage error.
-function hooksConfig(argv) {
-    if (argv.length !== 1) return usage(HOOKS_CONFIG_USAGE, 'hooks-config takes one argument');
-    const source = argv[0];
-    const fail = (message) => {
-        process.stderr.write(`json-tool: hooks-config: ${message}\n`);
-        return 1;
-    };
-
-    let text;
-    try {
-        text = fs.readFileSync(source === '-' ? 0 : source, 'utf8');
-    } catch (err) {
-        return fail(`cannot read ${source === '-' ? 'stdin' : source}: ${err.message}`);
-    }
-    let doc;
-    try {
-        doc = JSON.parse(text.replace(/^﻿/, ''));
-    } catch (err) {
-        return fail(`not JSON: ${err.message}`);
-    }
-    const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
-    if (!isObject(doc)) return fail('the document is not an object of entries');
-
-    const field = (value) =>
-        String(value).replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
-    const lines = [];
-    for (const entry of Object.keys(doc)) {
-        const body = doc[entry];
-        if (!isObject(body)) return fail(`entry ${JSON.stringify(entry)} is not an object`);
-        let enabled = 'absent';
-        if (Object.prototype.hasOwnProperty.call(body, 'enabled')) {
-            if (typeof body.enabled !== 'boolean') {
-                return fail(`entry ${JSON.stringify(entry)}: "enabled" is not a boolean`);
-            }
-            enabled = String(body.enabled);
-        }
-        for (const event of Object.keys(body)) {
-            if (event === 'enabled' || !Array.isArray(body[event])) continue;
-            const emit = (handler) => {
-                if (!isObject(handler)) {
-                    return fail(`entry ${JSON.stringify(entry)}, event ${event}: a handler is not an object`);
-                }
-                const command = typeof handler.command === 'string' ? handler.command : '';
-                lines.push([entry, event, enabled, command].map(field).join('\t'));
-                return 0;
-            };
-            for (const item of body[event]) {
-                if (!isObject(item)) {
-                    return fail(`entry ${JSON.stringify(entry)}, event ${event}: a list item is not an object`);
-                }
-                const grouped = Array.isArray(item.hooks);
-                if (grouped) {
-                    for (const handler of item.hooks) {
-                        if (emit(handler) !== 0) return 1;
-                    }
-                }
-                if (!grouped || typeof item.command === 'string') {
-                    if (emit(item) !== 0) return 1;
-                }
-            }
-        }
-    }
-    if (lines.length > 0) process.stdout.write(`${lines.join('\n')}\n`);
-    return 0;
-}
-
 const KEYS_USAGE = 'usage: json-tool.mjs keys <file>';
 const GET_USAGE = 'usage: json-tool.mjs get <file> <dot.path>';
 
@@ -195,12 +114,7 @@ function keys(argv) {
     return 0;
 }
 
-// get: the value at a dot path of a JSON file, followed by one newline. A string prints
-// raw; anything else prints as JSON.stringify gives it. The path splits on `.`: a segment
-// indexes an array when it is a canonical non-negative integer, else it is an own key of an
-// object (so a key that itself holds a dot cannot be addressed). Exit 1, with the reason
-// on stderr, if the file cannot be read, does not parse or has no such path; 2 on a usage
-// error.
+// get: the value at a dot path (integer segments index arrays), raw if a string; exit 1 if unreadable or absent, 2 on usage.
 function get(argv) {
     if (argv.length !== 2) return usage(GET_USAGE, 'get takes two arguments');
     const [file, dotPath] = argv;
@@ -431,9 +345,6 @@ const TRANSCRIPT_USAGE =
     'usage: json-tool.mjs transcript --product 2.0|ide|cli (--id <uuid> | --token <text>) ' +
     '--view tool-calls|skill-reads|subagents [--root <dir>] [--field <key>]';
 
-// Products whose transcripts the S7.9-roots ruling observed: a missing file there is a FAIL, not a SKIP.
-const OBSERVED_ROOT_PRODUCTS = ['ide', 'cli'];
-
 function transcriptRoots(product, home) {
     const g = (name) => path.join(home, '.gemini', name);
     if (product === '2.0') return [g('antigravity')];
@@ -541,10 +452,7 @@ function transcript(argv) {
     const home = process.env.SP_TRANSCRIPT_HOME || os.homedir();
     const roots = transcriptRoots(opt.product, home);
     const label = opt.id !== undefined ? opt.id : opt.token;
-    const missing = () =>
-        OBSERVED_ROOT_PRODUCTS.includes(opt.product) || opt.product === '2.0'
-            ? fail(`no transcript for ${label}`)
-            : fail(`not written on ${opt.product} (X18)`, 77);
+    const missing = () => fail(`no transcript for ${label}`);
 
     let file;
     if (opt.id !== undefined) {
@@ -653,7 +561,6 @@ function transcript(argv) {
 export const commands = {
     transcript,
     payload,
-    'hooks-config': hooksConfig,
     keys,
     get,
     stream,

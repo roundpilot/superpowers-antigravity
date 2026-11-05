@@ -41,11 +41,11 @@ else
         local text line rc
         text=$(node -p 'JSON.stringify(process.argv[1])' "$1")
         printf '{"event":"user","message":{"content":%s}}\n' "$text" >&"${COPROC[1]}"
-        while IFS= read -r -t 900 line <&"${COPROC[0]}"; do
+        while :; do
+            IFS= read -r -t 900 line <&"${COPROC[0]}" || { rc=$?; break; }
             printf '%s\n' "$line" >> "$STREAM"
             case "$line" in *'"event":"result"'*) return 0 ;; esac
         done
-        rc=$?
         stop_agy
         if [ "$rc" -gt 128 ]; then echo "[SKIP] turn timed out"; else echo "[SKIP] agy exited without a result"; fi
         exit 77

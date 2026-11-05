@@ -103,7 +103,7 @@ A release bumps all of these together, and `tests/antigravity/test-plugin-packag
 **R12 — Rule-walk hygiene.** Nothing tracked in this repo may be a file that Antigravity's directory-scoped rule walk, or its project-subdirectory customization discovery, would load for a workspace-install user. The only exceptions are the entries on the layout test's allowlist, each naming the spec section that owns it.
 
 Concretely:
-- **Rule files.** No `AGENTS.md` or `GEMINI.md` at any depth, in any letter case. The root `GEMINI.md` is allowed while S2.3 keeps it.
+- **Rule files.** No `AGENTS.md` or `GEMINI.md` at any depth, in any letter case.
 - **`.agents/` and `.agent/`.** No `AGENTS.md`, `GEMINI.md`, `rules/` or `rules.json` inside any such directory at any depth. The only tracked path under a `.agents/` directory is `.agents/skills/contributing-to-superpowers/SKILL.md`, which Live check 6(e) showed absent from workspace installs (D14).
 - **Discovery files.** No `skills.json`, `agents.json` or `rules.json` at any depth (S2.4; D15).
 - **Contributor guidance** for agents goes in CONTRIBUTING.md, which is never auto-loaded, or in a snippet contributors copy into their own `~/.gemini/config/rules/`.
@@ -111,8 +111,6 @@ Concretely:
 ### Delivery
 
 **Delivery uses documented plugin components only**: `plugin.json`, `rules/`, `skills/`, `agents/`. The plugin ships no `hooks.json` and no `mcp_config.json`. The global-hook entry in CONTRIBUTING is a contributor-only tool (S7.2).
-
-Contributors who open this repository as a workspace lose the root GEMINI.md; they rely on their installed plugin.
 
 ### Testing a branch without pushing
 
@@ -131,6 +129,8 @@ Run `bash tests/run-tests.sh` from the repository root in Git Bash. From PowerSh
 1. Check `node --version` in Antigravity's command shell first. The hook needs node 18 or later.
 2. Run `node hooks/purity-check.mjs --print-global-entry` and add the `superpowers-purity-gate` entry it prints to `~/.gemini/config/hooks.json`, which the 2.0 app, the IDE and the CLI share.
 3. Remove the entry when you stop contributing.
+
+How the hook decides: it denies a file-tool write that puts banned vocabulary into a guarded folder; it allows only a write inside a `workspacePaths` entry or the `artifactDirectoryPath`, where the engine already allows; otherwise, errors included, it asks. It never returns `allow` anywhere else, because `allow` is an approval ("Automatically allows the tool execution") that would skip a permission prompt the engine would have shown; `ask` defers to you and respects "Always Allow". The repository is resolved from the script's own location and its git common directory, never from the payload, so every checkout and linked worktree counts and no foreign repository does. `workspacePaths` is a membership test only and never widens the scope; a relative `TargetFile` is joined to a single `workspacePaths` entry, else the hook asks, with no cwd fallback.
 
 **Editing skills with the CLI.** After you edit a skill, run `/skills reload` in a running `agy` session before you test again.
 

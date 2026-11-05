@@ -28,7 +28,7 @@ ALLOWED_AGENT_FACING=()
 ALLOWED_DOT_AGENTS=(.agents/skills/contributing-to-superpowers/SKILL.md)
 HOOKS_DIR_ALLOWED=(
     hooks/purity-check.mjs
-    hooks/purity-check.sh   # one-release stub: remove it and this entry in the release after v6.4.2 (S7.2 item 1)
+    hooks/purity-check.sh   # one-release stub: remove it and this entry in the release after v7.0.2 (S7.2 item 1)
 )
 
 echo "========================================"
