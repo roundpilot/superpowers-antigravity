@@ -1,7 +1,6 @@
-I need to add a new feature to validate email addresses. It should:
-- Check that there's an @ symbol
-- Check that there's at least one character before the @
-- Check that there's a dot in the domain part
-- Return true/false
+The design is settled and approved, so no more design work is needed. Add an isValidEmail(str) function to src/email.js that returns true only when:
+- there's an @ symbol
+- there's at least one character before the @
+- the domain part contains a dot
 
-Can you implement this?
+Please write it now.
