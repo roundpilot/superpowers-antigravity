@@ -69,7 +69,7 @@
 * A headless run (`agy -p`) does not stop at the plan; the agent picks execution.
 * The plan gate has no headless test until it resumes over stream-json input.
 * The IDE has no subagents and no plugin slash form; the rule loads there.
-* Live tests passed on CLI 1.5.0; the transcript tier and app smoke tests have not run.
+* Live tests passed on CLI 1.5.0; transcript tests and app smoke tests have not run.
 
 ### Not Ported from Upstream v6.4.1 to v7.0.2
 
