@@ -48,8 +48,7 @@ if [ -f "$SKILL_MD" ]; then
   done
 
   # --- word budget --------------------------------------------------------
-  # Fork: count in the C locale, so the result does not depend on the locale
-  # (a UTF-8 locale counts each standalone em dash as a word).
+  # Fork: C-locale word count (UTF-8 counts standalone em dashes).
   body_words="$(awk 'BEGIN{fm=0} NR==1 && $0=="---"{fm=1; next} fm==1 && $0=="---"{fm=2; next} fm==2{print}' "$SKILL_MD" | LC_ALL=C wc -w | tr -d ' ')"
   if [ "$body_words" -le "$WORD_BUDGET" ]; then
     pass "SKILL.md body within $WORD_BUDGET words ($body_words)"

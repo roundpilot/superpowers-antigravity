@@ -5,9 +5,22 @@ of human involvement will be closed without review.
 -->
 
 ## Who is submitting this PR? (required)
-<!-- Who are you, and what did your human partner ask you to do? As close
-     to their words as you can get. If you wrote this PR by hand with no
-     agent, say so. -->
+<!-- Required. PRs that omit this will be closed. We assume an agent wrote
+     this PR — tell us which one, where it ran, and what your human partner
+     asked you to do. We weigh contributions by what produced them: content
+     reasoned from documentation is held to a different bar than work
+     grounded in a real session. -->
+
+| Field | Value |
+|-------|-------|
+| Your model + version | |
+| Antigravity product (2.0 app / IDE / CLI) + version | |
+| All plugins installed | |
+| Human partner who reviewed this diff | |
+
+What your human partner asked you to do, in their words:
+<!-- As close to verbatim as you can get. If you wrote this PR by hand
+     with no agent, say so. -->
 
 ## Human-authored summary (required, under 200 words)
 <!-- A human writes this section, in their own words: why this PR exists

@@ -145,6 +145,19 @@ check_E10() {
   must_lack skills 'using-superpowers/references'
   verdict E10 'no using-superpowers/references under skills/'
 }
+check_E15() {
+  must_lack skills/subagent-driven-development '`Model` key'
+  verdict E15 'SDD never tiers by a per-dispatch Model key (S3.4 variant-files)'
+}
+check_E16() {
+  local f r
+  for f in "$ROOT"/skills/*/SKILL.md; do
+    while IFS= read -r r; do
+      [ -f "$(dirname "$f")/$r" ] || problem "${f#"$ROOT"/}: $r does not exist"
+    done < <(grep -oE 'references/[a-z0-9-]+\.md' "$f" | sort -u)
+  done
+  verdict E16 'every references/<name>.md pointer in a SKILL.md resolves'
+}
 
 CHECKS=$(declare -F | sed 's/^declare -f //' | grep -E '^check_E[0-9]+$' | sort -t E -k2,2n)
 for c in $CHECKS; do "$c"; done

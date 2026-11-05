@@ -1,17 +1,10 @@
 #!/usr/bin/env bash
-# Fails when any skill's SKILL.md reaches Antigravity's 24 KB body limit.
-#
-# `agy plugin validate` (CLI 1.4.1) warns when a SKILL.md body is over the 24 KB
-# limit. Content a skill only needs sometimes belongs in its references/
-# directory, which the agent reads with view_file at the step that needs it.
-# Ported from upstream's tests/skill-size/test-skill-size.sh with this limit.
-#
-# Measures bytes, which is stricter than characters for files with non-ASCII
-# text. Usage: tests/skill-size/test-skill-size.sh
+# Fails when a SKILL.md reaches the 24 KB body limit `agy plugin validate` warns on (CLI 1.4.1); ported from upstream.
+# Usage: tests/skill-size/test-skill-size.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="${1:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 LIMIT=24000
 
 failed=0

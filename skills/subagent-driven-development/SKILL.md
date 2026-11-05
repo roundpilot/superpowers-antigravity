@@ -30,7 +30,7 @@ that norms say you ask about first (a merge, a push to a shared branch, a
 publish); and a plan so broken that every path forward is a guess. For those,
 stop and ask.
 
-Your human partner may steer while the plan runs — a message, a comment on the plan or another artifact, stopping a subagent you dispatched, or, in subagent-driven development, an instruction sent straight to an implementer (a CLI `@` message) that its report mentions. That is their instruction, not your ruling: apply it, ledger it as `Task <N>: partner instruction: <one-liner>`, and rule only where it conflicts with work already finished. One that changes scope or asks you to stop — a stopped subagent is one — is handled like the four stops.
+Your human partner may steer while the plan runs — a message, a comment on the plan or another artifact, stopping a subagent you dispatched, or, in subagent-driven development, an instruction sent straight to an implementer (a CLI `@` message or a 2.0 direct message) that its report mentions. That is their instruction, not your ruling: apply it, ledger it as `Task <N>: partner instruction: <one-liner>`, and rule only where it conflicts with work already finished. One that changes scope or asks you to stop — a stopped subagent is one — is handled like the four stops.
 
 ## When to Use
 
@@ -187,7 +187,7 @@ Read `references/batching.md` with `view_file` now.
 
 For each task, in plan order:
 
-1. Record BASE (`git rev-parse HEAD`) before dispatching — the review range and fix-round diffs need it. Fill `implementer-prompt.md`'s dynamic template with the task's plan range (Setup's `Plan map:`) and scene-setting context, choose the implementer's tier by Model Selection (it sets the TypeName or the `Model` key), and dispatch: `invoke_subagent(Subagents: [{TypeName: "implementer", Role: "Implement Task <N>", Prompt: <filled template>, Workspace: "inherit"}])`.
+1. Record BASE (`git rev-parse HEAD`) before dispatching — the review range and fix-round diffs need it. Fill `implementer-prompt.md`'s dynamic template with the task's plan range (Setup's `Plan map:`) and scene-setting context, choose the implementer's tier by Model Selection (it sets the TypeName), and dispatch: `invoke_subagent(Subagents: [{TypeName: "implementer", Role: "Implement Task <N>", Prompt: <filled template>, Workspace: "inherit"}])`.
 2. Record the implementer's agent identity from the dispatch result (its conversation ID) — fix-loop rounds 1-3 resume this agent — and ledger the dispatch line (Setup).
 3. When the implementer reports DONE, check the range (below), then run the two review stages in order: `spec-reviewer` first, then `code-reviewer` (dispatch templates in Prompt Templates below). Findings from either stage enter The Fix Loop.
 

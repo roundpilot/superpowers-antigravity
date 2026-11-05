@@ -4,12 +4,14 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SCRIPT_UNDER_TEST="$REPO_ROOT/skills/writing-skills/render-graphs.js"
-NODE_BIN="$(command -v node)"
-if [[ -z "$NODE_BIN" ]]; then
+if ! command -v node >/dev/null 2>&1; then
   echo "Writing-skills render-graphs tests"
   echo "  [SKIP] node not found on PATH — cannot exercise render-graphs.js"
   exit 77
 fi
+# Resolve the real binary: version-manager shims (mise, asdf) can't find node
+# under the empty PATH used for the missing-Graphviz case.
+NODE_BIN="$(node -p 'process.execPath')"
 
 PASSES=0
 FAILURES=0

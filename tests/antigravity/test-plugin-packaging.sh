@@ -388,6 +388,10 @@ check_7() {
         elif [ "$diag" != "$issue" ]; then
             fail 7 "diagnosis_report.md labels differ from templates/issue.md"
         fi
+        for label in "## Who's filing this report? (required)" "## Human-authored summary (required, under 200 words)"; do
+            grep -qxF -e "$label" "$diag_f" || fail 7 "diagnosis_report.md lacks '$label'"
+            grep -qxF -e "$label" "$issue_f" || fail 7 "templates/issue.md lacks '$label'"
+        done
     fi
     if [ ! -f "$bug_f" ]; then
         fail 7 ".github/ISSUE_TEMPLATE/bug_report.md is missing"
@@ -398,7 +402,7 @@ check_7() {
         done
     fi
     if [ "$FAILURES" -eq "$before" ]; then
-        pass 7 "the issue-template Environment labels agree"
+        pass 7 "the issue-template Environment labels and filer sections agree"
     fi
 }
 

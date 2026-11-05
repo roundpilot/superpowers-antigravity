@@ -11,6 +11,7 @@ tests/antigravity/known-tools.txt text eol=lf
 *.js text eol=lf
 *.mjs text eol=lf
 *.ts text eol=lf
+*.dot text eol=lf
 
 # Explicitly mark binary files
 *.png binary
