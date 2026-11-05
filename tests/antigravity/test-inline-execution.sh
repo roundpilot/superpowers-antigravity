@@ -35,7 +35,8 @@ fi
 FAILED=0
 
 # 1: the skill was read
-if node "$JT" stream tool-calls view_file --field AbsolutePath < "$STREAM" | tr '\\' '/' | grep -q '/executing-plans/SKILL\.md$'; then
+# CLI 1.5.0 reports skill reads as read_file with Path
+if { node "$JT" stream tool-calls view_file --field AbsolutePath < "$STREAM"; node "$JT" stream tool-calls read_file --field Path < "$STREAM"; } | tr '\\' '/' | grep -q '/executing-plans/SKILL\.md$'; then
     echo "[PASS] read executing-plans/SKILL.md"
 else
     echo "[FAIL] no view_file of executing-plans/SKILL.md"

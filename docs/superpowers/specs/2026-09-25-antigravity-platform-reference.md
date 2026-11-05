@@ -448,6 +448,7 @@ Probe record: send_message and manage_task are default components of every subag
   - `/skills reload` [CL CLI 1.2.4];
   - `skills.json`, `agents.json` and `rules.json` are discovered in project subdirectories [CL 2.0 2.11.0].
 - `view_file` accepts `IsSkillFile` [D shared hooks:130], and it is set on skill reads [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
+- CLI 1.5.0 reports a skill read in stream-json as tool `read_file` with a `Path` parameter, although `init.tools` lists `view_file` and not `read_file` [MO CLI 1.5.0 2026-11-05 Task 55 live run]. CLI 1.5.0 loads the plugin from `~/.gemini/config/plugins/superpowers`, the clone the 2.0 app and the IDE use (X1) [MO CLI 1.5.0 2026-11-05 Task 55 live run].
 - Markdown agents inherit ambient rules by default [CL CLI 1.1.25], and an agent's `rules:` key replaces the rule tree [CL CLI 1.1.15] (§3.8).
 - Built-in skills:
   - `antigravity_guide` [CL CLI 1.0.10; CL 2.0 2.2.1; CL IDE 2.5.2];

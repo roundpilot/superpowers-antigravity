@@ -506,13 +506,13 @@ function transcript(argv) {
     const items = [];
     if (opt.view === 'tool-calls') {
         for (const c of calls) {
-            const p = c.args.AbsolutePath ?? c.args.TargetFile ?? c.args.Cwd;
+            const p = c.args.AbsolutePath ?? c.args.Path ?? c.args.TargetFile ?? c.args.Cwd;
             items.push({ shown: { name: c.name, path: fmt(p) }, args: c.args });
         }
     } else if (opt.view === 'skill-reads') {
         for (const c of calls) {
-            const p = c.args.AbsolutePath;
-            if (c.name !== 'view_file' || typeof p !== 'string' || !/\/SKILL\.md$/.test(norm(p))) continue;
+            const p = c.args.AbsolutePath ?? c.args.Path;
+            if (!['view_file', 'read_file'].includes(c.name) || typeof p !== 'string' || !/\/SKILL\.md$/.test(norm(p))) continue;
             const shown = { skill: norm(p).split('/').slice(-2)[0], path: fmt(p), IsSkillFile: c.args.IsSkillFile };
             items.push({ shown, args: shown });
         }

@@ -29,7 +29,8 @@ cd "$WORK"
 agy_run stream.jsonl stderr.txt "$SECS" -p "$PROMPT" --output-format stream-json
 classify_agy_run $? stderr.txt stream.jsonl || exit $?
 
-READS=$(node "$JT" stream tool-calls view_file --field AbsolutePath < stream.jsonl | tr '\\' '/')
+# CLI 1.5.0 reports skill reads as read_file with Path
+READS=$({ node "$JT" stream tool-calls view_file --field AbsolutePath < stream.jsonl; node "$JT" stream tool-calls read_file --field Path < stream.jsonl; } | tr '\\' '/')
 if printf '%s\n' "$READS" | grep -q "/${SKILL}/SKILL\.md$"; then
     echo "[PASS] $SKILL: read $(printf '%s\n' "$READS" | grep "/${SKILL}/SKILL\.md$" | head -n 1)"
     RC=0
