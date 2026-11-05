@@ -757,7 +757,7 @@ Each feature, the products and evidence label that carry it, its reliance tier (
 | CLI `/diff` (Turn mode with line comments) and the IDE Review Changes pane | CLI and IDE [D CLI cli/commands/diff:7, :27; D IDE ide/review-changes-editor:3-7] | T3 | considered, not used: partner-facing review surfaces |
 | CLI artifact review (`/artifact` picker, per-file approve and reject, line comments) | CLI [D CLI cli/artifacts:18-56, :144-151] | T3 | considered, not used: partner-facing review picker; the executors write the walkthrough artifact it lists |
 | CLI `/tasks` | CLI [D CLI subagents:200-212] | T3 | considered, not used: partner-facing; skills use manage_task |
-| CLI `/fork` with `/resume` and `--conversation` | CLI [D CLI cli/conversations:19-40; D CLI cli/headless:229] | T3 | used by diagnosing-superpowers (clones settled by a supplied id) |
+| CLI `/fork` with `/resume` and `--conversation` | CLI [D CLI cli/conversations:19-40; D CLI cli/headless:229] | T3 | considered, not used: not shipped this release |
 | CLI status line (`context_window`, `transcript_path`) | CLI [D CLI cli/statusline:3, :47] | T3 | considered, not used: reaches the partner's script, not the agent |
 | CLI `/codesearch` | CLI [D CLI cli/commands/codesearch:3-7] | T3 | considered, not used: partner-facing; R13 bars code_search |
 
@@ -828,7 +828,7 @@ The protocols below are those registered on 2026-09-25 (maintainer instruction),
 - **Installs.** Probe plugins are workspace installs: `.agents/plugins/<probe>/` on 2.0 and the IDE, and `agy plugin install <path>` on the CLI, uninstalled after the leg. The exceptions are the real clone, switched to the probe branch and back, and S1-i's global placement, removed after the leg. Probe-branch commits need the maintainer's go-ahead (D16).
 - **Order.** LC6 S1-l; LC1; LC2; LC3, LC4, LC5 and LC7; LC8 and the CLI legs after the 2.0 and IDE collection; the remaining LC6 legs while a hook ships or remains the contributor gate (it does: S7.2). The core probe (IDE, then 2.0) and the CLI legs run before Phase 2 (D2); every gated row has a default.
 
-The probe kit ran on 2026-10-05 (run 20261005-1426) on the IDE 2.5.5, the 2.0 app 2.19.1 and the CLI 1.2.17. Its results files were not kept with the maintainer's rulings, so this reference records only the facts those rulings carry; every other leg reads as before.
+The probe kit ran on 2026-10-05 (run 20261005-1426) on the IDE 2.5.5, the 2.0 app 2.19.1 and the CLI 1.2.17. Its results files were not kept with the maintainer's rulings, so this reference records only the facts named in the sections and §0.5 rows marked [MO ... probe 20261005-1426]; the other rulings stay in the maintainer's ledger, and every cell they decide reads as before.
 
 ### §15.1 LC1 — Tool-schema dump
 
