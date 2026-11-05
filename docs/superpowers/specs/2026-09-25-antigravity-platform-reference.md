@@ -110,53 +110,53 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 | # | Capability | 2.0 | CLI | IDE | Skill use | Decider |
 |---|---|---|---|---|---|---|
 | 1 | Documented tool names and their documented arguments (§2.1a): `view_file`, `write_to_file`, `replace_file_content`, `multi_replace_file_content`, `list_dir`, `find_by_name`, `grep_search`, `search_web`, `read_url_content`, `run_command`, `manage_task`, `schedule`, `list_permissions`, `ask_permission`, `invoke_subagent`, `define_subagent`, `send_message`, `manage_subagents`, `ask_question`, `generate_image` | D·s hooks:123-180 | D·s | D·s | T1 as names; the prose baseline (§2.1b) excludes row 2 | — |
-| 2 | `list_dir`, `find_by_name` and `grep_search` in the default toolset | D·s listed; MO last used 2026-08-25 | CL 1.2.7 retired from the default baseline; kept if listed in `tools:` | D·s listed | T4 in skill and rule prose (R13); allowed in agent `tools:` | LC1, LC8 |
+| 2 | `list_dir`, `find_by_name` and `grep_search` in the default toolset | D·s listed; MO last used 2026-08-25; reviewer-allowlisted names present MO 2.19.1 (ruling S3.2-legacy) | CL 1.2.7 retired from the default baseline; kept if listed in `tools:`; reviewer-allowlisted names present MO 1.2.17 (ruling S3.2-legacy) | D·s listed | T4 in skill and rule prose (R13); allowed in agent `tools:` | LC1, LC8 |
 | 3 | `code_search` | U | D cli/modes:85 (name only) | U | T4 | LC1, LC8 |
-| 4 | `command_status` | MO | U | U | T4 (S3.5's gated row) | LC1 (S3 3k) |
+| 4 | `command_status` | MO; not in every product's tool list MO 2.19.1 (ruling S3.5-command-status no) | U | not in every product's tool list MO 2.5.5 (ruling S3.5-command-status no) | T4 (S3.5's gated row) | LC1 (S3 3k) |
 | 5 | `view_file` `StartPage`, `EndPage`, `MediaResolution` | CL 2.11.0 | U | U | T3 | LC1 |
 | 6 | `IsSkillFile: true` on skill reads | D·s (argument name only); MO (semantics) | U | U | Reference-only (diagnosing evidence) | LC7 |
-| 7 | `ArtifactMetadata` inner keys: `ArtifactType` (`task`, `implementation_plan`, `walkthrough`, `other`), `RequestFeedback`, `Summary`, `UserFacing` | MO (re-observe: 2.13.0) | U | U | T2; no gate depends on the effect | LC1, LC5, LC1 S1-k |
-| 8a | The agent writes artifacts to an explicit path in its own artifact directory | MO: in 199 of 217 `ArtifactMetadata` writes the agent itself passed an absolute `brain/<id>/` path; 18 targeted workspace paths | U | U; D settings:256 (the app-data directory "contains artifacts") | T3 | LC5 S1-g |
+| 7 | `ArtifactMetadata` inner keys: `ArtifactType` (`task`, `implementation_plan`, `walkthrough`, `other`), `RequestFeedback`, `Summary`, `UserFacing` | MO (re-observe: 2.13.0) | U | `ArtifactType: "task"` not rejected MO 2.5.5 (ruling S5.14-type) | T2; no gate depends on the effect | LC1, LC5, LC1 S1-k |
+| 8a | The agent writes artifacts to an explicit path in its own artifact directory | MO: in 199 of 217 `ArtifactMetadata` writes the agent itself passed an absolute `brain/<id>/` path; 18 targeted workspace paths; `IsArtifact`/`ArtifactMetadata` writes outside `brain/<id>/` refused MO 2.19.1 | rejected outside `brain/<id>/` MO 1.2.17 | U; D settings:256 (the app-data directory "contains artifacts"); refused outside `brain/<id>/` MO 2.5.5; the artifact directory not refused MO 2.5.5 (ruling S4.2-ledger) | T3 | LC5 S1-g |
 | 8b | A bare `TargetFile` with `IsArtifact` is routed to the artifact directory | U (the probe classified the path the agent passed, not routing) | U | U | T4: skills never rely on routing | LC5 S1-g |
 | 9 | `invoke_subagent` `Workspace` values `inherit`/`branch` | D 2.0 subagents:12; MO both used; CL 2.18.1; MO 2.19.1 | argument D·s hooks:167; `branch` worktrees CL 1.1.26; `inherit` MO 1.2.17; CL 1.2.10 | argument D·s; no `invoke_subagent` MO 2.5.5 | T3 (the argument is D·s; the values are named with a runtime fallback) | LC1, LC4 |
 | 10 | `Workspace: "share"` semantics | D 2.0 subagents:12, the phrase "share directory storage" only | U | U | T4 | LC4 S1-f |
-| 11 | `invoke_subagent` spec key `Model` | MO accepted (`inherit`, `flash`); effect unverified; MO 2.19.1 | MO 1.2.17 | U | T4; T2 once LC3's model leg (3a-M) shows each child's `modelName` following `flash` and `pro` on every product dispatched (D5) | LC3 |
+| 11 | `invoke_subagent` spec key `Model` | MO accepted (`inherit`, `flash`); ignored, the child ran the parent's model MO 2.19.1 (ruling S3.4) | ignored MO 1.2.17 (ruling S3.4) | U | T4: LC3's model leg (3a-M) found the child ignoring it (ruling S3.4; D5) | LC3 |
 | 12 | Child conversation id visible to the parent | MO (`INVOKE_SUBAGENT` results, 96/96) | D cli/headless:191 `subagent_info.conversation_id` (print mode) | U | T3; row 46 is the listing route | LC7 |
 | 13 | Plugin `agents/` discovered; bundled TypeNames dispatched by bare name | D 2.0 subagents:37; MO `implementer`, `spec-reviewer`, `code-reviewer` | D cli/commands/agents:68; CL 1.0.1; the TypeName form is U (CL 1.1.24's de-duplication suggests no prefix) | X8: no `invoke_subagent` MO 2.5.5 | T3 (runtime detection; S3.7's resolution chain) | LC3, LC8 |
-| 14 | Documented agent keys: `name`, `description`, `tools`, `mainAgent`, `subagent`, `model`, `commandExecutionPolicy`, `mcpServers`, `skills`/`plugins` | D 2.0 subagents:45-53 | D CLI subagents:189 (by link) | U | T3 as a file format; a product that does not load agents falls to S3.7's chain | LC3 |
+| 14 | Documented agent keys: `name`, `description`, `tools`, `mainAgent`, `subagent`, `model`, `commandExecutionPolicy`, `mcpServers`, `skills`/`plugins` | D 2.0 subagents:45-53; `model` honoured under a Claude parent MO 2.19.1 (ruling S3.3-tier-note) | D CLI subagents:189 (by link) | U | T3 as a file format; a product that does not load agents falls to S3.7's chain | LC3 |
 | 15 | Changelog-only agent keys (§3.8) | CL | CL | U | Not shipped until LC3 (S3.1) | LC3 |
 | 16 | Built-ins `research` and `self` | D 2.0 subagents:21-23; MO both used | `self` CL 1.1.22; `research` U | U | T3 (`research` for exploration only; never called read-only; `self` last in S3.7's chain) | LC3 |
 | 17 | `/browser` as the only entry point to the browser subagent | D 2.0 subagents:22, against CL 2.6.0 (X9) | `/browser` D slash-commands:39, :180-187 (2.0 and CLI); "exclusively" U, since the CLI tab does not repeat it | — (D ide/browser:9: the Browser Subagent works "as needed") | T3 per product | LC1 S1-a |
-| 18 | Plugin `skills/` discovery | D·s plugins:14-16; MO reads from `~/.gemini/config/plugins/superpowers/skills/` | D skills:127 | D·s | T1 | — |
+| 18 | Plugin `skills/` discovery | D·s plugins:14-16; MO reads from `~/.gemini/config/plugins/superpowers/skills/`; skill index loaded MO 2.19.1 (ruling S2.3) | D skills:127 | D·s; skill index loaded from `~/.gemini/config/plugins/superpowers` MO 2.5.5 (ruling S2.10-ide-store) | T1 | — |
 | 19 | Skill slash invocation | D skills:117 `/<skill-name>`; bare plugin-skill names MO 2.0 (probable) 2026-07-30 (re-observe: 2.18.1), recorded as "IDE" (§14) | D skills:131; `/superpowers:<skill>` MO 1.2.17 (ruling S2.11-slash) | D unscoped migration/workflows-to-skills:201 (`/<name>` for workspace and global skills, not plugin skills); IDE workflows `/workflow-name` D ide/workflows:7; no plugin slash form MO 2.5.5 (ruling S2.11-slash) | T3 per product | LC2 S1-c, LC8 |
 | 20 | Headless skill expansion, `agy -p "/<skill> …"` | — | CL 1.1.9 (un-namespaced example) | — | T3 (tests) | LC8 |
 | 21 | Directory-scoped rule walk | D·s rules:13-19 | D·s | D·s | Fact behind R12 | — |
 | 22 | Rule frontmatter required; invalid rules silently discarded | D·s rules:37-41 (worded for `.agents/rules`) | D·s | D·s | Fact (S2.1) | LC2 |
-| 23 | `@[label](path)` inlines; `@filename` does not | D·s rules:98-103 | D·s | D·s | T1 (not used today; S2.2 gates its adoption) | LC2 |
+| 23 | `@[label](path)` inlines; `@filename` does not | D·s rules:98-103; plugin-rule include inlined without frontmatter MO 2.19.1 (ruling S2.2) | D·s; same MO 1.2.17 (ruling S2.2) | D·s; same MO 2.5.5 (ruling S2.2) | T1; the bootstrap rule uses it (ruling S2.2 include) | LC2 |
 | 24 | `@path` inlines | CL 2.11.0 (X4) | U | U | T4 | LC2 |
-| 25 | Plugin `rules/` activated automatically | D·s component; activation U; MO 2.19.1 | D rules:160; MO 1.2.17 | D·s component; activation U; MO 2.5.5 | Per S2.1's gate | LC2, LC8 |
+| 25 | Plugin `rules/` activated automatically | D·s component; activation MO 2.19.1 (ruling S2.3) | D rules:160; MO 1.2.17; install shows `rules/` MO 1.2.17 (ruling S2.3) | D·s component; activation MO 2.5.5 (ruling S2.3) | Per S2.1's gate | LC2, LC8 |
 | 26 | A plugin-level `hooks.json` loads | D·s plugins:13, :82 (X7) | D hooks:26 | D·s (X7) | The fork ships none at the plugin root | LC6 |
 | 27 | Workspace `.agents/hooks.json` and global `~/.gemini/config/hooks.json` | D hooks:13-14; workspace hooks never fired MO 2.19.1 | D hooks:24-25; loading after folder trust CL 1.1.1; workspace hooks never fired MO 1.2.17 | D hooks:40-41; workspace hooks never fired MO 2.5.5 | T1 global only (contributor gate, S7.2); workspace hooks are not relied on (ruling S7.2-h) | LC6 |
 | 28 | Hook runtime: shell, cwd, exit codes, what a failure does | U; "fails closed" MO product unrecorded, 2026-08-03 (v6.2.1 release note) (re-observe: 2.0 2.6.0, 2.12.0) | U | U | T4 | LC6, LC6 S1-l |
 | 29a | Transcript path `<app_data_dir>/brain/<id>/.system_generated/logs/transcript.jsonl` | D·s hooks:204-208 | D·s, against the statusline example (X2) | D·s | T1 as a path; never as proof that the file exists | — |
 | 29b | The transcript file is actually written | MO (175 of 221 conversation directories) | U (X2; not observed before `agy` was installed) | X18: MO 1 of 33 directories has one; observed root, ruling S7.9-roots (LC7 S1-h) | T3: diagnosing names the product and falls back to the partner's account plus the conversation's artifacts | LC7 S1-h |
 | 30 | Transcript record fields; token usage | Fields MO; no token, usage or cost field MO | Token usage D cli/headless:65-70, :87, :179 (print mode) and D cli/statusline:47 (`context_window`, delivered to the partner's status-line script); quota D cli/commands/usage:26 | U | T3 (diagnosing notes, labelled) | LC7 |
-| 31 | Plugin install root | D plugins:110-111; MO clone at `~/.gemini/config/plugins/superpowers` | D plugins:166, against CL 1.0.2 (X1); CL 1.2.11; per-product MO 1.2.17 (ruling S2.10-cli-clone); D 2026-11-04 plugins:233-237 shared root | D plugins:180-181; MO `~/.gemini/antigravity-ide/plugins/` holds a Google plugin (2026-09-25 listing) | Never hard-coded in skills | LC8 S1-i, CLI C2 |
-| 32 | `plugin.json` with the `version` key loads | MO (the d558e20 clone loads) | D (`version` is a documented manifest field, spec D.1) | D | T1 (documented field, D.1; supersedes the D15 schema exception) | LC8 |
+| 31 | Plugin install root | D plugins:110-111; MO clone at `~/.gemini/config/plugins/superpowers` | D plugins:166, against CL 1.0.2 (X1); CL 1.2.11; the global clone not listed as the plugin's source MO 1.2.17 (ruling S2.10-cli-clone per-product); D 2026-11-04 plugins:233-237 shared root | D plugins:180-181; MO `~/.gemini/antigravity-ide/plugins/` holds a Google plugin (2026-09-25 listing) | Never hard-coded in skills | LC8 S1-i, CLI C2 |
+| 32 | `plugin.json` with the `version` key loads | MO (the d558e20 clone loads) | D (`version` is a documented manifest field, spec D.1); `package.json` staged or a `version` warning or rejection MO 1.2.17 (ruling S2.5, superseded by spec D.1) | D | T1 (documented field, D.1; supersedes the D15 schema exception) | LC8 |
 | 33 | `ask_question` `questions` array shape | D·s hooks:177-178; MO array form accepted (the probe recorded the first element only) | D·s | D·s | T1 (shape); multi-question rendering open | LC5 |
 | 34 | `ask_question` write-in answers | U | CL 1.2.7, CL 1.1.12 | U | T3 | LC1, LC5 |
 | 35a | `ask_permission` `Action` strings `write_file`, `read_file` | MO | U (only the rule namespaces are D) | U | T3 | LC1 |
 | 35b | `ask_permission` `Action: "unsandboxed"` | MO | deprecated as a rule namespace CL 1.2.2 (X5) | U | T4 (deprecated on one product) | LC1 |
-| 36 | Plan and artifact review policy | CL 2.17.0 "Plan Review Policy" (3 values), against D unscoped artifact-review:14, :24 (2 values) (X6) | D settings:152-155 `artifactReviewPolicy` | D settings:270-276: strict mode sets "Artifact review" to "Request Review", so the policy exists; its other labels are not quoted (X6) | Describe behaviour, not setting labels | LC5 |
-| 37 | `/plan` and the Implementation Plan artifact | D slash-commands:84-93 | D; plan mode D cli/modes | Plans as artifacts D ide/overview:41-43; `/plan` U | T3 | LC5 |
+| 36 | Plan and artifact review policy | CL 2.17.0 "Plan Review Policy" (3 values), against D unscoped artifact-review:14, :24 (2 values) (X6); no review header, a re-save did not reopen review MO 2.19.1 (rulings S5.1-header, S5.1-reopen) | D settings:152-155 `artifactReviewPolicy`; no review header, no re-open, no distinct approve signal MO 1.2.17 (rulings S5.1-header, S5.1-reopen, S5.1-cli-approve) | D settings:270-276: strict mode sets "Artifact review" to "Request Review", so the policy exists; its other labels are not quoted (X6); no review header MO 2.5.5 (ruling S5.1-header) | Describe behaviour, not setting labels | LC5 |
+| 37 | `/plan` and the Implementation Plan artifact | D slash-commands:84-93; under `/plan` skills fired and the plan file was written MO 2.19.1 (ruling S5.5-plan) | D; plan mode D cli/modes; under `--mode=plan` skills fired and the plan file was written MO 1.2.17 (ruling S5.5-plan) | Plans as artifacts D ide/overview:41-43; `/plan` U | T3 | LC5 |
 | 38 | `/goal`, `/grill-me`, `/learn`, `/schedule`, `/btw` | D slash-commands:29-40 | D | U | T3 | LC2 |
 | 39 | `/boost` and `/teamwork-preview` | D (paid plans) | D (paid plans) | — | T4 (plan-tier-gated) | — |
 | 40 | Subagent interaction timeout (60 s) | U | CL 1.0.2 | U | Risk note only | LC4 |
 | 41 | Remote Control answers questions and approvals remotely | CL 2.9.1; D remote-control:23 | CL 1.2.0 and 1.2.6; D remote-control:103 | U | T3 | — |
 | 42 | Windows shell used by `run_command` | D permissions:173 (PowerShell or Command Prompt possible; default undocumented) | D permissions:308; CL 1.0.10 concerns bash mode and may or may not apply to `run_command` [I] | U | R6 | LC6 |
-| 43 | A backgrounded `run_command` is read back with `manage_task` `Action: "status"` | tool D·s hooks:155-156; X17 (MO `command_status` did this job) | tool D·s; `/tasks` lists "direct shell commands" D CLI subagents:202; list and kill CL 1.1.13; completion notifications CL 1.2.5 | tool D·s; addressing a run U | T3: secondary to a foreground wait with a long enough `WaitMsBeforeAsync` (S3.5, S4 EP-11), which is T1 | LC4 S1-j |
+| 43 | A backgrounded `run_command` is read back with `manage_task` `Action: "status"` | tool D·s hooks:155-156; X17 (MO `command_status` did this job); `status` not blind to the run MO 2.19.1 (rulings S3.5-status, S5.16-status) | tool D·s; `/tasks` lists "direct shell commands" D CLI subagents:202; list and kill CL 1.1.13; completion notifications CL 1.2.5; `status` not blind to the run MO 1.2.17 (ruling S3.5-status) | tool D·s; addressing a run U | T3: secondary to a foreground wait with a long enough `WaitMsBeforeAsync` (S3.5, S4 EP-11), which is T1 | LC4 S1-j |
 | 44 | `send_message` to a conversation id | tool D·s hooks:170-171; routing D 2.0 subagents:115-117; MO `Recipient` carries child ids | tool D·s; routing U; partner-side `@<subagent>` CL 1.2.9 | tool D·s; routing U | T3 for agent-to-agent delivery | LC4 S1-m |
-| 45 | An Idle subagent re-awakens on a message with its context retained | D 2.0 subagents:103-104, :118 | U | U | T3. Used by SDD fix rounds 1-3 (register B7) and S4's "ask it to repeat the report". Fallback, T1: dispatch a fresh subagent with the task text (S4 already does this for Killed and for rounds 4-5) | LC4 S1-m |
+| 45 | An Idle subagent re-awakens on a message with its context retained | D 2.0 subagents:103-104, :118; P4 condition 1 met MO 2.19.1 (ruling S3.10-P4) | P4 (dispatch, `send_message` resume, relay) condition 1 met MO 1.2.17 (ruling S3.10-P4) | U | T3. Used by SDD fix rounds 1-3 (register B7) and S4's "ask it to repeat the report". Fallback, T1: dispatch a fresh subagent with the task text (S4 already does this for Killed and for rounds 4-5) | LC4 S1-m |
 | 46 | `manage_subagents` `list`/`kill`/`kill_all` with `ConversationIds` | D·s hooks:172-173; MO all three actions | D·s | D·s | T1 (tool and actions); what `list` returns is U | LC4 |
 | 47 | `define_subagent` with `enable_write_tools`, `enable_mcp_tools`, `enable_subagent_tools` | D·s hooks:168-169; MO used; base registration toolset MO 2026-07-08 (registration read) | D·s | D·s | T1 as a tool; no skill step uses it (D6) | LC1, LC3 S1-e (S3 3j) |
 | 48 | Nesting limit of 10 levels | D 2.0 subagents:123 | U | U | Risk note only | — |
@@ -168,7 +168,7 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 **Binding verdicts**
 
 - **T1:** documented tool names; plugin `skills/`; the transcript path (as a path, never as proof the file exists); `ask_question` arrays; `manage_subagents` actions; foreground `run_command` waits; `@[label](path)` includes and the workspace/global `hooks.json` locations (existence).
-- **T2:** `ArtifactMetadata` inner keys; the `Model` key once LC3's model leg shows each child's `modelName` following `flash` and `pro` on every product dispatched (S3 3a-M); until then T4, and S3.4's variant files ship (D5).
+- **T2:** `ArtifactMetadata` inner keys. The `Model` key stays T4: LC3's model leg found the child ignoring it (S3 3a-M, ruling S3.4), so S3.4's variant files ship (D5).
 - **T3:** `Workspace` `inherit`/`branch` (S4 uses `inherit`, D4); bundled agents via S3.7's chain; `research` for exploration, never called read-only; explicit artifact paths; slash forms and `/plan`; Idle re-awakening and `send_message` by conversation id (fallback: fresh dispatch); the child conversation id; `manage_task` status (secondary to the foreground wait); `ask_question` write-in; the `ask_permission` read/write Actions; non-workspace access (pre-emptive `ask_permission` grants only before a subagent fan-out or a sandbox mount).
 - **T4:** bare-`TargetFile` routing, `share`, `@path`, hook runtime, `unsandboxed`, `/boost`, `/teamwork-preview`.
 - `plugin.json` carries the documented manifest fields, `version` included (Antigravity build-plugins; S2.5 superseded by spec Addendum D.1).
@@ -230,7 +230,7 @@ Every tool on the Supported Tools list of the hooks page [D shared hooks:123-180
 
 ### §2.1b Prose baseline
 
-§2.1a minus the `retired` class (`list_dir`, `find_by_name` and `grep_search` [CL CLI 1.2.7]), plus any name that LC1 or LC8 records in the default toolset of all three products (S3.5's `command_status` row is the model; S7.1 then moves the name to `baseline`). Skill and rule prose names only these tools (R13).
+§2.1a minus the `retired` class (`list_dir`, `find_by_name` and `grep_search` [CL CLI 1.2.7]), plus any name that LC1 or LC8 records in the default toolset of all three products (S3.5's `command_status` row is the model; S7.1 then moves the name to `baseline`). Skill and rule prose names only these tools (R13). LC1 found no name outside this list in every product's tool list [MO IDE 2.5.5 2026-10-05 LC1 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC1 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC1 probe 20261005-1426] (ruling S1.9 exclusion-list).
 
 | Tool | Label |
 |---|---|
@@ -271,22 +271,25 @@ Every tool on the Supported Tools list of the hooks page [D shared hooks:123-180
   - Numeric typing of `DurationSeconds` and `MaxIterations` [CL CLI 1.1.10].
   - An "early-termination condition" is mentioned [CL CLI 1.1.12]; its parameter is undocumented [U].
   - Only `{DurationSeconds, Prompt}` has been observed [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
+  - `schedule` and `manage_task` were in the tool list on all three products [MO IDE 2.5.5 2026-10-05 LC1 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC1 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC1 probe 20261005-1426] (ruling S4.3-background).
 - `manage_task` and background commands:
   - `manage_task` is the documented tool for background tasks [D shared hooks:155-156]. It is available to declarative agents that have not opted out of fundamental components [CL CLI 1.1.13].
   - Background tasks keep their names in completion notifications and task lists [CL CLI 1.2.5]. The CLI's completion notices [CL CLI 1.2.5, 1.1.13] have undocumented agent-facing semantics.
+  - `manage_task` `Action: "status"` was not blind to a backgrounded run, and listing `manage_task` in an agent's `tools` neither errored nor hung [MO 2.0 2.19.1 2026-10-05 LC4 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC4 probe 20261005-1426] (rulings S3.5-status, S3.5-manage-task, S5.16-status).
 - `ask_permission`:
   - Observed `Action` values are `write_file`, `read_file` and `unsandboxed` [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
   - The permission rule namespaces are documented [D 2.0 permissions:44-49, :159-165].
   - `all` is maintainer-sourced only: the 2026-07-29 reference, line 42, lists it from the maintainer's 2026-07-29 capture, and it is on no docs page and was never observed [U-ms]. It stays listed with that tag.
+- `list_permissions` was absent or errored on 2.0 and the CLI, so it is not in every product's tool list [MO 2.0 2.19.1 2026-10-05 LC6 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC6 probe 20261005-1426] (rulings S4.7-list-permissions, S6.5-access).
 - `ask_question`:
   - Its shape is the documented `questions` array [D shared hooks:177-178], whose array form was observed accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
   - Write-in answers are documented only for the CLI [CL CLI 1.0.3, 1.1.12, 1.2.7].
   - Cancel is documented for 2.0 [CL 2.0 2.13.0].
-- `invoke_subagent`: the `Model` spec key is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; the result carries the child `conversationId` [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; in headless output `subagent_info` has `type_name`, `role`, `conversation_id`, `log_uri` and `workspace_uris` [D CLI cli/headless:191].
+- `invoke_subagent`: the `Model` spec key is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe] and ignored (§3.10); the result carries the child `conversationId` [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; in headless output `subagent_info` has `type_name`, `role`, `conversation_id`, `log_uri` and `workspace_uris` [D CLI cli/headless:191].
 - `define_subagent`: `name`, `description`, `system_prompt`, and the optional `enable_mcp_tools`, `enable_write_tools` and `enable_subagent_tools` [D shared hooks:168-169; MO 2.0 ≤2.10.0 2026-08-25 transcript probe]. The flags' effects and defaults are undocumented [U]. On 2.0, registrations are stored per conversation under `brain/<id>/.agents/agents/<name>/agent.json`, with `hidden: true`; the base tool set is `send_message`, `find_by_name`, `grep_search`, `view_file`, `list_dir`, `read_url_content`, `search_web` and `schedule`, and a larger set adds the three write tools, `run_command` and `manage_task` [MO 2.0 ≤2.10.0 2026-07-08 registration read]. That the larger set is what `enable_write_tools: true` yields is an inference [I].
 - Legacy `list_dir`, `find_by_name` and `grep_search` were retired from the CLI's default baseline, and stay available to agents that list them in `tools` [CL CLI 1.2.7]. They are still listed on the hooks page (X13). 2.0 and the IDE have no retirement entry.
 - Tools not on the documented list:
-  - `command_status {CommandId, OutputCharacterCount, WaitDurationSeconds}`, observed on 2.0 and undocumented [MO 2.0 ≤2.10.0 2026-08-25 transcript probe];
+  - `command_status {CommandId, OutputCharacterCount, WaitDurationSeconds}`, observed on 2.0 and undocumented [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; it was not in every product's tool list [MO IDE 2.5.5 2026-10-05 LC1 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC1 probe 20261005-1426] (ruling S3.5-command-status);
   - `manage_inbox` [CL CLI 1.1.13];
   - `code_search` [D CLI cli/modes:85];
   - `read_resource` (MCP) [CL CLI 1.1.16];
@@ -345,7 +348,7 @@ The `subagents` page is tabbed throughout (§0.2): its 2.0 tab documents the dis
 ### §3.5 Permissions and timeouts
 
 - Subagents inherit command prefixes, file scopes and sandbox settings, and permission requests bubble up [D 2.0 subagents:129-131]. On the CLI, subagent approvals surface to the partner through Alt+J and Ctrl+K [D CLI subagents:216-230].
-- The default 60-second interaction timeout applies to subagents [CL CLI 1.0.2]. A timed-out subagent commit falls back to the controller committing the reported files (ruling S4.7-60s fallback, LC4 K8 on the CLI).
+- The default 60-second interaction timeout applies to subagents [CL CLI 1.0.2]. A timed-out subagent commit falls back to the controller committing the reported files (ruling S4.7-60s fallback, LC4 K8 on the CLI). On the CLI the `inherit` implementer's commit was made, with no timeout or denial [MO CLI 1.2.17 2026-10-05 LC4 probe 20261005-1426].
 - Approvals are remembered for the conversation [CL 2.0 2.5.0; CL CLI 1.1.9].
 
 ### §3.6 Discovery and TypeNames
@@ -355,7 +358,7 @@ The `subagents` page is tabbed throughout (§0.2): its 2.0 tab documents the dis
 - Project custom agents in `.agents/agents/` are found in Desktop-created workspaces, trusted workspaces, `--agent` and headless runs [CL CLI 1.2.11], so probe 3e and E9 count only on CLI 1.2.11 or later.
 - IDE: no `invoke_subagent` [MO IDE 2.5.5 2026-10-05 LC1 probe 20261005-1426] (X8 decided).
 - Bundled agents are documented on 2.0 and the CLI; the IDE cannot dispatch them.
-- A same-name agent in `.agents/agents/` or `~/.gemini/config/agents/`: the fork's override note was deleted after LC3 3e on 2.0 and the CLI (ruling S3.7-3e delete-override).
+- A same-name agent in `.agents/agents/` or `~/.gemini/config/agents/`: the fork's override note was deleted after LC3 3e on 2.0 and the CLI (ruling S3.7-3e delete-override). Against a same-name agent in `.agents/agents/`, the plugin's agent ran on every run [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC3 probe 20261005-1426].
 - Bare bundled TypeNames resolve on 2.0 [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
 - The CLI TypeName form is unverified [U]. Same-name agents are de-duplicated across plugins [CL CLI 1.1.24], which suggests there is no prefix [I].
 
@@ -397,21 +400,21 @@ Each changelog-only agent key, with its product and version (S3.1 decides which 
 
 ### §3.9 Inheritance does not grant tools
 
-Tools are the explicit list [D 2.0 subagents:47]; `inheritCustomizations` adopts skills, rules, plugins, subagents and MCP servers [CL CLI 1.1.14] (2.0: skills, rules, subagents [CL 2.0 2.9.1]); neither list includes built-in tools; CLI Markdown agents inherit ambient skills, rules and subagents by default [CL CLI 1.1.25]; rosters reach only agents listing `invoke_subagent` [CL CLI 1.2.5]; the default toolset is `[U]`, and its one documented member, `manage_task`, cannot dispatch; `self` shares its caller's tools [D 2.0 subagents:23]. Hence [I, pending LC3 S1-e] no bundled agent can open a review seat but `self` can, so `self` is the last subagent step: bare TypeName, `superpowers:` TypeName, `self`, then the consumer's own path, each fallback ledgered (D6). Skipped in v6.3.0; reversed in d58690c and reverted in 1f9860d (2026-08-24): "this is a native port, the skip stands" (maintainer instruction). Accepted residuals (D15): a duplicated review seat via `self` (cost, not correctness); a bundled agent reached by the bootstrap rule reviews inline at worst (`<SUBAGENT-STOP>`). Re-open if LC3 S1-e or S3 3i finds an unlisted dispatch tool, a skill uses `self` earlier, or a changelog adds dispatch tools to the defaults.
+Tools are the explicit list [D 2.0 subagents:47]; `inheritCustomizations` adopts skills, rules, plugins, subagents and MCP servers [CL CLI 1.1.14] (2.0: skills, rules, subagents [CL 2.0 2.9.1]); neither list includes built-in tools; CLI Markdown agents inherit ambient skills, rules and subagents by default [CL CLI 1.1.25]; rosters reach only agents listing `invoke_subagent` [CL CLI 1.2.5]; the default toolset is `[U]` beyond `send_message` and `manage_task` (probe record below), and its one documented member, `manage_task`, cannot dispatch; `self` shares its caller's tools [D 2.0 subagents:23]. Hence [I, pending LC3 S1-e] no bundled agent can open a review seat but `self` can, so `self` is the last subagent step: bare TypeName, `superpowers:` TypeName, `self`, then the consumer's own path, each fallback ledgered (D6). Skipped in v6.3.0; reversed in d58690c and reverted in 1f9860d (2026-08-24): "this is a native port, the skip stands" (maintainer instruction). Accepted residuals (D15): a duplicated review seat via `self` (cost, not correctness); a bundled agent reached by the bootstrap rule reviews inline at worst (`<SUBAGENT-STOP>`). Re-open if LC3 S1-e or S3 3i finds an unlisted dispatch tool, a skill uses `self` earlier, or a changelog adds dispatch tools to the defaults.
 
 **Gate.** LC3 S1-e. Default: keep the skip. Fallback: d58690c's Task 8 verbatim at its placements (three reviewer blocks, `implementer.md`, both SDD hunks; placement-only divergence), plus the reviewer block in `final-reviewer.md` and the implementer block in any S3.4 variants (`session-analyst`, `bundle-scrubber`: none); record it in §3.9 and weigh `excludeDefaultComponents`.
 
-Fallback applied: LC3 S1-e found send_message and manage_task in the bundled reviewers (spec-reviewer, code-reviewer, re-reviewer, final-reviewer) on 2.0 2.19.1 and CLI 1.2.17; d58690c's Task 8 blocks ship at their placements (placement-only divergence). [MO 2.0 2.19.1 2026-10-05 LC3; MO CLI 1.2.17 2026-10-05 LC3]
+Fallback applied: LC3 S1-e found send_message and manage_task in the bundled reviewers (spec-reviewer, code-reviewer, re-reviewer, final-reviewer) on 2.0 2.19.1 and CLI 1.2.17; d58690c's Task 8 blocks ship at their placements (placement-only divergence). [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426 self-report]; [MO CLI 1.2.17 2026-10-05 LC3 probe 20261005-1426]
 
-Probe record: send_message and manage_task are default components of every subagent, with inheritance on or off [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426].
+Probe record: send_message and manage_task are default components of every subagent, with inheritance on or off [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426]. Inheriting probe agents listed `invoke_subagent` [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426 self-report] (ruling S1.7). Bundled agents with no `inheritCustomizations` key received the workspace rule and a non-empty skill index [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426 self-report]; [MO CLI 1.2.17 2026-10-05 LC3 probe 20261005-1426] (ruling S3.1-inherit none).
 
 ### §3.10 Models
 
 - `model` is `inherit`, `flash` or `pro` [D 2.0 subagents:50].
 - With `inherit`, a subagent whose parent has no model falls back to the fast tier [CL CLI 1.1.16].
 - What `flash` and `pro` map to is undocumented.
-- No per-invocation override is documented (R7). The `invoke_subagent` spec key `Model` is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; effect unverified (R7, D5).
-- The per-dispatch `Model` key was ignored: the child ran the parent's model on 2.0 and the CLI [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC3 probe 20261005-1426]. The agent frontmatter `model` key was honoured on 2.0 under a Claude parent [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426].
+- No per-invocation override is documented (R7). The `invoke_subagent` spec key `Model` is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; LC3 found it ignored (next bullet; R7, D5).
+- The per-dispatch `Model` key was ignored: the child ran the parent's model on 2.0 (`pro` ran gemini-3.8-flash-medium, `flash` ran gemini-3.1-pro-low) and the CLI (`pro` ran gemini-3.8-flash-medium, `flash` ran gemini-pro-agent) [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC3 probe 20261005-1426] (ruling S3.4 variant-files). The agent frontmatter `model` key was honoured on 2.0 under a Claude parent: the `pro` and `flash` agents ran gemini-3.1-pro-low and gemini-3.8-flash-tiered, the others Claude [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426] (ruling S3.3-tier-note).
 - `/model <name> <prompt>` is a one-shot for the main agent only [CL CLI 1.1.27].
 - Arbitrary model targets per subagent, independent of the root agent, exist only in the SDK [CL SDK 0.1.18]. The product mechanism is the `model` frontmatter key.
 - Current models: Gemini 3.8, 3.7 and 3.6 Flash, Gemini 3.1 Pro, Claude Sonnet 4.6 and Opus 4.6, and GPT-OSS-120b [D unscoped models:9-15]. Skills never name model slugs (X15).
@@ -458,6 +461,7 @@ Probe record: send_message and manage_task are default components of every subag
   - `<dir>/AGENTS.md`, `<dir>/GEMINI.md`, `<dir>/.agents/AGENTS.md`, `<dir>/.agents/GEMINI.md`, `<dir>/.agents/rules/*.md` and the legacy `<dir>/.agent/rules/*.md`;
   - the walk runs at every level from the file read up to the workspace root;
   - for a plugin installed at `<ws>/.agents/plugins/superpowers/`, every tracked file of that kind in the plugin's tree is in the walk [I from D shared rules:15]. This includes a plugin-root `GEMINI.md`, and it is why agent-facing files are banned from the repository (S2.7, R12);
+  - observed: after a read inside a plugin tree under `<ws>/.agents/plugins/`, neither the plugin-root `GEMINI.md` nor the file it `@`-includes loaded [MO IDE 2.5.5 2026-10-05 LC2 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC2 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC2 probe 20261005-1426] (ruling S2.3-walk none). No walk-leak hook line was logged (ruling S7.3-walk-leak default), but workspace hooks never fired (§7.1). A skill under that tree's `.agents/skills/` was not in the skill index [MO IDE 2.5.5 2026-10-05 LC6 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC6 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC6 probe 20261005-1426] (ruling S7.11 ship);
   - whether the walk runs for files outside the workspace (global installs) is unverified [U].
 - The scan of `.agents/rules/` is flat [D shared rules:30].
 - Frontmatter:
@@ -465,7 +469,7 @@ Probe record: send_message and manage_task are default components of every subag
   - Triggers are `always_on`, `model_decision`, `glob` and `manual` [D shared rules:47, :55]; `always_on` injects the full content on every turn [D shared rules:75].
   - `description` is required for `model_decision`, and serves as the fallback for over-budget `always_on` rules [D shared rules:56].
 - Includes and limits:
-  - `@[label](path)` inlines the file, resolves relative to the rule file and strips frontmatter. `@filename` does not inline [D shared rules:98-103]. Includes work in `AGENTS.md`, `GEMINI.md` and `.agents/rules/*.md` [D shared rules:98].
+  - `@[label](path)` inlines the file, resolves relative to the rule file and strips frontmatter. `@filename` does not inline [D shared rules:98-103]. Includes work in `AGENTS.md`, `GEMINI.md` and `.agents/rules/*.md` [D shared rules:98]. In the plugin's always-on rule, an `@[label](path)` include inlined its target without the target's frontmatter [MO IDE 2.5.5 2026-10-05 LC2 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC2 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC8 probe 20261005-1426] (ruling S2.2 include).
   - Bare `@path` inlining is contested: 2.0 2.11.0 says `@path/to/file` inlines [CL 2.0 2.11.0], and the rules page says `@filename` does not (X4).
   - `@` has no documented meaning inside a skill. writing-skills' old "force-loads" wording is gone; `skills/writing-skills/references/discovery.md` says `@` loads nothing in a skill.
   - `.agents/rules.json` supports `inherits`, `entries`, `include_only` and `exclude` [D shared rules:114-126].
@@ -478,9 +482,9 @@ Probe record: send_message and manage_task are default components of every subag
 - Locations by product:
   - global standalone files (no frontmatter, always active) `~/.gemini/AGENTS.md`, `~/.gemini/GEMINI.md`, `~/.gemini/config/AGENTS.md` and `~/.gemini/config/GEMINI.md`, and modular global rules (frontmatter required) in `~/.gemini/config/rules/*.md` [D shared rules:25-26];
   - workspace and global rule locations per product [D 2.0 rules:151-152; D CLI rules:158-160; D IDE rules:170-171]; the CLI adds `~/.gemini/antigravity-cli/rules/*.md` [D CLI rules:159];
-  - plugin rules are activated automatically [D CLI rules:160]. On 2.0 and the IDE activation is unverified [U], although `rules/` is a documented plugin component [D shared plugins:19, :80].
+  - plugin rules are activated automatically [D CLI rules:160], and were observed active on all three products (below); `rules/` is a documented plugin component [D shared plugins:19, :80].
 - Agent `rules:` key: §3.8.
-- The plugin's always-on rule loaded as the bootstrap on all three products, and the legacy `GEMINI.md` context did not [MO IDE 2.5.5 2026-10-05 LC2 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC2 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC2 probe 20261005-1426].
+- The plugin's always-on rule loaded as the bootstrap on all three products, and the legacy `GEMINI.md` context did not [MO IDE 2.5.5 2026-10-05 LC2 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC2 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC2 probe 20261005-1426] (ruling S2.3 outcome-A). On the CLI the rule's marker arrived without a file read, the variant with the legacy files gained no `GEMINI.md` context, and the install showed `rules/` [MO CLI 1.2.17 2026-10-05 LC8 probe 20261005-1426].
 - `/learn` output location: X10.
 
 ## §6 Plugins
@@ -491,10 +495,11 @@ Probe record: send_message and manage_task are default components of every subag
   - the pattern is `^[a-zA-Z0-9-_]+$`, with `additionalProperties: false`;
   - the `$schema` URL returned 404 on 2026-09-25 [MO docs ? 2026-09-25 schema URL fetch].
 - `plugin.json` carries the documented manifest fields, `version` included (Antigravity build-plugins; spec Addendum D.1 supersedes S2.5). No `$schema` (D15).
+- On the CLI the install staged `package.json`, or warned on or rejected `version`; which is not recorded [MO CLI 1.2.17 2026-10-05 LC8 probe 20261005-1426] (ruling S2.5 version-dropped, superseded by Addendum D.1).
 - Installation by product:
-  - 2.0 and the IDE: `.agents/plugins/` for a workspace (it "activates only when working in that project") or `~/.gemini/config/plugins/` [D 2.0 plugins:110-111; D IDE plugins:180-181].
+  - 2.0 and the IDE: `.agents/plugins/` for a workspace (it "activates only when working in that project") or `~/.gemini/config/plugins/` [D 2.0 plugins:110-111; D IDE plugins:180-181]. Both loaded the skill index of a clone at `~/.gemini/config/plugins/superpowers` [MO IDE 2.5.5 2026-10-05 LC2 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC2 probe 20261005-1426] (rulings S2.3, S2.10-ide-store).
   - CLI: `agy plugin list|install|enable|disable|uninstall`, with staging at `~/.gemini/antigravity-cli/plugins/<plugin_name>/` [D CLI plugins:131-167]. This conflicts with CLI 1.0.2, which names the shared `~/.gemini/config/` [CL CLI 1.0.2] (X1). The 2026-11-04 docs stage CLI installs in `~/.gemini/config/plugins/<plugin_name>/`, the folder the 2.0 clone uses [D 2026-11-04 plugins:233-237; D 2026-11-04 build-plugins:242].
-  - The CLI also loads plugins placed directly in `~/.gemini/config/plugins` [CL CLI 1.2.11].
+  - The CLI also loads plugins placed directly in `~/.gemini/config/plugins` [CL CLI 1.2.11]. In LC8 the CLI did not list a clone placed there as the plugin's source [MO CLI 1.2.17 2026-10-05 LC8 probe 20261005-1426] (ruling S2.10-cli-clone per-product).
   - CLI: `agy plugin import gemini` converts Gemini CLI extensions [D CLI cli/gcli-migration:3, :26].
   - A `~/.gemini/antigravity-ide/plugins/` directory has been observed locally [MO IDE ? 2026-09-25 directory listing].
 - Marketplace, the `/plugin` manager and cross-surface sync: plugins install from a Marketplace; the `/plugin` manager (`install <plugin>@<marketplace>`, `install <local-path>`, `list`, `enable`, `disable`, `uninstall`) manages them; and plugins installed in 2.0 appear in the CLI's Installed tab [D 2.0/CLI marketplace:7; D CLI marketplace:121-129; D CLI plugins:113-129; CL 2.0 2.18.1]. 2.0 lists them in the Customizations tab's Marketplace and Installed views [D 2.0 plugins:92-104].
@@ -552,7 +557,7 @@ The hooks page is tabbed only for locations and toggles; its schema and contract
 - Stop-hook loops are bounded [CL CLI 1.1.9; CL 2.0 2.6.0].
 - Configurations that could never run are rejected at load time [CL 2.0 2.6.0].
 - A failing hook "is now reported as an error and the conversation continues" [CL 2.0 2.12.0]. What that means for the gated tool call is unstated.
-- Workspace hooks were fixed to load after a folder is trusted [CL CLI 1.1.1]; that trust gates loading is an inference [I].
+- Workspace hooks were fixed to load after a folder is trusted [CL CLI 1.1.1]; that trust gates loading is an inference [I]. CLI `/hooks` did not list the workspace hooks only when the folder was trusted [MO CLI 1.2.17 2026-10-05 LC6 probe 20261005-1426] (ruling S7.8-trust no).
 - Empty decision strings returned by pre-tool hooks are handled safely instead of failing [CL CLI 1.0.16].
 - `/hooks` writes to the shared `~/.gemini/config/hooks.json`, not a CLI-private file [CL CLI 1.0.8].
 - Plugin hooks appear in `/hooks` [CL CLI 1.2.3].
@@ -597,11 +602,12 @@ The plugin ships no hook: no `hooks.json` at the plugin root and no user-facing 
   - The IDE's app-data directory "contains artifacts, knowledge items, and configuration files" [D IDE settings:256]; 2.0's, on Windows, "contains Artifacts, Knowledge Items" [D 2.0 agent-settings:35].
   - Observed: in 199 of 217 `ArtifactMetadata` writes the agent itself passed an absolute path under `brain/<id>/`; 18 writes targeted workspace paths [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]. `task.md`, `implementation_plan.md` and `walkthrough.md` sit there with `.metadata.json` and `.resolved.N`.
   - Whether a bare `TargetFile` is routed to the artifact directory is unverified on every product [U] (§0.5 row 8b; LC5 S1-g).
-  - Whether the agent is told its artifact directory is unverified [U]; on 2.0 it evidently knew it [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
+  - Whether the agent is told its artifact directory: on 2.0 it evidently knew it [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; in LC7 neither its own conversation id nor its artifact directory was visible to it on any product [MO IDE 2.5.5 2026-10-05 LC7 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC7 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC7 probe 20261005-1426] (ruling S6.2-identity default).
   - Artifacts in subdirectories now appear in the list [CL 2.0 2.11.0; CL CLI 1.1.15].
   - Scratch files are hidden unless marked user-facing [CL 2.0 2.13.0], so `task.md` is never written under `scratch/` [I].
 - HTML and generative-UI artifacts [CL 2.0 2.11.0].
 - Writes with `IsArtifact` and `ArtifactMetadata` were refused outside `brain/<id>/` on the IDE and 2.0, and rejected on the CLI [MO IDE 2.5.5 2026-10-05 LC5 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC5 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC5 probe 20261005-1426]. Repository files are written plainly.
+- On the IDE, writes into the artifact directory were not refused, and `ArtifactType: "task"` was not rejected [MO IDE 2.5.5 2026-10-05 LC5 probe 20261005-1426] (rulings S4.2-ledger, S5.14-type).
 - Knowledge Items: 2.0 [D 2.0 agent-settings:35], IDE [D IDE settings:256]. The IDE's records include a `KNOWLEDGE_ARTIFACTS` type [MO IDE ? 2026-09-25 transcript probe].
 - Task Groups:
   - The agent manages them in planning mode [D unscoped tools:3]; no documented tool creates them (§2.1a).
@@ -613,10 +619,12 @@ The plugin ships no hook: no `hooks.json` at the plugin root and no user-facing 
   - The partner selects the mode: Shift+Tab or `--mode=plan` on the CLI [D CLI cli/modes:26, :82], Planning or Fast at the start of a conversation [D unscoped artifact-review:3-6].
   - Plan Review Policy governs `/plan` on 2.0 [CL 2.0 2.17.0].
   - Headless runs proceed through plan review automatically [CL CLI 1.1.28].
+  - Under `/plan` on 2.0 and `--mode=plan` on the CLI, skills fired and the plan file was written [MO 2.0 2.19.1 2026-10-05 LC5 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC5 probe 20261005-1426] (ruling S5.5-plan writes-note).
 - Review setting per product (X6):
   - 2.0: "Plan Review Policy", with three behaviours: review every plan, review only when the agent judges it worthwhile, or skip review [CL 2.0 2.17.0]. The artifact-review page still names two options [D unscoped artifact-review:8-29].
   - CLI: `artifactReviewPolicy`, whose values are `asks-for-review`, `agent-decides` and `always-proceed`, and which also gates code files [D CLI settings:152-155]. The CLI's artifact picker approves or rejects per file and takes line comments [D CLI cli/artifacts:18-56, :144-151].
   - IDE: the policy exists; strict mode sets it to "Request Review", and "the agent always prompts for confirmation before acting on plans laid out in artifacts" [D IDE settings:270-276]. The IDE's Review Changes pane takes comments on diffs "just like with artifacts" [D IDE ide/review-changes-editor:3-7]. The non-strict values, Request Review or Always Proceed "When working in Planning Mode", come only from the unscoped artifact-review page [D unscoped artifact-review:8-29].
+  - Observed (LC5): the plan write raised no review header on any product [MO IDE 2.5.5 2026-10-05 LC5 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC5 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC5 probe 20261005-1426] (ruling S5.1-header). Re-saving it did not reopen review [MO 2.0 2.19.1 2026-10-05 LC5 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC5 probe 20261005-1426] (ruling S5.1-reopen). The CLI gave no approve signal other than Shift+A or `accept-edits` [MO CLI 1.2.17 2026-10-05 LC5 probe 20261005-1426] (ruling S5.1-cli-approve).
 - CLI write approval: `y` approves one file, Shift+A approves all pending files [D CLI cli/artifacts:51, :53], and `accept-edits` approves writes automatically [D CLI cli/modes:17]. The approval is consent to write, not a review verdict [I]. Whether a repository-path artifact appears in `/artifact` is open (LC5 5a); CLI 1.2.2's fix hints that the review trigger is keyed to the app-data path [CL CLI 1.2.2].
 
 ## §9 Permissions, sandbox and settings
@@ -720,7 +728,8 @@ The plugin ships no hook: no `hooks.json` at the plugin root and no user-facing 
   - a tool that needs an approval it cannot obtain is soft-denied: the run continues and exits 0 [D CLI cli/headless:445];
   - `--dangerously-skip-permissions` [D CLI cli/headless:461-467];
   - exit codes [D CLI cli/headless:469-471];
-  - `--print-timeout` (X3).
+  - `--print-timeout` (X3);
+  - the plan gate did not resume when the next turn sent `Proceed` [MO CLI 1.2.17 2026-10-05 LC5 probe 20261005-1426] (ruling S5.4-reentry not-met).
 - Changelog additions for headless runs:
   - plan review auto-proceeds under `agy -p` [CL CLI 1.1.28];
   - the agent settles choices itself where it would otherwise ask [CL CLI 1.1.12];
@@ -770,7 +779,7 @@ Each entry names both sides, the interim rule that binds every section until the
 
 | X | Topic | Side A | Side B | Interim rule | Decider |
 |---|---|---|---|---|---|
-| X1 | CLI plugin store root | `~/.gemini/antigravity-cli/plugins/<plugin_name>/` [D CLI plugins:166; D CLI skills:127] | install to the shared `~/.gemini/config/` [CL CLI 1.0.2]; the CLI also loads plugins placed directly in `~/.gemini/config/plugins` [CL CLI 1.2.11] | Never hard-code the CLI plugin root; diagnosing derives it from the loaded SKILL.md. Decided: per-product on CLI 1.2.17 (ruling S2.10-cli-clone, LC8 S1-i). The 2026-11-04 docs stage CLI installs in the shared `~/.gemini/config/plugins/<plugin_name>/` [D 2026-11-04 plugins:233-237; D 2026-11-04 build-plugins:242]: re-check on current CLIs. | LC8 S1-i |
+| X1 | CLI plugin store root | `~/.gemini/antigravity-cli/plugins/<plugin_name>/` [D CLI plugins:166; D CLI skills:127] | install to the shared `~/.gemini/config/` [CL CLI 1.0.2]; the CLI also loads plugins placed directly in `~/.gemini/config/plugins` [CL CLI 1.2.11] | Never hard-code the CLI plugin root; diagnosing derives it from the loaded SKILL.md. Decided: per-product; on CLI 1.2.17 a clone in `~/.gemini/config/plugins/` was not listed as the plugin's source (ruling S2.10-cli-clone, LC8 S1-i). The 2026-11-04 docs stage CLI installs in the shared `~/.gemini/config/plugins/<plugin_name>/` [D 2026-11-04 plugins:233-237; D 2026-11-04 build-plugins:242]: re-check on current CLIs. | LC8 S1-i |
 | X2 | CLI transcript root | `~/.gemini/antigravity-cli` [D CLI hooks:34; D CLI cli/commands/resume:97] | the example path `~/.gemini/antigravity/brain/…` [D CLI cli/statusline:73] | Use a supplied `transcriptPath`, else probe the CLI root, then `~/.gemini/antigravity`. | LC7 |
 | X3 | Headless timeout default | `--print-timeout` default `5m` [D CLI cli/headless:499, :519] | "from 5 minutes to unlimited" [CL CLI 1.2.6] | Not relied on; tests pass `--print-timeout`. | none |
 | X4 | `@path` in rule files | `@filename` "Does **not** inline" [D shared rules:103] | inlining with `@path/to/file` [CL 2.0 2.11.0] | Only `@[label](path)` includes. | LC2 |
@@ -785,8 +794,8 @@ Each entry names both sides, the interim rule that binds every section until the
 | X13 | Legacy search tools | listed [D shared hooks:137-145]; `grep_search` named as a read-only plan-mode tool [D CLI cli/modes:85] | retired from the default baseline [CL CLI 1.2.7] | R13 (§16.4). | LC1, LC8 |
 | X14 | Removed CLI commands | `/fast` and `/planning` listed [D CLI cli/reference:23, :34] | "removed in `1.1.0`" [D CLI cli/modes:131] | Not relied on. | none |
 | X15 | Model catalogue | no 3.5 Flash [D unscoped models:9-15] | `--model gemini-3.5-flash-medium` example [D CLI cli/headless:430]; "Gemini 3.5 Flash (High)" in the status-line example [D CLI cli/statusline:75] | Skills and tests never name model slugs (`Model` values are tiers); tests read `AGY_TEST_MODEL`. | none |
-| X16 | Default agent inheritance | inherit by default [CL CLI 1.1.25] | 2.0's opt-in reading, "can now reuse … using a single `inheritCustomizations` setting" [CL 2.0 2.9.1] | Nothing depends on default inheritance. | LC3 |
-| X17 | Reading back a backgrounded command | `manage_task`: "Interact with background tasks", with `Action: "status"` [D shared hooks:155-156]; the CLI's `/tasks` lists "direct shell commands" [D CLI subagents:202]; list and kill for custom agents [CL CLI 1.1.13]; named completion notifications [CL CLI 1.2.5] | on 2.0 the agent read backgrounded commands with the undocumented `command_status {CommandId, OutputCharacterCount, WaitDurationSeconds}` [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; `manage_task` `status` was also called, on targets the probe did not record | Name only `manage_task` (`command_status` only if S3.5's all-products 3k row passes); foreground first; an unreadable result never passes. | LC4 S1-j |
+| X16 | Default agent inheritance | inherit by default [CL CLI 1.1.25] | 2.0's opt-in reading, "can now reuse … using a single `inheritCustomizations` setting" [CL 2.0 2.9.1] | Nothing depends on default inheritance. Observed: bundled agents with no key received the workspace rule and a skill index on 2.0 and the CLI (ruling S3.1-inherit, §3.9). | LC3 |
+| X17 | Reading back a backgrounded command | `manage_task`: "Interact with background tasks", with `Action: "status"` [D shared hooks:155-156]; the CLI's `/tasks` lists "direct shell commands" [D CLI subagents:202]; list and kill for custom agents [CL CLI 1.1.13]; named completion notifications [CL CLI 1.2.5] | on 2.0 the agent read backgrounded commands with the undocumented `command_status {CommandId, OutputCharacterCount, WaitDurationSeconds}` [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; `manage_task` `status` was also called, on targets the probe did not record | Name only `manage_task` (`command_status` only if S3.5's all-products 3k row passes); foreground first; an unreadable result never passes. Observed: `status` was not blind to the backgrounded run on 2.0 and the CLI; `command_status` is not on every product (rulings S3.5-status, S3.5-command-status, §2.2). | LC4 S1-j |
 | X18 | IDE transcript presence | `transcriptPath` is "the persistent `transcript.jsonl` conversation logs", with an IDE root [D shared hooks:204-208] | 1 of 33 IDE conversation directories has a transcript [MO IDE ? 2026-09-25 directory listing] | A missing IDE transcript never means "nothing happened"; use the partner's account plus the artifacts. Decided: an observed transcript root for the IDE and the CLI (ruling S7.9-roots, LC7 S1-h; no path recorded); the transcript tier fails on a missing file. | LC7 S1-h |
 
 Where a section cites a numbered contradiction that overlaps an X entry, the X entry's interim rule binds.
@@ -831,7 +840,7 @@ The protocols below are those registered on 2026-09-25 (maintainer instruction),
 - **Installs.** Probe plugins are workspace installs: `.agents/plugins/<probe>/` on 2.0 and the IDE, and `agy plugin install <path>` on the CLI, uninstalled after the leg. The exceptions are the real clone, switched to the probe branch and back, and S1-i's global placement, removed after the leg. Probe-branch commits need the maintainer's go-ahead (D16).
 - **Order.** LC6 S1-l; LC1; LC2; LC3, LC4, LC5 and LC7; LC8 and the CLI legs after the 2.0 and IDE collection; the remaining LC6 legs while a hook ships or remains the contributor gate (it does: S7.2). The core probe (IDE, then 2.0) and the CLI legs run before Phase 2 (D2); every gated row has a default.
 
-The probe kit ran on 2026-10-05 (run 20261005-1426) on the IDE 2.5.5, the 2.0 app 2.19.1 and the CLI 1.2.17. Its results files were not kept with the maintainer's rulings, so this reference records only the facts named in the sections and §0.5 rows marked [MO ... probe 20261005-1426], plus the FINAL rulings cited by slug (for example "ruling S7.2-h"); the other rulings stay in the maintainer's ledger.
+The probe kit ran on 2026-10-05 (run 20261005-1426) on the IDE 2.5.5, the 2.0 app 2.19.1 and the CLI 1.2.17. Its results files were not kept with the maintainer's rulings, so this reference records the run from the rulings ledger: every FINAL ruling and `Obs:` line that states a platform fact is recorded in its section and §0.5 row, labelled [MO ... probe 20261005-1426] and cited by slug (for example "ruling S7.2-h"). Rulings that only record a maintainer decision, or a leg that was not run, stay in the ledger.
 
 ### §15.1 LC1 — Tool-schema dump
 
@@ -1177,7 +1186,7 @@ The rules every change follows. R1–R5 are the decision register's standing rul
 
 Concretely:
 - **Rule files.** No `AGENTS.md` or `GEMINI.md` at any depth, in any letter case.
-- **`.agents/` and `.agent/`.** No `AGENTS.md`, `GEMINI.md`, `rules/` or `rules.json` inside any such directory at any depth. The only tracked path under a `.agents/` directory is `.agents/skills/contributing-to-superpowers/SKILL.md`, which Live check 6(e) showed absent from workspace installs (D14).
+- **`.agents/` and `.agent/`.** No `AGENTS.md`, `GEMINI.md`, `rules/` or `rules.json` inside any such directory at any depth. The only tracked path under a `.agents/` directory is `.agents/skills/contributing-to-superpowers/SKILL.md`, which Live check 6(e) showed absent from workspace installs (D14) [MO IDE 2.5.5 2026-10-05 LC6 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC6 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC6 probe 20261005-1426] (ruling S7.11 ship, §5).
 - **Discovery files.** No `skills.json`, `agents.json` or `rules.json` at any depth (S2.4; D15).
 - **Contributor guidance** for agents goes in CONTRIBUTING.md, which is never auto-loaded, or in a snippet contributors copy into their own `~/.gemini/config/rules/`.
 
@@ -1233,3 +1242,5 @@ Decision record changes of this release (id — old — new — part). The ids a
 - 2026-10-05 — §7–§11, §13–§16 — added; live checks not run — maintainer instruction
 - 2026-11-04 — §0.5, §2–§16 — §7.8 and §12 written; live-check results recorded from the rulings (run 20261005-1426) — maintainer instruction
 - 2026-11-05 — §1, §3–§7, §13, §16 — final review: P4, B9, C5, row 32 corrected; IDE subagents, slash forms, workspace hooks, roots, CLI plugin root, 24 KB limit recorded — final review
+- 2026-11-05 — §0.5, §2–§8, §11, §13, §15.0, §16.3 — every platform-fact FINAL ruling and Obs line of run 20261005-1426 recorded; S1-e 2.0 relabelled self-report; `Model` and rule-activation cells corrected — final review
+

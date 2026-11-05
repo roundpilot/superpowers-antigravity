@@ -64,7 +64,7 @@
 ### Platform Notes
 
 * The live-check probe ran on IDE 2.5.5, 2.0 app 2.19.1 and CLI 1.2.17.
-* The platform reference records the probe facts marked in its sections (section 15.0).
+* The platform reference records every probe fact from the maintainer's rulings ledger.
 * Never-probed and unverified behaviours ship their documented defaults, listed in the reference.
 * A headless run (`agy -p`) does not stop at the plan; the agent picks execution.
 * The plan gate has no headless test until it resumes over stream-json input.
