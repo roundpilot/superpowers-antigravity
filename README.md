@@ -133,6 +133,7 @@ Both executors run a plan to the end without pausing, but approval settings can 
 - **2.0 on Windows:** the Default preset reviews every command, so add the same rules. Enabling the sandbox is not the lever: a command that must run outside it still asks first.
 - **CLI:** `request-review` (the default) prompts before shell commands, so add the same rules. On Windows shells use the `regex:` form, one token per regex: `command(regex:git (rev-parse|rev-list|merge-base|diff|log|status|add|commit).*)`. `default` mode also pauses on every file edit; `accept-edits` removes those pauses and subagents inherit it — it is your choice, and the plugin never sets it. `unsandboxed` rules are deprecated in favour of `command` rules. Headless runs (`agy -p`) soft-deny shell commands you have not granted, so grant them under `permissions.allow` first.
 - **IDE:** add the same git subcommands and the test command to the terminal allowlist under Request Review. In strict mode the allowlist is ignored, so every command asks.
+- **Auto mode** (2.0 app 2.23+ on macOS and Linux, 2.26+ on Windows; CLI 1.3.5+ and 1.4.4+, personal accounts, sandbox required): edits and sandboxed commands run without asking, and a separate agent reviews commands that leave the sandbox, asking you only about risky or irreversible ones. It is the lowest-friction setting for long plan runs.
 - **Least invasive:** answer the first prompt with "Yes, and always allow in this conversation" (CLI), or rely on 2.0 remembering an approval for the rest of the conversation. Each subagent runs in its own conversation; subagents inherit your allowed command prefixes, but whether a per-conversation approval reaches a subagent is not documented.
 - **Remote Control** (2.0 and the CLI) lets you answer approvals and questions from another device and notifies you when an agent needs input. It is optional; the skills never name it.
 - **`/goal` is not recommended for plan runs:** it runs "without intermediate pauses", which overrides the executors' stops and the finishing menu. The executors already run continuously.
@@ -326,7 +327,7 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 | `session-analyst` | inherit | Read-only: analyses session transcripts for diagnosing-superpowers |
 | `bundle-scrubber` | inherit | Redacts an exported diagnosis bundle for diagnosing-superpowers |
 
-`inherit` runs your session's model. `final-reviewer` ships at the Pro tier; which model that is, is not documented. It may run a different model family from your session's.
+`inherit` runs your session's model. `final-reviewer` ships at the Pro tier; which model that is, is not documented. Agent files can name only `inherit`, `flash` or `pro`, not a model or a reasoning effort, and plans differ in which models they offer, so check that a Pro-tier agent runs on your plan. It may run a different model family from your session's.
 
 ## 🧭 Philosophy
 
