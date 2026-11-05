@@ -24,7 +24,7 @@
 
 It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do.
 
-How much ceremony follows depends on what you asked for. It classifies the request out loud — a feasibility probe, a bounded change to code that already exists, or something architectural — and only the last of those earns a written spec, shown to you in chunks short enough to actually read and digest. The smaller paths get a couple of sentences in chat instead. What never scales down is the approval: nothing gets built until you say yes.
+How much ceremony follows depends on what you asked for. A quick, clear task just gets done. Otherwise it draws out what you want, and why, plays its understanding back for correction, and has you pick one of two or three approaches. Then it sizes the work: a small change gets a short design doc, and a project gets the full written design, which a builder check reads before you do. What never scales down is the approval: nothing gets built until you say yes.
 
 After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasises true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY.
 
@@ -47,7 +47,7 @@ The abstraction layer costs tokens on every interaction, and those costs compoun
 
 2. **Agent reasoning overhead.** When a skill says "use the Bash tool," the agent must look up the mapping, reason about which native tool to call, and potentially make mistakes. When skills say `run_command` directly, there's zero translation cost.
 
-3. **Platform-conditional branching in skills.** The upstream `using-superpowers` skill has separate instruction blocks for Claude Code, Copilot CLI, Gemini CLI, Codex, Antigravity 2.0, and "other environments." Only one applies.
+3. **Platform-conditional branching in skills.** The upstream `using-superpowers` skill points each harness to its own reference file: Claude Code, Codex, Pi, Antigravity, Hermes Agent and Muse (as of v7.0.2). Only one applies.
 
 4. **85 fewer files than upstream (as of v7.0.2 on both sides).** When agents explore the repo, fewer files means less noise in `list_dir` output and faster orientation.
 
@@ -80,7 +80,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 - 🔄 **Async subagent coordination** — `manage_task` for builds, `send_message` mid-flight, `schedule` for timeouts
 - 🌐 **Browser-testing skill** — evidence-before-assertions discipline for UI work
 - 💰 **Token-saving subagents** — reviewers are read-only bundled agents
-- ✅ **Review gates** — design docs and plans end with an `ask_question` your partner answers before work goes on
+- ✅ **Review gates** — design docs wait for your partner's approval, and plans end with an `ask_question` your partner answers before work goes on
 - 🔀 **Workspace mode guidance** — decision tables for `branch` and `inherit` per role; `share` is not recommended (semantics unverified)
 - 🛡️ **Edit-time purity gate** — contributors can enable a `PreToolUse` hook (`hooks/purity-check.mjs`, needs `node`) through their global `hooks.json`; the release gate `tests/antigravity/test-skill-tool-purity.sh` enforces the same law. See CONTRIBUTING.
 - 🔍 **Web research integration** — `search_web` woven into debugging, brainstorming, and planning
@@ -104,7 +104,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
                                                                 └──────────────────────────┘
 ```
 
-1. **brainstorming** — Classifies the request (spike / bounded / architectural), then refines it through questions, explores alternatives, generates visual mockups
+1. **brainstorming** — Draws out what you want, and why, plays it back, has you pick an approach through `ask_question`, then sizes the work as a short or full design doc with a builder check and `generate_image`/Mermaid visuals
 2. **using-git-worktrees** — Isolates the session on a feature branch; concurrent writing subagents get native `Workspace: "branch"`
 3. **writing-plans** — Breaks work into bite-sized tasks with exact file paths and verification steps
 4. **subagent-driven-development** or **executing-plans** — Activates with plan. Either dispatches a fresh subagent per task with a two-stage review after each (most thorough), or implements every task inline in the current session with one fresh review of the whole branch at the end (cheapest).
@@ -258,7 +258,7 @@ Inside an `agy` session, `/plugin install <local-path>` does the same as `agy pl
 - **Disable or enable:** `agy plugin disable superpowers` / `agy plugin enable superpowers`
 - **Uninstall:** `agy plugin uninstall superpowers` (it also removes `plugins.superpowers.enabled` from `~/.gemini/config/config.json`)
 
-> The CLI keeps its own copy of installed plugins. If you also use the 2.0 app or the IDE, install for each. If `agy plugin list` already shows superpowers after you cloned for the app, skip the CLI install.
+> CLI 1.2.17 kept its own copy of installed plugins, but current docs say `agy plugin install` writes to `~/.gemini/config/plugins/superpowers`, the folder the app and IDE clone uses. If `agy plugin list` already shows superpowers after you cloned for the app, skip the CLI install: never run both a clone and `agy plugin install` against that folder.
 
 ### ✅ Verify Installation
 
@@ -296,7 +296,7 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 ### Collaboration
 | Skill | Purpose |
 |-------|---------|
-| **brainstorming** | Three-path router (spike / bounded / architectural) so ceremony scales to the task; Socratic refinement with `generate_image` mockups and `search_web` for prior art |
+| **brainstorming** | Draws out intent and why first; approaches picked through `ask_question`; Size the Work (short or full design doc); a builder check; `generate_image` mockups and Mermaid diagrams |
 | **writing-plans** | Detailed plans with Mermaid diagrams, rich formatting, an `ask_question` review gate, and a `Spec:` pointer so the spec travels with the plan |
 | **executing-plans** | Inline plan execution: one context, one final review |
 | **dispatching-parallel-agents** | Concurrent workflows with `Workspace: "branch"` / `"inherit"` and monitoring |

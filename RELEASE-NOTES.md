@@ -4,74 +4,88 @@
 
 ### Upstream v6.4.1 to v7.0.2 Sync
 
-* **`executing-plans` is a native inline executor.** It runs on all three products and Windows, with one ledger per plan.
-* **You review the plan, then choose Subagent-driven or Native.** Subagents are documented for the 2.0 app and the CLI and not available in the IDE (it has no `invoke_subagent`).
-* **`writing-plans` follows upstream v6.4.2's rewrite.** Steps keep only what the implementer cannot decide ("What a Step Contains"); `plan-document-reviewer-prompt.md` is gone.
-* **Reviews judge by what a reasonable user expects, and every review range is checked first.** The whole-branch range starts at the merge base.
-* **Brainstorming is rebuilt on upstream v7.0.2.** It writes your intent back, sizes the work, and stops before building anything.
-* **A builder check reviews each brainstormed design.** `self` runs it on the 2.0 app and the CLI; the IDE session runs it.
-* **Green means the project's whole suite passes.** A passing run that prints nothing is recorded as `(no output)`.
-* **Bundled scripts run through their interpreter.** Skills call `bash ./find-polluter.sh` and `node ./render-graphs.js`.
-* **`diagnosing-superpowers` is a new skill.** Its issue reports say who is filing and carry a human summary.
-* **`systematic-debugging` checks `IDENTITY` by presence only.** Its pressure-test files moved to `tests/systematic-debugging/`.
-* **`writing-skills` adopts upstream's `references/` layout.** Template, discovery and flowchart guidance now live there.
-* **`executing-plans` drops its Example Workflow.** Upstream removed it in v7.0.1.
-* **"You Do Not Dispatch Subagents" (#2059) is ported.** It ships in all read-only roles and implementer tiers.
+* `executing-plans` is a native inline executor on all three products, one ledger per plan.
+* After plan review you choose Subagent-driven or Native; the IDE has no `invoke_subagent`.
+* `writing-plans` follows upstream v6.4.2: steps hold only what implementers cannot decide.
+* `writing-plans` drops `plan-document-reviewer-prompt.md`, as upstream did.
+* Reviews judge by what a reasonable user expects; every review range is checked first.
+* Brainstorming is rebuilt on upstream v7.0.2: it plays back intent, sizes work, then stops.
+* A builder check reviews each project design; in the IDE the session runs it.
+* Green means the whole suite passes; a silent passing run is recorded as `(no output)`.
+* Bundled scripts run through their interpreter: `bash ./find-polluter.sh`, `node ./render-graphs.js`.
+* New skill `diagnosing-superpowers`; its issue reports name the filer and carry a human summary.
+* `systematic-debugging` checks `IDENTITY` by presence; pressure tests moved to `tests/systematic-debugging/`.
+* `writing-skills` adopts upstream's `references/` layout for templates, discovery and flowcharts.
+* `executing-plans` drops its Example Workflow, as upstream did in v7.0.1.
+* "You Do Not Dispatch Subagents" (#2059) ships in every reviewer and implementer agent.
+* `using-superpowers` tracks checklists in a `task.md` artifact.
 
 ### Native Antigravity Re-architecture
 
-* **The bootstrap rule loads natively.** `rules/using-superpowers.md` is `trigger: always_on`; `gemini-extension.json` and `GEMINI.md` are retired.
-* **Installation covers the 2.0 app, the IDE and the CLI.** The app and IDE share one clone; the CLI keeps its own.
-* **`final-reviewer`, `session-analyst` and `bundle-scrubber` ship as bundled agents.** Implementer tiers are `implementer-flash` and `implementer-pro`.
-* **Skills find a bundled agent by bare name, then `superpowers:<name>`, then `self`.** The override notes were removed.
-* **Implementers work in your checkout.** Subagent-driven development dispatches them with `Workspace: "inherit"`, one at a time.
-* **Specs and plans always get a review request, and only your own response approves them.** For unattended runs, the README's "Running long plans" gives allow rules.
-* **Git steps run in PowerShell, `cmd` or bash.** Each git command runs on its own with `run_command`'s `Cwd`.
-* **A workspace install loads nothing from this repository but the plugin.** No tracked `AGENTS.md`, extra `GEMINI.md` or `.agents/rules/` file is left.
-* **`plugin.json` carries the manifest fields Antigravity's build-plugins page documents.** They are `version`, `displayName`, `logo`, `suggestedPrompts`, `author`, `homepage`, `repository` and `keywords`. A packaging test checks that its copies agree.
-* **`SKILL.md` files stay under Antigravity's 24 KB limit.** Subagent-driven development moved step guidance into `references/`, and a gate test enforces the limit.
-* **The purity gate is a Node contributor hook.** Contributors enable it through a global hooks entry, as CONTRIBUTING describes.
-* **`bash tests/run-tests.sh` runs the gate, unit and live tiers and never counts a SKIP as a pass.**
-* **A platform reference covers all three products.** `docs/superpowers/specs/2026-09-25-antigravity-platform-reference.md` labels each fact by its evidence and records why "You Do Not Dispatch Subagents" is ported.
+* The bootstrap rule `rules/using-superpowers.md` loads natively as `trigger: always_on`.
+* Installation covers the 2.0 app, IDE and CLI; app and IDE share one clone.
+* Never use both a clone and `agy plugin install` on `~/.gemini/config/plugins/superpowers`.
+* `final-reviewer`, `session-analyst` and `bundle-scrubber` ship as bundled agents.
+* Implementer tiers ship as the `implementer-flash` and `implementer-pro` agents.
+* Skills find a bundled agent by bare name, then `superpowers:<name>`, then `self`.
+* Implementers work in your checkout, one at a time, with `Workspace: "inherit"`.
+* Only your own response approves a spec or plan; see README's "Running long plans".
+* Git steps run in PowerShell, `cmd` or bash, each command alone with `Cwd`.
+* Workspace installs load only the plugin: no tracked `AGENTS.md`, `GEMINI.md` or `.agents/rules/`.
+* `plugin.json` carries the manifest fields the build-plugins page documents, `version` included.
+* A packaging test checks that `plugin.json` and its copies agree.
+* `SKILL.md` files stay under Antigravity's 24 KB limit; a gate test enforces it.
+* SDD step guidance and executing-plans' Common Rationalizations moved into `references/` to fit.
+* The purity gate is a Node contributor hook, enabled through a global hooks entry.
+* Contributors also get a workspace skill, `contributing-to-superpowers`, absent from plugin installs.
+* `bash tests/run-tests.sh` runs the gate, unit and live tiers; a SKIP never passes.
+* A platform reference labels each fact about all three products by its evidence.
+* `Workspace: "share"` is no longer recommended; its semantics are unverified.
 
 ### Breaking Changes
 
-* **The bootstrap arrives only through the always-on rule.** `gemini-extension.json` and `GEMINI.md` are gone.
+* The bootstrap arrives only through the always-on rule; `gemini-extension.json` and `GEMINI.md` are gone.
 
 ### Fixes
 
-* **Skills name only tools, settings and folders every product documents.** `list_dir`, `grep_search` and `find_by_name` left the CLI's default toolset in 1.2.7; `writing-skills` now gives each product's personal-skill folder.
-* **Code of Conduct reports go to this fork's maintainer, not upstream's e-mail address.** Open an issue asking for a private channel, or use GitHub's "Report content".
-* **The GitHub templates, CONTRIBUTING and `docs/` describe this fork.** They no longer carry upstream's harness list or its fourteen unreferenced working papers.
-* **Two claims in the v6.0.0 notes are corrected.** `anthropic-best-practices.md` was never deleted, and `using-git-worktrees`' submodule guard was never removed.
+* Skills name only tools, settings and folders that every product documents.
+* `list_dir`, `grep_search` and `find_by_name` left the CLI's default toolset in 1.2.7.
+* `writing-skills` now gives each product's personal-skill folder.
+* Code of Conduct reports go to this fork's maintainer, not upstream's address.
+* The GitHub templates, CONTRIBUTING and `docs/` describe this fork, not upstream's harnesses.
+* Two v6.0.0 claims are corrected: neither `anthropic-best-practices.md` nor the submodule guard was removed.
 
 ### Deprecations
 
-* **The v6.2.x purity-gate opt-in is deprecated.** If you renamed `hooks.example.json` to `hooks.json`, delete that file.
+* The v6.2.x purity-gate opt-in is deprecated: delete a `hooks.json` made from `hooks.example.json`.
+* This release leaves a no-op `hooks/purity-check.sh`; the next release removes it.
+* On some versions, a hook whose script is missing blocks the file edits it matches.
 
 ### Platform Notes
 
-* **The live-check probe ran on the IDE 2.5.5, the 2.0 app 2.19.1 and the CLI 1.2.17 (2026-10-05).** The platform reference records only the facts listed in its section 15.0.
-* **Never-probed and unverified behaviours ship their documented defaults.** The platform reference lists each one.
-* **A headless run (`agy -p`) does not stop at the plan.** Plan review proceeds and the agent picks the execution method.
-* **The plan gate has no headless test yet.** It waits until the plan gate is observed to resume over stream-json input.
-* **Some IDE behaviour — plugin agents, subagent dispatch, rule activation and slash forms — is detected at run time, not documented.**
-* **Some live checks are not verified.** Not run: the live and transcript test tiers (`--live --live-extra`) have not run for this release.
+* The live-check probe ran on IDE 2.5.5, 2.0 app 2.19.1 and CLI 1.2.17.
+* The platform reference records the probe facts marked in its sections (section 15.0).
+* Never-probed and unverified behaviours ship their documented defaults, listed in the reference.
+* A headless run (`agy -p`) does not stop at the plan; the agent picks execution.
+* The plan gate has no headless test until it resumes over stream-json input.
+* The IDE has no subagents and no plugin slash form; the rule loads there.
+* The live and transcript test tiers have not run for this release.
 
 ### Not Ported from Upstream v6.4.1 to v7.0.2
 
-* **Other harnesses' support, docs and labels (#2106, #2306, #2317, #2132, #2250)** — this fork supports Antigravity only.
-* **Upstream's `task-*`, `sdd-workspace` and `review-package` scripts and their fixes (#2602 to #2607)** — bash on every path would break Windows.
-* **A root `AGENTS.md` as the canonical agent file (#2317)** — on Antigravity a root `AGENTS.md` is a live rule, loaded into every workspace install whenever a skill is read.
-* **Upstream's Gemini CLI files, `gemini-extension.json` and `GEMINI.md`** — retired here: the always-on rule carries the bootstrap on all three products.
-* **The nested subagent-driven orchestrator (#2320)** — deferred until a plugin agent is shown to dispatch and relay an implementer.
-* **The Prime Radiant community code of conduct (#2122)** — this fork keeps the Contributor Covenant with its own contact.
-* **`proving-it-works-with-a-movie`, diagnosing design papers and the `CLAUDE.md` pointer** — upstream held the skill back; the rest is not this fork's.
-* **Upstream's skill-discovery bootstrap claim and its logo render script (#2479)** — the always-on rule is probe-verified on all three products, and the render script is dev tooling.
-* **Hooks, session-start, brainstorm server and other harness scripts (#2284 to #2608)** — charter, or files the fork does not ship.
-* **`requesting-code-review` `awk` to `cut` (#2311)** — the fork's text has no `awk`.
-* **Upstream's "no agent-written PRs for someone else's issue" policy (#2569)** — adopting it for this fork is the maintainer's call.
-* **The SDD file layout (#2565) and the 20,000-character skill size test** — the fork's `references/` follow its own sections and Antigravity's 24,000-byte limit.
+* Other harnesses' support, docs and labels (#2106, #2306, #2317, #2132, #2250): Antigravity only.
+* Upstream's `task-*`, `sdd-workspace` and `review-package` scripts (#2602 to #2607): bash breaks Windows.
+* A root `AGENTS.md` (#2317): on Antigravity it is a live rule in workspace installs.
+* Upstream's Gemini CLI files: the always-on rule carries the bootstrap on all three products.
+* The nested orchestrator (#2320): dispatch met on 2.0 and CLI; approvals and pinned tiers unproven.
+* The Prime Radiant code of conduct (#2122): this fork keeps the Contributor Covenant.
+* `proving-it-works-with-a-movie` (held back upstream), diagnosing design papers and the `CLAUDE.md` pointer.
+* Upstream's skill-discovery bootstrap claim and logo render script (#2479): the rule is probe-verified.
+* Hooks, session-start, brainstorm server and other harness scripts (#2284 to #2608): charter.
+* `requesting-code-review` `awk` to `cut` (#2311): the fork's text has no `awk`.
+* The "no agent-written PRs for someone else's issue" policy (#2569): the maintainer's call.
+* `resuming.md` and `cannot-verify.md` from #2565: the fork has no matching sections.
+* Upstream's 20,000-byte size limit: the fork's size test uses Antigravity's 24,000-byte limit.
 
 ---
 
