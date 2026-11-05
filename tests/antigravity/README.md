@@ -15,7 +15,7 @@ Every test exits `0` PASS, `1` FAIL or `77` SKIP; any other code counts as FAIL.
 
 | Tier | Runs | Tests |
 |---|---|---|
-| gate | always; anything but PASS fails the run | `test-skill-tool-purity.sh`, `test-plugin-layout.sh`, `test-agent-frontmatter.sh`, `test-purity-hook.sh`, `test-rule-sync.sh`, `test-plugin-packaging.sh`, `test-execution-skills.sh`, `tests/diagnosing-superpowers/test-skill-structure.sh`, `tests/skill-size/test-skill-size.sh`, `tests/skill-layout/test-no-dev-files-in-skills.sh` |
+| gate | always; anything but PASS fails the run | `test-skill-tool-purity.sh`, `test-plugin-layout.sh`, `test-agent-frontmatter.sh`, `test-purity-hook.sh`, `test-rule-sync.sh`, `test-plugin-packaging.sh`, `test-execution-skills.sh`, `tests/diagnosing-superpowers/test-skill-structure.sh`, `tests/skill-size/test-skill-size.sh`, `tests/skill-layout/test-no-dev-files-in-skills.sh`, `tests/antigravity/test-release-notes-bullets.sh` |
 | unit | always | `tests/writing-skills/test-render-graphs.sh`, `tests/systematic-debugging/test-find-polluter.sh` |
 | live | `--live` | `test-plugin-discovery.sh`, `test-tool-roster.sh`, `test-bundled-dispatch.sh`, `test-skill-triggering/run-all.sh`, `test-subagent-dispatch.sh`, `test-inline-execution.sh`, `test-worktree-workspace.sh`, `test-spec-gate-stream.sh` |
 | live-extra | `--live-extra` | `test-hooks-introspection.sh` (CLI only) |

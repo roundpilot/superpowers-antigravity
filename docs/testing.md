@@ -10,6 +10,7 @@ From PowerShell, run `& "$env:ProgramFiles\Git\bin\bash.exe" tests/run-tests.sh`
 |---|---|---|
 | `tests/antigravity/test-skill-tool-purity.sh` | gate | the purity law in `purity-patterns.txt` over `skills/`, `agents/`, `rules/` and `.github/`; tool names against `known-tools.txt`; bundled scripts invoked through their interpreter |
 | `tests/antigravity/test-plugin-layout.sh` | gate | nothing tracked that the rule walk, plugin discovery or a hook file could load for users (R12) |
+| `tests/antigravity/test-release-notes-bullets.sh` | gate | the newest release-notes entry keeps bullets short; a "used by" row in the platform reference names a shipped skill |
 | `tests/antigravity/test-agent-frontmatter.sh` | gate | bundled agents' frontmatter keys, tools, roles and cross-file rules |
 | `tests/antigravity/test-purity-hook.sh` | gate | `hooks/purity-check.mjs` decisions on fixture payloads, Windows path forms included |
 | `tests/antigravity/test-rule-sync.sh` | gate | `rules/using-superpowers.md` frontmatter, wrapper and body |
