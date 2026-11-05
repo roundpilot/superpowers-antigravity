@@ -126,19 +126,15 @@ You can also start it directly: `/diagnosing-superpowers` in the 2.0 app or `/su
 
 ## Running long plans
 
-Both executors run a plan to the end without pausing, but approval settings can still park a run on a prompt. What may wait: the read-only git commands the executors and reviewers run on every task (`git rev-parse`, `git rev-list`, `git merge-base`, `git diff`, `git log`, `git status`), the plan's test commands, `git add` and `git commit`, and — where edits need review — every file edit.
+Both executors run a plan to the end, but an approval prompt can park a run. Every task runs read-only git commands (`git rev-parse`, `rev-list`, `merge-base`, `diff`, `log`, `status`), the plan's tests, `git add` and `git commit`.
 
-- **Allow rules per subcommand, never a blanket `command(git)`**, which also lets `git push` through — and a push is one of the stops a run asks you about. Allow `command(git rev-parse)`, `command(git rev-list)`, `command(git merge-base)`, `command(git diff)`, `command(git log)`, `command(git status)`, `command(git add)`, `command(git commit)` and the plan's test command.
-- **2.0 on macOS/Linux, Default preset:** sandboxed commands already run without prompting, so `command(git add)`, `command(git commit)` and the test command matter most; under Request Review add the read-only rules too.
-- **2.0 on Windows:** the Default preset reviews every command, so add the same rules. Enabling the sandbox is not the lever: a command that must run outside it still asks first.
-- **CLI:** `request-review` (the default) prompts before shell commands, so add the same rules. On Windows shells use the `regex:` form, one token per regex: `command(regex:git (rev-parse|rev-list|merge-base|diff|log|status|add|commit).*)`. `default` mode also pauses on every file edit; `accept-edits` removes those pauses and subagents inherit it — it is your choice, and the plugin never sets it. `unsandboxed` rules are deprecated in favour of `command` rules. Headless runs (`agy -p`) soft-deny shell commands you have not granted, so grant them under `permissions.allow` first.
-- **IDE:** add the same git subcommands and the test command to the terminal allowlist under Request Review. In strict mode the allowlist is ignored, so every command asks.
-- **Auto mode** (2.0 app 2.23+ on macOS and Linux, 2.26+ on Windows; CLI 1.3.5+ and 1.4.4+, personal accounts, sandbox required): edits and sandboxed commands run without asking, and a separate agent reviews commands that leave the sandbox, asking you only about risky or irreversible ones. It is the lowest-friction setting for long plan runs.
-- **Least invasive:** answer the first prompt with "Yes, and always allow in this conversation" (CLI), or rely on 2.0 remembering an approval for the rest of the conversation. Each subagent runs in its own conversation; subagents inherit your allowed command prefixes, but whether a per-conversation approval reaches a subagent is not documented.
-- **Remote Control** (2.0 and the CLI) lets you answer approvals and questions from another device and notifies you when an agent needs input. It is optional; the skills never name it.
-- **`/goal` is not recommended for plan runs:** it runs "without intermediate pauses", which overrides the executors' stops and the finishing menu. The executors already run continuously.
+- **Easiest: Auto mode** (2.0 app 2.23+, 2.26+ on Windows; CLI 1.3.5+, 1.4.4+ on Windows; personal accounts, sandbox required). It asks only about risky or irreversible commands.
+- **Otherwise, allow each git subcommand above and the test command**, for example `command(git diff)`. Never allow all of `command(git)`: that lets `git push` through.
+  - **CLI on Windows:** one rule covers them: `command(regex:git (rev-parse|rev-list|merge-base|diff|log|status|add|commit).*)`. Headless runs (`agy -p`) deny any command not under `permissions.allow`.
+  - **IDE:** add them to the terminal allowlist. Strict mode ignores it.
+- **Don't use `/goal`:** it skips the executors' stops and the finishing menu.
 
-When a subagent's commit approval times out — the CLI gives subagent interactions 60 seconds — the implementer reports `commit not made`, and the controller commits its reported files in your conversation, where no such limit applies.
+If a subagent's commit approval times out (60 seconds in the CLI), the controller makes the commit itself.
 
 ## 📦 Installation
 
