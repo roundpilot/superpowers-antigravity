@@ -1,0 +1,19 @@
+# GitHub Pages site: renders README.md as the home page.
+title: Superpowers for Google Antigravity
+description: A native plugin for the Antigravity 2.0 app, IDE and agy CLI. Brainstorming, planning, TDD and subagent-driven development skills.
+url: https://roundpilot.github.io
+baseurl: /superpowers-antigravity
+theme: jekyll-theme-cayman
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+exclude:
+  - agents
+  - assets
+  - docs/superpowers
+  - hooks
+  - rules
+  - skills
+  - tests
+  - package.json
+  - plugin.json

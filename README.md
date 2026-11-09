@@ -3,13 +3,13 @@
 </p>
 
 <p align="center">
-  <strong>A complete software development methodology for your coding agent.</strong><br>
+  <strong>Superpowers for Google Antigravity: a complete software development methodology for your coding agent.</strong><br>
   Composable skills that trigger automatically — your agent just has Superpowers.
 </p>
 
 <p align="center">
   <a href="https://github.com/roundpilot/superpowers-antigravity#-installation"><img src="https://img.shields.io/badge/Install-Guide-blue?style=for-the-badge" alt="Install"></a>
-  <a href="RELEASE-NOTES.md"><img src="https://img.shields.io/badge/Version-7.0.2-green?style=for-the-badge" alt="Version 7.0.2"></a>
+  <a href="https://github.com/roundpilot/superpowers-antigravity/blob/main/RELEASE-NOTES.md"><img src="https://img.shields.io/badge/Version-7.0.2-green?style=for-the-badge" alt="Version 7.0.2"></a>
   <a href="https://github.com/obra/superpowers"><img src="https://img.shields.io/badge/Fork%20of-obra%2Fsuperpowers-purple?style=for-the-badge" alt="Fork of obra/superpowers"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT License"></a>
 </p>
@@ -17,6 +17,18 @@
 ---
 
 > **This is a fork of [obra/superpowers](https://github.com/obra/superpowers) rebuilt natively for [Google Antigravity](https://antigravity.google): the 2.0 app, the IDE and the CLI (`agy`).** If you need multi-platform support (Claude Code, Codex, Cursor, etc.), use the upstream repo instead.
+
+**Quick install.** CLI:
+
+```bash
+agy plugin install https://github.com/roundpilot/superpowers-antigravity
+```
+
+2.0 app and IDE (macOS / Linux; Windows and workspace installs are under [Installation](#-installation)):
+
+```bash
+git clone https://github.com/roundpilot/superpowers-antigravity ~/.gemini/config/plugins/superpowers
+```
 
 ---
 
