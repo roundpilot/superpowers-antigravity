@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Superpowers for Google Antigravity</title>
+<meta name="description" content="A native plugin for the Antigravity 2.0 app, IDE and agy CLI. Your agent asks what you want, writes a design you approve, plans, builds test-first with subagents, and reviews the branch.">
+<link rel="canonical" href="https://roundpilot.github.io/superpowers-antigravity/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Superpowers for Google Antigravity">
+<meta property="og:description" content="Skills that make your Antigravity agent work like a disciplined engineer: design first, then plan, then build test-first with subagents.">
+<meta property="og:url" content="https://roundpilot.github.io/superpowers-antigravity/">
+<meta property="og:image" content="https://roundpilot.github.io/superpowers-antigravity/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#173024">
+<link rel="icon" href="site/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="site/fonts/courier-prime-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Superpowers for Google Antigravity","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","softwareVersion":"7.0.2","license":"https://opensource.org/licenses/MIT","url":"https://roundpilot.github.io/superpowers-antigravity/","codeRepository":"https://github.com/roundpilot/superpowers-antigravity","author":{"@type":"Person","name":"roundpilot","url":"https://github.com/roundpilot"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+@font-face{font-family:"Courier Prime";src:url(site/fonts/courier-prime-400-normal.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Courier Prime";src:url(site/fonts/courier-prime-400-italic.woff2) format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Courier Prime";src:url(site/fonts/courier-prime-700-normal.woff2) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+
+:root{
+  --paper:#fbfcf9;
+  --band:#e1eedd;
+  --band-deep:#c6dcc1;
+  --ink:#1b231f;
+  --ink-soft:#46524a;
+  --rule:#8fa898;
+  --surround:#173024;
+  --surround-ink:#bcd3c3;
+  --lh:24px;
+  --strip:48px;
+  --pad:7ch;
+  --hole:7px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:var(--lh)}
+body{
+  margin:0;
+  background:var(--surround);
+  color:var(--ink);
+  font:17px/var(--lh) "Courier Prime","Courier New",Courier,monospace;
+  font-variant-ligatures:none;
+}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{background:var(--band-deep)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+code,pre{font:inherit}
+
+/* the continuous-form sheet: tractor strips either side, green bars in the print area */
+.sheet{
+  position:relative;
+  max-width:calc(72ch + 2 * var(--pad) + 2 * var(--strip) + 2px);
+  margin:var(--lh) auto calc(var(--lh) * 3);
+  padding:0 var(--strip);
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(circle at 50% 50%, var(--surround) 0 var(--hole), transparent calc(var(--hole) + .5px)),
+    radial-gradient(circle at 50% 50%, var(--surround) 0 var(--hole), transparent calc(var(--hole) + .5px));
+  background-size:var(--strip) calc(var(--lh) * 2);
+  background-position:left top, right top;
+  background-repeat:repeat-y;
+  box-shadow:0 30px 60px -20px rgb(0 0 0 / .55),0 3px 8px rgb(0 0 0 / .25);
+}
+.print{
+  padding:calc(var(--lh) * 2) var(--pad) calc(var(--lh) * 2);
+  border-inline:1px dashed var(--rule);
+  background:repeating-linear-gradient(var(--band) 0 calc(var(--lh) * 2), var(--paper) calc(var(--lh) * 2) calc(var(--lh) * 4));
+}
+
+.links{margin:0 0 var(--lh);font-size:15px;color:var(--ink-soft);word-spacing:-.15em}
+.links a{word-spacing:0;color:var(--ink)}
+
+.meta{display:flex;justify-content:space-between;gap:2ch;margin:0 0 var(--lh)}
+.meta ul{list-style:none;margin:0;padding:0}
+.meta ul:last-child{text-align:right}
+
+h1{
+  margin:0 0 var(--lh);
+  font-size:56px;line-height:calc(var(--lh) * 3);
+  font-weight:700;letter-spacing:-.03em;text-align:center;text-wrap:balance;
+  max-width:none!important;
+}
+.sub{margin:0 0 var(--lh);text-align:center;color:var(--ink-soft);text-wrap:balance}
+#abstract{margin-top:var(--lh)}
+h2,h3{font-size:inherit;line-height:inherit;font-weight:700;margin:calc(var(--lh) * 2) 0 var(--lh)}
+h3{margin-top:var(--lh)}
+p,ul,ol,dl,pre,table,figure{margin:0 0 var(--lh)}
+ul,ol{padding-left:3ch}
+.indent{padding-left:3ch}
+.kw{font-weight:700}
+
+/* install */
+.tabs{display:flex;flex-wrap:wrap;gap:0 1ch;margin:0 0 var(--lh);padding:0}
+.tab,.btn,.stage{
+  font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;
+}
+.tab{padding:0 .5ch}
+.tab::before{content:"["}.tab::after{content:"]"}
+.tab:hover{background:var(--band-deep)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.cmd{
+  display:flex;align-items:flex-start;gap:2ch;
+  background:var(--ink);color:var(--paper);
+  padding:calc(var(--lh) / 2) 2ch;margin:0 0 var(--lh);
+}
+.cmd pre{margin:0;flex:1;white-space:pre-wrap;overflow-wrap:anywhere;padding-left:2ch;text-indent:-2ch}
+.cmd pre::before{content:"$ ";color:var(--surround-ink)}
+.btn{color:var(--paper);flex:none;padding:0 .5ch}
+.btn::before{content:"["}.btn::after{content:"]"}
+.btn:hover{background:var(--paper);color:var(--ink)}
+.cmd .btn:focus-visible{outline-color:var(--paper)}
+.note{color:var(--ink-soft)}
+.nw{white-space:nowrap}
+
+/* table of contents */
+.toc{list-style:none;padding:0}
+.toc li{display:flex;gap:1ch}
+.toc .lead{flex:1;overflow:hidden;white-space:nowrap;color:var(--rule)}
+.toc .lead::before{content:". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."}
+.toc .pg{flex:none}
+.toc .sub-i{padding-left:3ch}
+
+/* page break: footer, perforation, next header */
+.pb{
+  margin:calc(var(--lh) * 2) calc(-1 * var(--pad));
+  color:var(--ink-soft);font-size:15px;
+}
+.pb .run{display:flex;justify-content:space-between;gap:2ch;padding:0 var(--pad)}
+.pb .run span:nth-child(2){text-align:center}
+.pb .perf{height:2px;margin:11px calc(-1 * var(--strip) - 1px);background:repeating-linear-gradient(90deg,var(--rule) 0 6px,transparent 6px 12px)}
+
+/* figure */
+figure{margin-left:0;margin-right:0}
+.fig{
+  margin:0 0 var(--lh);
+  font-size:min(17px, calc((100vw - 2 * var(--strip) - 2 * var(--pad) - 2px) / 26.6));
+  line-height:var(--lh);
+  white-space:pre;overflow-x:auto;
+}
+.fig .ln{display:block;min-height:var(--lh)}
+.box{cursor:pointer;transition:background-color .25s cubic-bezier(.16,1,.3,1),color .25s cubic-bezier(.16,1,.3,1)}
+.box:hover{background:var(--band-deep)}
+.box.on{background:var(--ink);color:var(--paper)}
+.stage{font-weight:700;white-space:pre}
+.stage:focus-visible{outline-offset:0}
+figcaption{text-align:center;margin:0 0 var(--lh)}
+.feed .ln{animation:strike .16s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i) * 45ms)}
+@keyframes strike{from{opacity:0;transform:translateY(-6px);filter:blur(1.5px)}to{opacity:1;transform:none;filter:none}}
+.stage-note h3{margin-top:0}
+.skills{font-style:italic;color:var(--ink-soft)}
+
+/* definition lists and tables */
+dt{font-weight:700}
+dd{margin:0 0 var(--lh) 3ch}
+/* rules run through the middle of spacer lines, as in Figure 1, so text stays on the grid */
+table{border-collapse:collapse;width:100%;clip-path:inset(calc(var(--lh) / 2 - 1px) 0)}
+th,td{
+  padding:0 1ch var(--lh);text-align:left;vertical-align:top;
+  box-shadow:inset -1px 0 0 var(--ink);
+  background:linear-gradient(var(--ink),var(--ink)) no-repeat 0 calc(100% - var(--lh) / 2 + 1px) / 100% 1px;
+}
+th{
+  padding-top:var(--lh);
+  background:
+    linear-gradient(var(--ink),var(--ink)) no-repeat 0 calc(var(--lh) / 2) / 100% 1px,
+    linear-gradient(var(--ink),var(--ink)) no-repeat 0 calc(100% - var(--lh) / 2 + 1px) / 100% 1px;
+}
+th:first-child,td:first-child{box-shadow:inset 1px 0 0 var(--ink),inset -1px 0 0 var(--ink)}
+th{font-weight:700}
+td:first-child,td:nth-child(2){white-space:nowrap}
+.bul li::marker{content:"* "}
+.refs dt{font-weight:400}
+.refs dt::before{content:"["}.refs dt::after{content:"]"}
+
+/* tear-off stub */
+.stub{
+  margin:calc(var(--lh) * 2) calc(-1 * var(--pad)) calc(var(--lh) * -2);
+  padding:calc(var(--lh) * 2) var(--pad);
+  border-top:2px dashed var(--rule);
+  background:var(--paper);
+}
+.stub h2{margin-top:0}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:760px){
+  :root{--strip:20px;--pad:12px;--hole:5px}
+  body{font-size:16px}
+  .sheet{margin:0;box-shadow:none}
+  .print{padding-top:var(--lh)}
+  h1{font-size:34px;line-height:calc(var(--lh) * 2);letter-spacing:-.02em}
+  .meta{flex-direction:column;gap:0;font-size:15px}
+  .meta ul:last-child{text-align:left}
+  .pb .run{font-size:13px}
+  .pb .run span:nth-child(2){display:none}
+  .cmd{padding:calc(var(--lh) / 2) 12px;flex-direction:column;gap:0}
+  .cmd .btn{align-self:flex-end}
+  dd{margin-left:2ch}
+  thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  tr{
+    display:grid;grid-template-columns:1fr auto;
+    box-shadow:inset 1px 0 0 var(--ink),inset -1px 0 0 var(--ink);
+    background:linear-gradient(var(--ink),var(--ink)) no-repeat 0 calc(100% - var(--lh) / 2 + 1px) / 100% 1px;
+  }
+  tbody tr:first-child{
+    padding-top:var(--lh);
+    background:
+      linear-gradient(var(--ink),var(--ink)) no-repeat 0 calc(var(--lh) / 2) / 100% 1px,
+      linear-gradient(var(--ink),var(--ink)) no-repeat 0 calc(100% - var(--lh) / 2 + 1px) / 100% 1px;
+  }
+  td,td:first-child{box-shadow:none;background:none;padding:0 1ch}
+  td:nth-child(3){grid-column:1 / -1;padding-bottom:var(--lh);color:var(--ink-soft)}
+}
+@media (prefers-reduced-motion:reduce){
+  .feed .ln{animation:none}
+  .box{transition:none}
+}
+@media print{
+  body{background:#fff}
+  .sheet{box-shadow:none;background-image:none;padding:0}
+  .print{background:none;border:0}
+}
+</style>
+</head>
+<body>
+<!--
+THESIS: Superpowers is a protocol for how an agent builds software, so the page is the protocol: a Request for Comments printed on continuous green-bar paper. It refuses the dark neon dev-tool hero with a feature-card grid.
+OWN-WORLD: Fan-fold line-printer paper, pale green bars every two lines, punched tractor strips with dashed perforations, bottle-green surround. One face: Courier Prime. Bracketed links, reversed ink blocks for commands and the active stage. ASCII artwork, RFC section numbers, running headers and page footers.
+STORY: A developer sees what it is, copies one install line, then reads the workflow figure and the normative rules behind each stage.
+FIRST VIEWPORT: Bracketed link row, RFC header block, centred title, abstract, then Section 1 with install tabs and the command with [Copy].
+FORM: RFC document on green-bar paper, grounded list position 4, seed key eceff219.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->
+<main class="sheet">
+<div class="print">
+
+<p class="links"><a href="https://github.com/roundpilot/superpowers-antigravity">[GitHub]</a> <a href="https://github.com/roundpilot/superpowers-antigravity#readme">[README]</a> <a href="https://github.com/roundpilot/superpowers-antigravity/blob/main/RELEASE-NOTES.md">[Release notes]</a> <a href="https://github.com/roundpilot/superpowers-antigravity/issues">[Issues]</a> <a href="https://github.com/obra/superpowers">[Upstream]</a></p>
+
+<div class="meta">
+  <ul>
+    <li>Superpowers for Antigravity</li>
+    <li>Request for Install: 7.0.2</li>
+    <li>Updates: obra/superpowers</li>
+    <li>Category: Plugin</li>
+    <li>License: MIT</li>
+  </ul>
+  <ul>
+    <li>roundpilot</li>
+    <li>November 2026</li>
+  </ul>
+</div>
+
+<h1>Superpowers for Google Antigravity</h1>
+<p class="sub">for the 2.0 app, the IDE and the agy CLI</p>
+
+<h2 id="abstract">Abstract</h2>
+<p>Superpowers is a set of skills that makes your Antigravity agent work like a careful engineer. It asks what you want and why, writes a design you approve, plans the work, builds it test-first with subagents, reviews every task and the whole branch, then finishes the branch. The skills trigger on their own.</p>
+
+<h2 id="install">1. Installation</h2>
+<div class="tabs" role="tablist" aria-label="Where you use Antigravity">
+  <button class="tab" role="tab" id="t-cli" aria-selected="true" aria-controls="p-cli">CLI</button>
+  <button class="tab" role="tab" id="t-nix" aria-selected="false" aria-controls="p-nix" tabindex="-1">App and IDE: macOS, Linux</button>
+  <button class="tab" role="tab" id="t-win" aria-selected="false" aria-controls="p-win" tabindex="-1">App and IDE: Windows</button>
+</div>
+<div role="tabpanel" id="p-cli" aria-labelledby="t-cli">
+  <div class="cmd"><pre id="c-cli">agy plugin install https://<wbr>github.com/<wbr>roundpilot/<wbr><span class="nw">superpowers-antigravity</span></pre><button class="btn" type="button" data-copy="c-cli">Copy</button></div>
+</div>
+<div role="tabpanel" id="p-nix" aria-labelledby="t-nix" hidden>
+  <div class="cmd"><pre id="c-nix">git clone https://<wbr>github.com/<wbr>roundpilot/<wbr><span class="nw">superpowers-antigravity</span> <wbr>~/<wbr>.gemini/<wbr>config/<wbr>plugins/<wbr>superpowers</pre><button class="btn" type="button" data-copy="c-nix">Copy</button></div>
+</div>
+<div role="tabpanel" id="p-win" aria-labelledby="t-win" hidden>
+  <div class="cmd"><pre id="c-win">git clone https://<wbr>github.com/<wbr>roundpilot/<wbr><span class="nw">superpowers-antigravity</span> <wbr>"$env:USERPROFILE\<wbr>.gemini\<wbr>config\<wbr>plugins\<wbr>superpowers"</pre><button class="btn" type="button" data-copy="c-win">Copy</button></div>
+</div>
+<p class="sr" role="status" id="copy-status"></p>
+<p class="note">Then say "Let's make a react todo list". The agent SHOULD start asking design questions instead of writing code. Workspace installs, WSL, ZIP downloads and updates: <a href="https://github.com/roundpilot/superpowers-antigravity#-installation">README, Installation</a>.</p>
+
+<h2 id="status">Status of This Memo</h2>
+<p>This document describes a working plugin, version 7.0.2, released in November 2026 under the MIT License. Its test suite passes, and its live tests passed on Antigravity CLI 1.5.0; transcript tests and app smoke tests have not run. Distribution of this memo is unlimited.</p>
+
+<h2 id="toc">Table of Contents</h2>
+<ol class="toc">
+  <li><a href="#install">1. Installation</a><span class="lead" aria-hidden="true"></span><span class="pg">1</span></li>
+  <li><a href="#keywords">2. Requirements Language</a><span class="lead" aria-hidden="true"></span><span class="pg">2</span></li>
+  <li><a href="#workflow">3. The Workflow</a><span class="lead" aria-hidden="true"></span><span class="pg">2</span></li>
+  <li><a href="#skills">4. Skills</a><span class="lead" aria-hidden="true"></span><span class="pg">3</span></li>
+  <li><a href="#agents">5. Bundled Agents</a><span class="lead" aria-hidden="true"></span><span class="pg">4</span></li>
+  <li><a href="#upstream">6. Differences from Upstream</a><span class="lead" aria-hidden="true"></span><span class="pg">4</span></li>
+  <li><a href="#security">7. Security Considerations</a><span class="lead" aria-hidden="true"></span><span class="pg">5</span></li>
+  <li><a href="#iana">8. IANA Considerations</a><span class="lead" aria-hidden="true"></span><span class="pg">5</span></li>
+  <li><a href="#refs">9. References</a><span class="lead" aria-hidden="true"></span><span class="pg">5</span></li>
+  <li><a href="#thanks">Acknowledgements</a><span class="lead" aria-hidden="true"></span><span class="pg">5</span></li>
+  <li><a href="#author">Author's Address</a><span class="lead" aria-hidden="true"></span><span class="pg">5</span></li>
+</ol>
+
+<div class="pb" aria-hidden="true"><div class="run"><span>roundpilot</span><span>Superpowers for Antigravity</span><span>[Page 1]</span></div><div class="perf"></div><div class="run"><span>RFI 7.0.2</span><span>Superpowers for Antigravity</span><span>November 2026</span></div></div>
+
+<h2 id="keywords">2. Requirements Language</h2>
+<p>The key words "<span class="kw">MUST</span>", "<span class="kw">MUST NOT</span>", "<span class="kw">SHOULD</span>" and "<span class="kw">MAY</span>" in this document are to be interpreted as described in BCP 14 [<a href="#ref-2119">RFC2119</a>] [<a href="#ref-8174">RFC8174</a>].</p>
+<p>They are also how the skills talk to your agent. Superpowers is written in this register, and the agent treats a skill as a rule it follows, not a suggestion.</p>
+
+<h2 id="workflow">3. The Workflow</h2>
+<p>Each stage is a skill. Select a stage in Figure 1 to read what it requires.</p>
+<figure>
+<pre class="fig" id="fig1" aria-describedby="fig1-cap"><span class="ln" style="--i:0">  <span class="box" data-s="1"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:1">  <span class="box" data-s="1"><span aria-hidden="true">|</span><button class="stage" type="button" data-s="1" aria-pressed="false"> 1  Brainstorm</button>       <span aria-hidden="true">|</span></span>  what and why</span><span class="ln" style="--i:2">  <span class="box" data-s="1"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:3"><span aria-hidden="true">             |</span></span><span class="ln" style="--i:4"><span aria-hidden="true">             |  you approve</span></span><span class="ln" style="--i:5"><span aria-hidden="true">             v</span></span><span class="ln" style="--i:6">  <span class="box" data-s="2"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:7">  <span class="box" data-s="2"><span aria-hidden="true">|</span><button class="stage" type="button" data-s="2" aria-pressed="false"> 2  Plan</button>             <span aria-hidden="true">|</span></span>  tasks, files</span><span class="ln" style="--i:8">  <span class="box" data-s="2"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:9"><span aria-hidden="true">             |</span></span><span class="ln" style="--i:10"><span aria-hidden="true">             |  you say go</span></span><span class="ln" style="--i:11"><span aria-hidden="true">             v</span></span><span class="ln" style="--i:12">  <span class="box" data-s="3"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:13">  <span class="box" data-s="3"><span aria-hidden="true">|</span><button class="stage" type="button" data-s="3" aria-pressed="false"> 3  Build</button>            <span aria-hidden="true">|</span></span><span aria-hidden="true">&lt;-----+</span></span><span class="ln" style="--i:14">  <span class="box" data-s="3"><span aria-hidden="true">|</span>    test first       <span aria-hidden="true">|</span></span><span aria-hidden="true">      |</span></span><span class="ln" style="--i:15">  <span class="box" data-s="3"><span aria-hidden="true">|</span>    spec review      <span aria-hidden="true">|</span></span><span aria-hidden="true">      | each</span></span><span class="ln" style="--i:16">  <span class="box" data-s="3"><span aria-hidden="true">|</span>    code review      <span aria-hidden="true">|</span></span><span aria-hidden="true">------+ task</span></span><span class="ln" style="--i:17">  <span class="box" data-s="3"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:18"><span aria-hidden="true">             |</span></span><span class="ln" style="--i:19"><span aria-hidden="true">             v</span></span><span class="ln" style="--i:20">  <span class="box" data-s="4"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:21">  <span class="box" data-s="4"><span aria-hidden="true">|</span><button class="stage" type="button" data-s="4" aria-pressed="false"> 4  Final review</button>     <span aria-hidden="true">|</span></span>  whole branch</span><span class="ln" style="--i:22">  <span class="box" data-s="4"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:23"><span aria-hidden="true">             |</span></span><span class="ln" style="--i:24"><span aria-hidden="true">             v</span></span><span class="ln" style="--i:25">  <span class="box" data-s="5"><span aria-hidden="true">+---------------------+</span></span></span><span class="ln" style="--i:26">  <span class="box" data-s="5"><span aria-hidden="true">|</span><button class="stage" type="button" data-s="5" aria-pressed="false"> 5  Finish</button>           <span aria-hidden="true">|</span></span>  merge, PR, keep</span><span class="ln" style="--i:27">  <span class="box" data-s="5"><span aria-hidden="true">+---------------------+</span></span></span></pre>
+<figcaption id="fig1-cap">Figure 1: The workflow</figcaption>
+</figure>
+
+<div class="stage-notes" aria-live="polite">
+  <section class="stage-note" data-note="1">
+    <h3>3.1. Brainstorm</h3>
+    <p>The agent <span class="kw">MUST</span> ask what you want, and why, before proposing anything. It plays its understanding back, offers two or three approaches and sizes the work. A quick, clear task just gets done. Anything bigger <span class="kw">MUST NOT</span> be built until you approve the design.</p>
+    <p class="skills">brainstorming</p>
+  </section>
+  <section class="stage-note" data-note="2">
+    <h3>3.2. Plan</h3>
+    <p>The design is broken into small tasks with exact file paths and verification steps, clear enough for an enthusiastic junior engineer with no context. You review the plan before anything runs, and work moves to its own branch.</p>
+    <p class="skills">writing-plans, using-git-worktrees</p>
+  </section>
+  <section class="stage-note" data-note="3">
+    <h3>3.3. Build</h3>
+    <p>A fresh subagent takes each task test-first: a failing test, the least code that passes it, a commit. A spec reviewer checks the work against the task, then a code reviewer checks its quality. Agents can run for a couple of hours without leaving the plan. The IDE has no subagents, so there the tasks run inline.</p>
+    <p class="skills">subagent-driven-development, test-driven-development, executing-plans</p>
+  </section>
+  <section class="stage-note" data-note="4">
+    <h3>3.4. Final review</h3>
+    <p>A read-only reviewer at the Pro tier reads the whole branch before anything merges, and reports issues by severity.</p>
+    <p class="skills">requesting-code-review, receiving-code-review</p>
+  </section>
+  <section class="stage-note" data-note="5">
+    <h3>3.5. Finish</h3>
+    <p>The tests are run once more, then you choose: merge, open a pull request, or keep the branch. Nothing is called done without evidence.</p>
+    <p class="skills">finishing-a-development-branch, verification-before-completion</p>
+  </section>
+</div>
+
+<div class="pb" aria-hidden="true"><div class="run"><span>roundpilot</span><span>Superpowers for Antigravity</span><span>[Page 2]</span></div><div class="perf"></div><div class="run"><span>RFI 7.0.2</span><span>Superpowers for Antigravity</span><span>November 2026</span></div></div>
+
+<h2 id="skills">4. Skills</h2>
+<p>Sixteen skills. Each one loads only when it applies; a single short rule stays loaded so the agent knows they exist.</p>
+
+<h3>4.1. Building</h3>
+<dl>
+  <dt>brainstorming</dt><dd>Draws out what you want and why, offers approaches, sizes the work and writes the design.</dd>
+  <dt>writing-plans</dt><dd>Turns the design into small tasks with exact files, tests and a review gate.</dd>
+  <dt>subagent-driven-development</dt><dd>One fresh subagent per task, each followed by a spec review and a code review.</dd>
+  <dt>executing-plans</dt><dd>Runs the plan inline in one session, with one review of the whole branch.</dd>
+  <dt>dispatching-parallel-agents</dt><dd>Runs independent work at the same time on separate branches.</dd>
+  <dt>using-git-worktrees</dt><dd>Isolates the work on its own branch.</dd>
+  <dt>finishing-a-development-branch</dt><dd>Checks the tests, then offers merge, pull request or keep.</dd>
+</dl>
+
+<h3>4.2. Testing and debugging</h3>
+<dl>
+  <dt>test-driven-development</dt><dd>Red, green, refactor: the test fails first, then the least code passes it.</dd>
+  <dt>systematic-debugging</dt><dd>Finds the root cause in four phases before any fix.</dd>
+  <dt>verification-before-completion</dt><dd>No "it works" without the command output that proves it.</dd>
+  <dt>browser-testing</dt><dd>Screenshots and page checks as evidence for UI work.</dd>
+  <dt>diagnosing-superpowers</dt><dd>Works out what went wrong in a session, with line-level evidence.</dd>
+</dl>
+
+<h3>4.3. Review and meta</h3>
+<dl>
+  <dt>requesting-code-review</dt><dd>Sends a task or the whole branch to a read-only reviewer.</dd>
+  <dt>receiving-code-review</dt><dd>Weighs feedback on its merits before changing anything.</dd>
+  <dt>writing-skills</dt><dd>Writes and tests new skills.</dd>
+  <dt>using-superpowers</dt><dd>The short rule that tells the agent the skills exist.</dd>
+</dl>
+
+<div class="pb" aria-hidden="true"><div class="run"><span>roundpilot</span><span>Superpowers for Antigravity</span><span>[Page 3]</span></div><div class="perf"></div><div class="run"><span>RFI 7.0.2</span><span>Superpowers for Antigravity</span><span>November 2026</span></div></div>
+
+<h2 id="agents">5. Bundled Agents</h2>
+<p>Subagents ship with the plugin. "inherit" runs your session's model; "flash" and "pro" are Antigravity's own tiers, and which model each runs depends on your plan.</p>
+<table>
+  <thead><tr><th scope="col">Agent</th><th scope="col">Tier</th><th scope="col">Role</th></tr></thead>
+  <tbody>
+    <tr><td>implementer</td><td>inherit</td><td>Builds one plan task and fixes review findings</td></tr>
+    <tr><td>implementer-flash</td><td>flash</td><td>The same, for fully specified tasks</td></tr>
+    <tr><td>implementer-pro</td><td>pro</td><td>The same, for escalations and design work</td></tr>
+    <tr><td>spec-reviewer</td><td>inherit</td><td>Read-only: checks a task against its text</td></tr>
+    <tr><td>code-reviewer</td><td>inherit</td><td>Read-only: reviews one task or a small range</td></tr>
+    <tr><td>re-reviewer</td><td>inherit</td><td>Read-only: verifies a fix round</td></tr>
+    <tr><td>final-reviewer</td><td>pro</td><td>Read-only: reviews the whole branch</td></tr>
+    <tr><td>session-analyst</td><td>inherit</td><td>Read-only: reads transcripts for diagnosis</td></tr>
+    <tr><td>bundle-scrubber</td><td>inherit</td><td>Redacts a diagnosis bundle</td></tr>
+  </tbody>
+</table>
+
+<h2 id="upstream">6. Differences from Upstream</h2>
+<p>This is a fork of obra/superpowers [<a href="#ref-sp">SUPERPOWERS</a>], rebuilt for Antigravity only.</p>
+<ul class="bul">
+  <li>Skills name Antigravity's own tools, such as view_file, run_command and invoke_subagent, with no translation layer.</li>
+  <li>Reviewers are bundled read-only agents; implementers come at three tiers.</li>
+  <li>An always-on rule loads the bootstrap in the 2.0 app, the IDE and the CLI.</li>
+  <li>In the IDE, which has no subagents, plans run inline.</li>
+</ul>
+<p>For Claude Code, Codex, Cursor and other agents, you <span class="kw">SHOULD</span> use upstream instead.</p>
+
+<div class="pb" aria-hidden="true"><div class="run"><span>roundpilot</span><span>Superpowers for Antigravity</span><span>[Page 4]</span></div><div class="perf"></div><div class="run"><span>RFI 7.0.2</span><span>Superpowers for Antigravity</span><span>November 2026</span></div></div>
+
+<h2 id="security">7. Security Considerations</h2>
+<p>Skills and agents are plain Markdown. The plugin ships no MCP servers and installs no hooks; an optional check script is for contributors only. Reviewer agents are read-only. Work happens on its own branch, and nothing merges until you choose to.</p>
+
+<h2 id="iana">8. IANA Considerations</h2>
+<p>This document has no IANA actions.</p>
+
+<h2 id="refs">9. References</h2>
+<h3>9.1. Normative References</h3>
+<dl class="refs">
+  <dt id="ref-sp">SUPERPOWERS</dt><dd>Vincent, J., "Superpowers", <a href="https://github.com/obra/superpowers">https://github.com/obra/superpowers</a>.</dd>
+  <dt id="ref-ag">ANTIGRAVITY</dt><dd>Google, "Antigravity documentation", <a href="https://antigravity.google/docs">https://antigravity.google/docs</a>.</dd>
+  <dt id="ref-2119">RFC2119</dt><dd>Bradner, S., "Key words for use in RFCs to Indicate Requirement Levels", BCP 14, RFC 2119, March 1997.</dd>
+  <dt id="ref-8174">RFC8174</dt><dd>Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words", BCP 14, RFC 8174, May 2017.</dd>
+</dl>
+<h3>9.2. Informative References</h3>
+<dl class="refs">
+  <dt>README</dt><dd>"Superpowers for Google Antigravity", <a href="https://github.com/roundpilot/superpowers-antigravity#readme">README.md</a>.</dd>
+  <dt>NOTES</dt><dd>"Release notes", <a href="https://github.com/roundpilot/superpowers-antigravity/blob/main/RELEASE-NOTES.md">RELEASE-NOTES.md</a>.</dd>
+</dl>
+
+<h2 id="thanks">Acknowledgements</h2>
+<p>Superpowers was created by Jesse Vincent. This port keeps his methodology and rebuilds it for Antigravity. If it helps you, consider <a href="https://github.com/sponsors/obra">sponsoring the original project</a>.</p>
+
+<h2 id="author">Author's Address</h2>
+<p class="indent">roundpilot<br>GitHub: <a href="https://github.com/roundpilot">https://github.com/roundpilot</a><br>Issues: <a href="https://github.com/roundpilot/superpowers-antigravity/issues">superpowers-antigravity/issues</a></p>
+
+<div class="pb" aria-hidden="true"><div class="run"><span>roundpilot</span><span>Superpowers for Antigravity</span><span>[Page 5]</span></div></div>
+
+<section class="stub" aria-labelledby="stub-h">
+  <h2 id="stub-h">Request for Install</h2>
+  <div class="cmd"><pre id="c-stub">agy plugin install https://<wbr>github.com/<wbr>roundpilot/<wbr><span class="nw">superpowers-antigravity</span></pre><button class="btn" type="button" data-copy="c-stub">Copy</button></div>
+  <p class="note">2.0 app and IDE: <a href="#install">Section 1</a>. MIT License.</p>
+</section>
+
+</div>
+</main>
+<script>
+(() => {
+  // install tabs
+  const tabs = [...document.querySelectorAll('[role=tab]')];
+  const select = t => tabs.forEach(x => {
+    const on = x === t;
+    x.setAttribute('aria-selected', on);
+    x.tabIndex = on ? 0 : -1;
+    document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
+  });
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => select(t));
+    t.addEventListener('keydown', e => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      const n = tabs[(i + d + tabs.length) % tabs.length];
+      select(n); n.focus(); e.preventDefault();
+    });
+  });
+
+  // copy buttons
+  const status = document.getElementById('copy-status');
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+    const text = document.getElementById(b.dataset.copy).textContent;
+    try { await navigator.clipboard.writeText(text); b.textContent = 'Copied'; status.textContent = 'Command copied'; }
+    catch { getSelection().selectAllChildren(document.getElementById(b.dataset.copy)); b.textContent = 'Press Ctrl+C'; status.textContent = 'Copy failed, command selected'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 2000);
+  }));
+
+  // workflow figure: one stage at a time
+  const boxes = [...document.querySelectorAll('.box')];
+  const stages = [...document.querySelectorAll('.stage')];
+  const notes = [...document.querySelectorAll('[data-note]')];
+  const pick = s => {
+    boxes.forEach(b => b.classList.toggle('on', b.dataset.s === s));
+    stages.forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
+    notes.forEach(n => { n.hidden = n.dataset.note !== s; });
+  };
+  boxes.forEach(b => b.addEventListener('click', () => pick(b.dataset.s)));
+  pick('1');
+
+  // the figure prints line by line the first time it scrolls into view
+  const fig = document.getElementById('fig1');
+  if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver(es => {
+      if (es.some(e => e.isIntersecting)) { fig.classList.add('feed'); io.disconnect(); }
+    }, { threshold: .35 });
+    io.observe(fig);
+  }
+})();
+</script>
+</body>
+</html>
