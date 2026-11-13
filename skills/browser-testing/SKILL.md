@@ -50,6 +50,11 @@ Never claim UI work is correct without visual evidence. Browser automation makes
 - **superpowers:verification-before-completion** — browser-testing is specialized verification for UI work
 - **superpowers:test-driven-development** — browser tests complement unit tests, they don't replace them
 
-## Slash Command
+## Starting the Browser
 
-Recommend `/browser` to the user when UI verification is needed. `/browser` is the exclusive entry point to the built-in sandboxed `browser` subagent — it is not available via `invoke_subagent` and does not add browser tools to the calling agent's session. The subagent performs the testing (navigation, screenshots, recordings) and returns evidence for the walkthrough artifact.
+The `browser` subagent does the testing (navigation, screenshots, console and network checks, recordings) and returns evidence for the walkthrough artifact. It does not add browser tools to your own session.
+
+- **2.0 app 2.30+, personal Google account:** the built-in browser agent is on, and you can start `browser` subagents yourself, one or several in parallel, each in its own tab. Delegate the check when it needs live rendering, clicks, form input, responsive layout or console output.
+- **CLI, IDE, and business or enterprise accounts:** `/browser` is the only way in. Recommend it to your human partner with the exact check to run. In the CLI it drives their local Chrome 144+.
+
+If you cannot tell which case applies, recommend `/browser`: it works everywhere.

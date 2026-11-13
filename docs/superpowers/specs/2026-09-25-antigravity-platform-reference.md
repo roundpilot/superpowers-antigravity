@@ -126,7 +126,7 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 | 14 | Documented agent keys: `name`, `description`, `tools`, `mainAgent`, `subagent`, `model`, `commandExecutionPolicy`, `mcpServers`, `skills`/`plugins` | D 2.0 subagents:45-53; `model` honoured under a Claude parent MO 2.19.1 (ruling S3.3-tier-note) | D CLI subagents:189 (by link) | U | T3 as a file format; a product that does not load agents falls to S3.7's chain | LC3 |
 | 15 | Changelog-only agent keys (§3.8) | CL | CL | U | Not shipped until LC3 (S3.1) | LC3 |
 | 16 | Built-ins `research` and `self` | D 2.0 subagents:21-23; MO both used | `self` CL 1.1.22; `research` U | U | T3 (`research` for exploration only; never called read-only; `self` last in S3.7's chain) | LC3 |
-| 17 | `/browser` as the only entry point to the browser subagent | D 2.0 subagents:22, against CL 2.6.0 (X9) | `/browser` D slash-commands:39, :180-187 (2.0 and CLI); "exclusively" U, since the CLI tab does not repeat it | — (D ide/browser:9: the Browser Subagent works "as needed") | T3 per product | LC1 S1-a |
+| 17 | `/browser` as the only entry point to the browser subagent | D 2.0 subagents:22, against CL 2.6.0 (X9); on 2.30+ with a personal account the main agent starts `browser` subagents itself, one or several D 2026-11-13 subagents:24, browser:11, :24, :86 | `/browser` D slash-commands:39, :180-187 (2.0 and CLI); "exclusively" U, since the CLI tab does not repeat it | — (D ide/browser:9: the Browser Subagent works "as needed") | T3 per product | LC1 S1-a |
 | 18 | Plugin `skills/` discovery | D·s plugins:14-16; MO reads from `~/.gemini/config/plugins/superpowers/skills/`; skill index loaded MO 2.19.1 (ruling S2.3) | D skills:127 | D·s; skill index loaded from `~/.gemini/config/plugins/superpowers` MO 2.5.5 (ruling S2.10-ide-store) | T1 | — |
 | 19 | Skill slash invocation | D skills:117 `/<skill-name>`; bare plugin-skill names MO 2.0 (probable) 2026-07-30 (re-observe: 2.18.1), recorded as "IDE" (§14) | D skills:131; `/superpowers:<skill>` MO 1.2.17 (ruling S2.11-slash) | D unscoped migration/workflows-to-skills:201 (`/<name>` for workspace and global skills, not plugin skills); IDE workflows `/workflow-name` D ide/workflows:7; no plugin slash form MO 2.5.5 (ruling S2.11-slash) | T3 per product | LC2 S1-c, LC8 |
 | 20 | Headless skill expansion, `agy -p "/<skill> …"` | — | CL 1.1.9 (un-namespaced example) | — | T3 (tests) | LC8 |
@@ -176,7 +176,7 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 ## §1 Products, roots and identifiers
 
 - Target products: the Antigravity 2.0 app (Desktop and Web [D 2.0/CLI slash-commands:227]), the IDE and the CLI (`agy`).
-- Covered releases: 2.0 to 2.18.1 (2026-09-28), CLI to 1.2.11 (2026-09-25), IDE to 2.5.5; the 2026-11-04 docs capture reaches 2.0 2.29.0, CLI 1.4.12 and IDE 2.6.0, used only where cited.
+- Covered releases: 2.0 to 2.18.1 (2026-09-28), CLI to 1.2.11 (2026-09-25), IDE to 2.5.5; the 2026-11-04 docs capture reaches 2.0 2.29.0, CLI 1.4.12 and IDE 2.6.0, and the 2026-11-13 capture 2.0 2.31.2, CLI 1.5.7 and IDE 2.7.0; both are used only where cited.
 - Out of target:
   - the SDK, a library, whose facts are never mechanisms;
   - IDE extensions (VS Code, Visual Studio, JetBrains, Zed and Xcode). They are recorded only where a tab reads "IDE & Extensions" [D shared rules:141].
@@ -313,6 +313,7 @@ The `subagents` page is tabbed throughout (§0.2): its 2.0 tab documents the dis
 - The `Workspace` argument is optional [D shared hooks:167].
 - `inherit`: "the same workspace as its parent". Writes land in the parent's checkout, and there is no read-only property [D 2.0 subagents:12].
 - `branch`: an isolated Git worktree [D 2.0 subagents:12], created under `.system_generated/worktrees` [CL CLI 1.1.26].
+- A subagent's worktree includes the parent's staged, unstaged and untracked changes, not only the last commit [CL CLI 1.5.5].
 - Subagent worktrees live under the app data directory's `worktrees/`, no longer in conversation directories or treated as artifacts [CL CLI 1.2.10; CL 2.0 2.18.1].
 - `share`: documented only as "share directory storage". Its path, lifetime and git state are unverified [U] (LC4 S1-f).
 - Parents keep full access to their subagents' workspaces, including worktrees [D 2.0 subagents:130].
@@ -417,7 +418,8 @@ Probe record: send_message and manage_task are default components of every subag
 - The per-dispatch `Model` key was ignored: the child ran the parent's model on 2.0 (`pro` ran gemini-3.8-flash-medium, `flash` ran gemini-3.1-pro-low) and the CLI (`pro` ran gemini-3.8-flash-medium, `flash` ran gemini-pro-agent) [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC3 probe 20261005-1426] (ruling S3.4 variant-files). The agent frontmatter `model` key was honoured on 2.0 under a Claude parent: the `pro` and `flash` agents ran gemini-3.1-pro-low and gemini-3.8-flash-tiered, the others Claude [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426] (ruling S3.3-tier-note).
 - `/model <name> <prompt>` is a one-shot for the main agent only [CL CLI 1.1.27].
 - Arbitrary model targets per subagent, independent of the root agent, exist only in the SDK [CL SDK 0.1.18]. The product mechanism is the `model` frontmatter key.
-- Current models: Gemini 3.8, 3.7 and 3.6 Flash, Gemini 3.1 Pro, Claude Sonnet 4.6 and Opus 4.6, and GPT-OSS-120b [D unscoped models:9-15]. Skills never name model slugs (X15).
+- Current models: Gemini 4 Carbon, Argon and Hydrogen, Orchestrator (Carbon) and (Argon), Gemini 3.8, 3.7 and 3.6 Flash, Gemini 3.1 Pro, Claude Sonnet and Opus 5.5 and 4.6, and GPT-OSS-120b, each by plan [D 2026-11-13 models:21-36]. Orchestrator is a main-agent choice that plans with Carbon or Argon and builds with Hydrogen, not a subagent tier [D 2026-11-13 models:46-68]. Skills never name model slugs (X15).
+- The CLI shows each subagent's model in `/agents` and in the status line JSON [CL CLI 1.5.3].
 
 ## §4 Skills
 
@@ -550,12 +552,13 @@ The hooks page is tabbed only for locations and toggles; its schema and contract
 - PostToolUse input: `toolCall` (`name` and `args`), `stepIdx` and `error`; it returns `{}` [D shared hooks:288-295].
 - PreInvocation receives `invocationNum` and `initialNumSteps` and may return `injectSteps` (`toolCall`, `userMessage` or `ephemeralMessage`) [D shared hooks:333-349].
 - PostInvocation may also return `terminationBehavior` [D shared hooks:383-393].
-- Stop receives `fullyIdle` and `terminationReason`, and returns `decision: "continue"` with a `reason` to keep the agent running [D shared hooks:415-430].
+- Stop receives `fullyIdle` and `terminationReason`, and returns `decision: "continue"` with a `reason` to keep the agent running [D shared hooks:415-430]. The plugin page now agrees: Stop returns `{"decision": "continue", ...}` or `{}` (it said `"block"` before), and its MCP matcher example is `"mcp_.*"` [D 2026-11-13 build-plugins:483-485].
 
 ### §7.4 Changelog behaviours
 
 - Hooks run before the built-in termination checks [CL CLI 1.1.10].
-- Stop-hook loops are bounded [CL CLI 1.1.9; CL 2.0 2.6.0].
+- Stop-hook loops are bounded [CL CLI 1.1.9; CL 2.0 2.6.0]. Stop hooks receive `continuation_active` while a continuation they requested is running [CL CLI 1.5.6].
+- Plugin hooks receive `PLUGIN_ROOT` and `PLUGIN_DATA` [CL CLI 1.5.3]; every hook's input adds `hookEventName`, `cwd` and `toolCall.id` [CL CLI 1.5.4].
 - Configurations that could never run are rejected at load time [CL 2.0 2.6.0].
 - A failing hook "is now reported as an error and the conversation continues" [CL 2.0 2.12.0]. What that means for the gated tool call is unstated.
 - Workspace hooks were fixed to load after a folder is trusted [CL CLI 1.1.1]; that trust gates loading is an inference [I]. CLI `/hooks` did not list the workspace hooks only when the folder was trusted [MO CLI 1.2.17 2026-10-05 LC6 probe 20261005-1426] (ruling S7.8-trust no).
@@ -788,7 +791,7 @@ Each entry names both sides, the interim rule that binds every section until the
 | X6 | Review-policy name and values | "Artifact Review Policy", two options [D unscoped artifact-review:8-29] | "Plan Review Policy", three options [CL 2.0 2.17.0]; CLI `artifactReviewPolicy` with three values [D CLI settings:152-155]; IDE strict mode's "Artifact review" [D IDE settings:276] | Describe behaviour, never labels. | LC5 |
 | X7 | Plugin-level `hooks.json` | plugin level listed only in the CLI tab [D CLI hooks:26] | `hooks.json` in the shared component list [D shared plugins:13, :82] | No plugin-level `hooks.json`. | LC6 |
 | X8 | IDE custom agents and `invoke_subagent` | `invoke_subagent` and `agents/` in shared lists [D shared hooks:166; D shared plugins:17]; "Agent & Parallel Subagents" [D IDE ide/overview:33] | the `subagents` page has no IDE tab (§0.2); `/docs/ide/subagents` returned 404 [MO docs ? 2026-09-25 page fetch]; "IDE following shortly", a vendor promise [CL blog 2026-08-12 2.0/CLI] | "Unverified on the IDE; detect at runtime." Decided: the IDE has no `invoke_subagent` [MO IDE 2.5.5 2026-10-05 LC1 probe 20261005-1426]. | LC1, LC3 |
-| X9 | `/browser` as the only entry point | "invoked exclusively via the `/browser` slash command" [D 2.0 subagents:22] | "research, browser and teamwork assistants work again" [CL 2.0 2.6.0]; the IDE Browser Subagent works "as needed" [D IDE ide/browser:9] | `/browser` on 2.0 and the CLI; the IDE may delegate; never name `browser_*` tools. | LC1 S1-a |
+| X9 | `/browser` as the only entry point | "invoked exclusively via the `/browser` slash command" [D 2.0 subagents:22] | "research, browser and teamwork assistants work again" [CL 2.0 2.6.0]; the IDE Browser Subagent works "as needed" [D IDE ide/browser:9] | `/browser` on the CLI and on 2.0 business accounts; 2.0 2.30+ with a personal account delegates itself [D 2026-11-13 subagents:24]; the IDE may delegate; never name `browser_*` tools. | LC1 S1-a |
 | X10 | `/learn` output | `.antigravity/rules.md` [D 2.0/CLI slash-commands:134] | `.agents/rules/*.md` [D shared rules:9-19] | Not relied on. | none |
 | X11 | Project permission option | "Inherit General" [D 2.0 agent-settings:17] | "Inherit Global" [CL 2.0 2.14.0] | Not relied on. | none |
 | X12 | Over-budget rules | the per-file cap truncates; over budget, the largest rules are demoted to pointers [D shared rules:132-133] | "instead of being cut short" [CL 2.0 2.17.0]; "cutting oversized rules on newline boundaries" [CL CLI 1.2.7] | Shipped rules stay far below 24,000 bytes. | LC2 |
@@ -864,7 +867,7 @@ The probe kit ran on 2026-10-05 (run 20261005-1426) on the IDE 2.5.5, the 2.0 ap
 
 **Sub-questions:**
 
-- **S1-a** Can the main agent reach the browser subagent without the partner typing `/browser`? (X9)
+- **S1-a** Can the main agent reach the browser subagent without the partner typing `/browser`? (X9) Answered by the docs for 2.0 2.30+ with a personal account: yes [D 2026-11-13 browser:24]. The CLI and business accounts still need `/browser` [D 2026-11-13 subagents:24].
 - **S1-b** Record the full tool list per product for §2.1b and R13: from `init.tools` on the CLI; on 2.0 and the IDE from the model's list, labelled self-report until a logged call corroborates each name.
 - **S1-k** Pass one unknown inner `ArtifactMetadata` key on each product and record whether it is ignored, rejected with an error the agent can act on, or hangs (T2's per-product note, §0.3).
 - **1a** Per product: the `ArtifactType` values, the `ask_permission` Actions, `manage_task` status output and `command_status` (S5).
@@ -1245,3 +1248,4 @@ Decision record changes of this release (id — old — new — part). The ids a
 - 2026-11-05 — §1, §3–§7, §13, §16 — final review: P4, B9, C5, row 32 corrected; IDE subagents, slash forms, workspace hooks, roots, CLI plugin root, 24 KB limit recorded — final review
 - 2026-11-05 — §0.5, §2–§8, §11, §13, §15.0, §16.3 — every platform-fact FINAL ruling and Obs line of run 20261005-1426 recorded; S1-e 2.0 relabelled self-report; `Model` and rule-activation cells corrected — final review
 
+- 2026-11-13 — §0, §1, §2.3, §3.10, §7, §15, §16 — 2026-11-13 capture: browser subagent self-start on 2.0 2.30+, worktrees carry uncommitted work, hook fields, current models — maintainer instruction
