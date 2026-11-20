@@ -176,7 +176,7 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 ## §1 Products, roots and identifiers
 
 - Target products: the Antigravity 2.0 app (Desktop and Web [D 2.0/CLI slash-commands:227]), the IDE and the CLI (`agy`).
-- Covered releases: 2.0 to 2.18.1 (2026-09-28), CLI to 1.2.11 (2026-09-25), IDE to 2.5.5; the 2026-11-04 docs capture reaches 2.0 2.29.0, CLI 1.4.12 and IDE 2.6.0, and the 2026-11-13 capture 2.0 2.31.2, CLI 1.5.7 and IDE 2.7.0; both are used only where cited.
+- Covered releases: 2.0 to 2.18.1 (2026-09-28), CLI to 1.2.11 (2026-09-25), IDE to 2.5.5; the 2026-11-04 docs capture reaches 2.0 2.29.0, CLI 1.4.12 and IDE 2.6.0, the 2026-11-13 capture 2.0 2.31.2, CLI 1.5.7 and IDE 2.7.0, and the 2026-11-20 capture 2.0 2.33.0, CLI 1.5.12 and IDE 2.8.0; all are used only where cited.
 - Out of target:
   - the SDK, a library, whose facts are never mechanisms;
   - IDE extensions (VS Code, Visual Studio, JetBrains, Zed and Xcode). They are recorded only where a tab reads "IDE & Extensions" [D shared rules:141].
@@ -285,7 +285,7 @@ Every tool on the Supported Tools list of the hooks page [D shared hooks:123-180
   - Its shape is the documented `questions` array [D shared hooks:177-178], whose array form was observed accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
   - Write-in answers are documented only for the CLI [CL CLI 1.0.3, 1.1.12, 1.2.7].
   - Cancel is documented for 2.0 [CL 2.0 2.13.0].
-- `invoke_subagent`: the `Model` spec key is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe] and ignored (§3.10); the result carries the child `conversationId` [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; in headless output `subagent_info` has `type_name`, `role`, `conversation_id`, `log_uri` and `workspace_uris` [D CLI cli/headless:191].
+- `invoke_subagent`: the `Model` spec key is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe] and ignored when the agent file sets `model:` (§3.10); the result carries the child `conversationId` [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; in headless output `subagent_info` has `type_name`, `role`, `conversation_id`, `log_uri` and `workspace_uris` [D CLI cli/headless:191].
 - `define_subagent`: `name`, `description`, `system_prompt`, and the optional `enable_mcp_tools`, `enable_write_tools` and `enable_subagent_tools` [D shared hooks:168-169; MO 2.0 ≤2.10.0 2026-08-25 transcript probe]. The flags' effects and defaults are undocumented [U]. On 2.0, registrations are stored per conversation under `brain/<id>/.agents/agents/<name>/agent.json`, with `hidden: true`; the base tool set is `send_message`, `find_by_name`, `grep_search`, `view_file`, `list_dir`, `read_url_content`, `search_web` and `schedule`, and a larger set adds the three write tools, `run_command` and `manage_task` [MO 2.0 ≤2.10.0 2026-07-08 registration read]. That the larger set is what `enable_write_tools: true` yields is an inference [I].
 - Legacy `list_dir`, `find_by_name` and `grep_search` were retired from the CLI's default baseline, and stay available to agents that list them in `tools` [CL CLI 1.2.7]. They are still listed on the hooks page (X13). 2.0 and the IDE have no retirement entry.
 - Tools not on the documented list:
@@ -315,7 +315,7 @@ The `subagents` page is tabbed throughout (§0.2): its 2.0 tab documents the dis
 - `branch`: an isolated Git worktree [D 2.0 subagents:12], created under `.system_generated/worktrees` [CL CLI 1.1.26].
 - A subagent's worktree includes the parent's staged, unstaged and untracked changes, not only the last commit [CL CLI 1.5.5].
 - Subagent worktrees live under the app data directory's `worktrees/`, no longer in conversation directories or treated as artifacts [CL CLI 1.2.10; CL 2.0 2.18.1].
-- `share`: documented only as "share directory storage". Its path, lifetime and git state are unverified [U] (LC4 S1-f).
+- `share`: documented as "share directory storage" [D 2.0 subagents:12] and as "a new working copy that shares the underlying repository storage" [D 2026-11-20 dynamic-workflows:206]. Its lifetime and how its changes come back are unverified [U] (LC4 S1-f).
 - Parents keep full access to their subagents' workspaces, including worktrees [D 2.0 subagents:130].
 - Killing a subagent cleans up its worktrees [D 2.0 subagents:110]. So branch results must be integrated before the kill [I].
 - Parallel `inherit` subagents that each commit share one checkout and race on `.git/index.lock` [I].
@@ -414,12 +414,14 @@ Probe record: send_message and manage_task are default components of every subag
 - `model` is `inherit`, `flash` or `pro` [D 2.0 subagents:50].
 - With `inherit`, a subagent whose parent has no model falls back to the fast tier [CL CLI 1.1.16].
 - What `flash` and `pro` map to is undocumented.
-- No per-invocation override is documented (R7). The `invoke_subagent` spec key `Model` is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; LC3 found it ignored (next bullet; R7, D5).
+- No per-invocation override is documented (R7). The `invoke_subagent` spec key `Model` is accepted [MO 2.0 ≤2.10.0 2026-08-25 transcript probe]; LC3 found it ignored for an agent whose file sets `model: inherit` (next bullet; R7, D5).
 - The per-dispatch `Model` key was ignored: the child ran the parent's model on 2.0 (`pro` ran gemini-3.8-flash-medium, `flash` ran gemini-3.1-pro-low) and the CLI (`pro` ran gemini-3.8-flash-medium, `flash` ran gemini-pro-agent) [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC3 probe 20261005-1426] (ruling S3.4 variant-files). The agent frontmatter `model` key was honoured on 2.0 under a Claude parent: the `pro` and `flash` agents ran gemini-3.1-pro-low and gemini-3.8-flash-tiered, the others Claude [MO 2.0 2.19.1 2026-10-05 LC3 probe 20261005-1426] (ruling S3.3-tier-note).
 - `/model <name> <prompt>` is a one-shot for the main agent only [CL CLI 1.1.27].
 - Arbitrary model targets per subagent, independent of the root agent, exist only in the SDK [CL SDK 0.1.18]. The product mechanism is the `model` frontmatter key.
-- Current models: Gemini 4 Carbon, Argon and Hydrogen, Orchestrator (Carbon) and (Argon), Gemini 3.8, 3.7 and 3.6 Flash, Gemini 3.1 Pro, Claude Sonnet and Opus 5.5 and 4.6, and GPT-OSS-120b, each by plan [D 2026-11-13 models:21-36]. Orchestrator is a main-agent choice that plans with Carbon or Argon and builds with Hydrogen, not a subagent tier [D 2026-11-13 models:46-68]. Skills never name model slugs (X15).
+- Current models: Gemini 4 Neon (the default where a plan includes it [D 2026-11-20 models:50]), Carbon, Argon and Hydrogen, Orchestrator (Neon), (Carbon) and (Argon), Gemini 3.8, 3.7 and 3.6 Flash, Gemini 3.1 Pro, Claude Sonnet and Opus 5.5 and 4.6, and GPT-OSS-120b, each by plan [D 2026-11-13 models:21-36; D 2026-11-20 models:23-27]. Orchestrator is a main-agent choice that plans with Carbon or Argon and builds with Hydrogen, not a subagent tier [D 2026-11-13 models:46-68]. Skills never name model slugs (X15).
 - The CLI shows each subagent's model in `/agents` and in the status line JSON [CL CLI 1.5.3].
+- `inherit` ran the parent's model, an Orchestrator and Claude included, while `flash` and `pro`, by frontmatter or by the dispatch `Model` key, both ran gemini-3.8-flash-tiered, on an Argon-trial account and a business Starter account; a paid Pro or Ultra plan is untested [MO CLI 1.5.8 2026-11-13 model test runs 5-9]. The dispatch `Model` key is honoured only when the agent file has no `model:` line [MO CLI 1.5.1 2026-11-06 model test runs 1-4]. So `final-reviewer` ships `model: inherit`.
+- Dynamic Workflows: the `run_workflow` tool runs a Python script that starts agents in parallel or in stages, each with a `type_name`, `model` tier and `workspace`; every script needs approval [CL CLI 1.5.9; CL 2.0 2.32.0; D 2.0/CLI 2026-11-20 dynamic-workflows:3, :193, :204-216]. Not used by any skill yet.
 
 ## §4 Skills
 
@@ -1249,3 +1251,4 @@ Decision record changes of this release (id — old — new — part). The ids a
 - 2026-11-05 — §0.5, §2–§8, §11, §13, §15.0, §16.3 — every platform-fact FINAL ruling and Obs line of run 20261005-1426 recorded; S1-e 2.0 relabelled self-report; `Model` and rule-activation cells corrected — final review
 
 - 2026-11-13 — §0, §1, §2.3, §3.10, §7, §15, §16 — 2026-11-13 capture: browser subagent self-start on 2.0 2.30+, worktrees carry uncommitted work, hook fields, current models — maintainer instruction
+- 2026-11-20 — §2.3, §3.10 — 2026-11-20 capture: Neon, `share` wording, Dynamic Workflows; model test results and `final-reviewer` on `inherit` recorded — maintainer instruction

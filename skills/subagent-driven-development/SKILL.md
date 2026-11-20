@@ -168,14 +168,14 @@ Read `references/preflight.md` with `view_file` now.
 
 ## Model Selection
 
-No documented dispatch argument sets the model, so an implementer's tier comes from the bundled agent's frontmatter: you choose the tier by choosing the TypeName — `implementer-flash` (`model: flash`), `implementer` (your session's model) or `implementer-pro` (`model: pro`). `flash` and `pro` are tiers; which models they are is not documented. If you cannot tell which model your session runs, treat it as Flash. Use the least powerful tier that can handle each role to conserve cost and increase speed.
+No documented dispatch argument sets the model, so an implementer's tier comes from the bundled agent's frontmatter: you choose the tier by choosing the TypeName — `implementer-flash` (`model: flash`), `implementer` (your session's model) or `implementer-pro` (`model: pro`). `flash` and `pro` are tiers; which models they are is not documented, and on some plans both run the same Flash model, so `implementer-pro` is then no step up. If you cannot tell which model your session runs, treat it as Flash. Use the least powerful tier that can handle each role to conserve cost and increase speed.
 
 - **Transcription** — the task's plan text contains the complete code to write — **and single-file mechanical fixes:** `implementer-flash`.
 - **Tasks worked from prose, integration and judgment tasks** (multi-file coordination, pattern matching, debugging): `implementer`.
 - **Architecture and design tasks** (design judgment or broad codebase understanding): `implementer-pro` if your session runs a Flash model; otherwise `implementer`.
 - **BLOCKED on reasoning, and fix-loop rounds 4-5:** one tier above the implementer that got stuck. Stuck on `implementer-flash`: `implementer` if your session runs above Flash, else `implementer-pro`. Stuck on `implementer`: `implementer-pro` if your session runs Flash; on a Pro-tier or non-Gemini session no TypeName is a step up, so re-dispatch `implementer` with more context or a smaller task. Stuck on `implementer-pro`: a fresh `implementer-pro`.
 - **Per-task reviews:** `spec-reviewer`, `code-reviewer` and `re-reviewer` run on your session's model.
-- **The final whole-branch review** goes to `final-reviewer`, which ships at the Pro tier (`model: pro`), not your session's model.
+- **The final whole-branch review** goes to `final-reviewer`, which runs on your session's model (`model: inherit`) in a fresh context. If your session runs a Flash model, tell your human partner before dispatching it that they can switch to a stronger model for this review.
 
 **Always pick the tier; without one, the implementer inherits your session's model.**
 

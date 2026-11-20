@@ -2,7 +2,7 @@
 
 Two bundled agents take this template — no registration needed:
 - `code-reviewer` (`agents/code-reviewer.md`): one task's diff, or a small ad-hoc range.
-- `final-reviewer` (`agents/final-reviewer.md`, Pro tier): a whole branch — an executor's final review, after a major feature, before merge.
+- `final-reviewer` (`agents/final-reviewer.md`, your session's model): a whole branch — an executor's final review, after a major feature, before merge.
 
 Fill the template below and dispatch:
 `invoke_subagent(Subagents: [{TypeName: "<code-reviewer or final-reviewer>", Role: "<role for this task>", Prompt: <filled template>, Workspace: "inherit"}])`

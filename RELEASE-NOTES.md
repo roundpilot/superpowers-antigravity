@@ -1,5 +1,27 @@
 # Superpowers Release Notes
 
+## v7.0.2.1 (2026-11-20)
+
+A fork hotfix on upstream v7.0.2. The manifest version stays 7.0.2.
+
+### Changes
+
+* `final-reviewer` now runs on your session's model, Orchestrator and Claude included.
+* On a Flash session the agent suggests a stronger model before the final review.
+* `browser-testing`: in the 2.0 app 2.30+, the agent starts the browser check itself.
+* The CLI, the IDE and business accounts still use `/browser`.
+
+### Platform Notes
+
+* On two tested accounts, `flash` and `pro` both ran Gemini 3.8 Flash.
+* Paid Pro and Ultra plans are untested and may map `pro` differently.
+* `implementer-pro` may therefore be no step up from `implementer-flash` on your plan.
+* `inherit` follows any session model, including Gemini 4 Neon, the new default.
+* The platform reference records docs to 2.0 2.33.0, CLI 1.5.12 and IDE 2.8.0.
+* Dynamic Workflows (`run_workflow`) are recorded in the reference; no skill uses them yet.
+
+---
+
 ## v7.0.2 (2026-11-04)
 
 ### Upstream v6.4.1 to v7.0.2 Sync

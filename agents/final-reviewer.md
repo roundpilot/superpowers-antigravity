@@ -1,9 +1,9 @@
 ---
 name: final-reviewer
-description: Whole-branch code review at the Pro tier - an executor's final review, or a review after a major feature or before merge. Read-only; dispatch with requesting-code-review's code-reviewer.md template, base and whole-branch blocks filled.
+description: Whole-branch code review on your session's model - an executor's final review, or a review after a major feature or before merge. Read-only; dispatch with requesting-code-review's code-reviewer.md template, base and whole-branch blocks filled.
 subagent: true
 mainAgent: false
-model: pro
+model: inherit
 tools:
   - view_file
   - list_dir

@@ -74,13 +74,13 @@ The abstraction layer costs tokens on every interaction, and those costs compoun
 | **Platforms** | 9+ (Claude Code, Codex, Cursor, etc.) | Antigravity only (2.0 app, IDE, CLI) |
 | **Tool names in skills** | Claude Code names + mapping files | Native Antigravity names |
 | **Subagent dispatch** | `Task tool (general-purpose)` | Bundled custom agents + `invoke_subagent` |
-| **Workspace isolation** | `git worktree` with fallback | Native `Workspace: "branch"` / `"inherit"` (`"share"` not recommended: its semantics are unverified) |
+| **Workspace isolation** | `git worktree` with fallback | Native `Workspace: "branch"` / `"inherit"` (`"share"` not recommended: untested) |
 | **Task tracking** | `TodoWrite` tool | `task.md` artifacts |
 | **Visual brainstorming** | Browser-based server | Native `generate_image` (no server needed) |
 | **Plan formatting** | Plain markdown | Mermaid diagrams, file links, diff blocks, GitHub alerts |
 | **Background tasks** | Not documented | `manage_task`, `send_message`, `schedule` (incl. cron) |
 | **UI verification** | Not available | `browser-testing` skill with screenshot evidence |
-| **Read-only subagents** | Full tool set for all | Bundled read-only reviewer agents: `spec-reviewer`, `re-reviewer`, `code-reviewer` (one task or a small range) and `final-reviewer` (whole branch, Pro tier) |
+| **Read-only subagents** | Full tool set for all | Bundled read-only reviewer agents: `spec-reviewer`, `re-reviewer`, `code-reviewer` (one task or a small range) and `final-reviewer` (whole branch) |
 | **Web research** | Not guided | `search_web` + `read_url_content` integrated |
 
 ### Core Enhancements
@@ -93,7 +93,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 - 🌐 **Browser-testing skill** — evidence-before-assertions discipline for UI work
 - 💰 **Token-saving subagents** — reviewers are read-only bundled agents
 - ✅ **Review gates** — design docs wait for your partner's approval, and plans end with an `ask_question` your partner answers before work goes on
-- 🔀 **Workspace mode guidance** — decision tables for `branch` and `inherit` per role; `share` is not recommended (semantics unverified)
+- 🔀 **Workspace mode guidance** — decision tables for `branch` and `inherit` per role; `share` is not recommended (untested)
 - 🛡️ **Edit-time purity gate** — contributors can enable a `PreToolUse` hook (`hooks/purity-check.mjs`, needs `node`) through their global `hooks.json`; the release gate `tests/antigravity/test-skill-tool-purity.sh` enforces the same law. See CONTRIBUTING.
 - 🔍 **Web research integration** — `search_web` woven into debugging, brainstorming, and planning
 
@@ -309,7 +309,7 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 | **writing-plans** | Detailed plans with Mermaid diagrams, rich formatting, an `ask_question` review gate, and a `Spec:` pointer so the spec travels with the plan |
 | **executing-plans** | Inline plan execution: one context, one final review |
 | **dispatching-parallel-agents** | Concurrent workflows with `Workspace: "branch"` / `"inherit"` and monitoring |
-| **requesting-code-review** | Bundled `code-reviewer` (one task or a small range) and Pro-tier `final-reviewer` (whole branch), with severity classification |
+| **requesting-code-review** | Bundled `code-reviewer` (one task or a small range) and `final-reviewer` (whole branch), with severity classification |
 | **receiving-code-review** | Responding to feedback with technical rigor |
 | **using-git-worktrees** | Workspace isolation with mode decision table |
 | **finishing-a-development-branch** | Merge/PR decision workflow |
@@ -331,11 +331,11 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 | `spec-reviewer` | inherit | Read-only: checks one task's implementation against its task text |
 | `code-reviewer` | inherit | Read-only: reviews code quality for one task or a small range |
 | `re-reviewer` | inherit | Read-only: verifies a fix round |
-| `final-reviewer` | pro | Read-only: reviews the whole branch before merge, for both executors |
+| `final-reviewer` | inherit | Read-only: reviews the whole branch before merge, for both executors |
 | `session-analyst` | inherit | Read-only: analyses session transcripts for diagnosing-superpowers |
 | `bundle-scrubber` | inherit | Redacts an exported diagnosis bundle for diagnosing-superpowers |
 
-`inherit` runs your session's model. `final-reviewer` ships at the Pro tier; which model that is, is not documented. Agent files can name only `inherit`, `flash` or `pro`, not a model or a reasoning effort, and plans differ in which models they offer, so check that a Pro-tier agent runs on your plan. It may run a different model family from your session's.
+`inherit` runs your session's model, so the reviewers, including the final review, use whatever you pick: Gemini 4 Neon, Carbon, Argon, Hydrogen, an Orchestrator, Claude or any other. Agent files can name only `inherit`, `flash` or `pro`, not a model. Which models `flash` and `pro` run is not documented and depends on your plan; on some plans both run Gemini 3.8 Flash, so `implementer-pro` may be no step up from `implementer-flash`.
 
 ## 🧭 Philosophy
 

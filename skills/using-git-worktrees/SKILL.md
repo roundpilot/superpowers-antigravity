@@ -82,7 +82,7 @@ Antigravity 2.0 supports three workspace modes for subagents. Choose based on th
 |------|--------|---------|----------|
 | `branch` | `Workspace: "branch"` | Agents that write concurrently with other writers | Parallel fixers on overlapping files |
 | `inherit` | `Workspace: "inherit"` | Agents that work in your checkout: reviewers, and writers that run one at a time | Reviewers, plan implementers |
-| `share` | `Workspace: "share"` | Documented only as 'share directory storage'; its path, lifetime and git state are unverified — not recommended | — |
+| `share` | `Workspace: "share"` | Documented as a new working copy that shares the repository's storage; its lifetime and how its changes come back are unverified — not recommended | — |
 
 **Rules of thumb:**
 - If agents write code at the same time → `branch`

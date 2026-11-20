@@ -82,7 +82,7 @@ invoke_subagent(Subagents: [
 | Editing different files, no commits | `Workspace: "inherit"` | Same checkout as yours — tell each agent not to commit; you commit after all return |
 | Read-only investigation | `Workspace: "inherit"` | Same checkout as yours |
 
-`Workspace: "share"` is documented only as 'share directory storage'; its semantics are unverified, so it is not recommended.
+`Workspace: "share"` is documented as a new working copy that shares the repository's storage; how its changes come back is unverified, so it is not recommended.
 
 ### 4. Review and Integrate
 
