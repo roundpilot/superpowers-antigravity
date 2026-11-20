@@ -422,6 +422,10 @@ Probe record: send_message and manage_task are default components of every subag
 - The CLI shows each subagent's model in `/agents` and in the status line JSON [CL CLI 1.5.3].
 - `inherit` ran the parent's model, an Orchestrator and Claude included, while `flash` and `pro`, by frontmatter or by the dispatch `Model` key, both ran gemini-3.8-flash-tiered, on an Argon-trial account and a business Starter account; a paid Pro or Ultra plan is untested [MO CLI 1.5.8 2026-11-13 model test runs 5-9]. The dispatch `Model` key is honoured only when the agent file has no `model:` line [MO CLI 1.5.1 2026-11-06 model test runs 1-4]. So `final-reviewer` ships `model: inherit`.
 - Dynamic Workflows: the `run_workflow` tool runs a Python script that starts agents in parallel or in stages, each with a `type_name`, `model` tier and `workspace`; every script needs approval [CL CLI 1.5.9; CL 2.0 2.32.0; D 2.0/CLI 2026-11-20 dynamic-workflows:3, :193, :204-216]. Not used by any skill yet.
+  - The CLI ships a built-in `run-workflow` skill (`~/.gemini/antigravity-cli/builtin/skills/run-workflow/SKILL.md`) that tells the agent when and how to write a script, and the agent read it before calling the tool [MO CLI 1.5.13 2026-11-20 workflow probe].
+  - A headless run (`agy -p`) denies the script as an unsandboxed command, in default and in Auto mode [MO CLI 1.5.13 2026-11-20 workflow probe].
+  - Per that built-in skill: workflow agents are main agents, not subagents; each must end by calling `finish` against its `schema`; one failure in `parallel` cancels the rest; a tool call from the script that needs approval is denied [MO CLI 1.5.13 2026-11-20 built-in skill text]. Whether a bundled agent with `mainAgent: false` can be a workflow `type_name` is untested [U].
+  - `run_workflow` was already in `init.tools` on CLI 1.5.1, before the feature was announced, so `init.tools` does not prove a tool is usable [MO CLI 1.5.1 2026-11-06 model test run 3].
 
 ## §4 Skills
 
