@@ -40,7 +40,7 @@ ROOT="${ROOT:-$REPO_ROOT}"
 JT="$SCRIPT_DIR/lib/json-tool.mjs"
 
 # The keys plugin.json may carry (a space-separated word list). Later tasks edit this line.
-PLUGIN_KEYS="name displayName description version logo suggestedPrompts author homepage repository keywords"
+PLUGIN_KEYS="name displayName description version logo suggestedPrompts author homepage repository license keywords"
 REQUIRED_KEYS="version displayName logo"
 DESCRIPTION='Core skills library for Google Antigravity (2.0 app, IDE and CLI): TDD, debugging, collaboration patterns, and proven techniques'
 

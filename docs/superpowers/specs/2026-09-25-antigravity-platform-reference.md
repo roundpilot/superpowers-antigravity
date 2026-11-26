@@ -176,7 +176,7 @@ A cell cites its source in short form: the page and lines of the 2026-09-29 capt
 ## §1 Products, roots and identifiers
 
 - Target products: the Antigravity 2.0 app (Desktop and Web [D 2.0/CLI slash-commands:227]), the IDE and the CLI (`agy`).
-- Covered releases: 2.0 to 2.18.1 (2026-09-28), CLI to 1.2.11 (2026-09-25), IDE to 2.5.5; the 2026-11-04 docs capture reaches 2.0 2.29.0, CLI 1.4.12 and IDE 2.6.0, the 2026-11-13 capture 2.0 2.31.2, CLI 1.5.7 and IDE 2.7.0, and the 2026-11-20 capture 2.0 2.33.0, CLI 1.5.12 and IDE 2.8.0; all are used only where cited.
+- Covered releases: 2.0 to 2.18.1 (2026-09-28), CLI to 1.2.11 (2026-09-25), IDE to 2.5.5; the 2026-11-04 docs capture reaches 2.0 2.29.0, CLI 1.4.12 and IDE 2.6.0, the 2026-11-13 capture 2.0 2.31.2, CLI 1.5.7 and IDE 2.7.0, and the 2026-11-20 capture 2.0 2.33.0, CLI 1.5.12 and IDE 2.8.0, and the 2026-11-26 capture 2.0 2.35.2 and CLI 1.5.18; all are used only where cited.
 - Out of target:
   - the SDK, a library, whose facts are never mechanisms;
   - IDE extensions (VS Code, Visual Studio, JetBrains, Zed and Xcode). They are recorded only where a tab reads "IDE & Extensions" [D shared rules:141].
@@ -426,6 +426,11 @@ Probe record: send_message and manage_task are default components of every subag
   - A headless run (`agy -p`) denies the script as an unsandboxed command, in default and in Auto mode [MO CLI 1.5.13 2026-11-20 workflow probe].
   - Per that built-in skill: workflow agents are main agents, not subagents; each must end by calling `finish` against its `schema`; one failure in `parallel` cancels the rest; a tool call from the script that needs approval is denied [MO CLI 1.5.13 2026-11-20 built-in skill text]. Whether a bundled agent with `mainAgent: false` can be a workflow `type_name` is untested [U].
   - `run_workflow` was already in `init.tools` on CLI 1.5.1, before the feature was announced, so `init.tools` does not prove a tool is usable [MO CLI 1.5.1 2026-11-06 model test run 3].
+  - An interactive CLI session in Auto mode still asks before each workflow script runs; once approved, a script with no agents and a script with one `type_name="self"` agent both completed, the agent in about 35 seconds. The script runs on a Python embedded in the CLI [MO CLI 1.5.13 2026-11-20 workflow probe 2; cli.log `workflow_python.go`]. A three-agent script naming two bundled agents hung after approval on its first run and was not re-run, so bundled agents as `type_name` stay untested [U].
+  - A trailing top-level `return` in a script is evaluated as the workflow's result [CL CLI 1.5.14].
+- Under a Gemini 4 Neon Low parent on an account shown as Google AI Pro, `inherit` ran gemini-4-neon-low, `flash` ran gemini-4-hydrogen-tiered-high and `pro` ran gemini-4-hydrogen-tiered-xhigh, by frontmatter and by the dispatch `Model` key alike [MO CLI 1.5.18 2026-11-26 model test run 10]. Whether the change from gemini-3.8-flash-tiered came with the CLI release or the account is not separated [U].
+- Gemini 4 Argon, Gemini 3.8 Flash, GPT-OSS-120b and the Claude 4.6 models leave on 2026-11-30 [D 2026-11-26 models]. Gemini 4 Hydrogen is on every plan and is the default for Free, Plus and standard Pro-trial accounts [D 2026-11-26 models].
+- Orchestrator is now one selector option with a planner (Neon by default, Carbon, Argon or Claude Opus 5.5) and an executor (Hydrogen by default, or Claude Sonnet 5.5), set under Settings > Models on Pro and Ultra; Gemini Enterprise fixes it to Carbon High with Hydrogen High [D 2026-11-26 models]. In the CLI, the same model and effort for both roles runs single-agent [CL CLI 1.5.17].
 
 ## §4 Skills
 
@@ -441,6 +446,7 @@ Probe record: send_message and manage_task are default components of every subag
   | Plugin | a plugin's `skills/` [D shared plugins:14-16, :78] | `~/.gemini/antigravity-cli/plugins/<name>/skills/` [D CLI skills:127]; the 2026-11-04 docs stage CLI plugins in `~/.gemini/config/plugins/<plugin_name>/` [D 2026-11-04 plugins:233-237] (X1) | a plugin's `skills/` [D shared plugins:14-16, :78] |
 
   The legacy workspace `.agent/skills` is still read [D shared skills:17].
+  The CLI also discovers user-global skills in `~/.agents/skills`, and skills in `~/.gemini` win a name collision [CL CLI 1.5.16]. Whether a plugin's skill wins over a same-name skill there is untested [U].
 - Skill frontmatter:
   - `name` defaults to the folder name [D shared skills:59];
   - `disable-slash-command` [CL CLI 1.1.12];
@@ -556,7 +562,7 @@ The hooks page is tabbed only for locations and toggles; its schema and contract
 - Common input fields: `conversationId`, `workspacePaths` (it can hold several roots), `transcriptPath`, `artifactDirectoryPath` and `modelName` [D shared hooks:196-212].
 - PreToolUse input: `toolCall.name`, `toolCall.args` and `stepIdx` [D shared hooks:226-229]. Decisions: `allow`, `deny`, `ask`, `force_ask` and `deny_unless_prior_grant`, plus `reason` and `permissionOverrides` [D shared hooks:236-243]. `allow` "Automatically allows the tool execution" [D shared hooks:237], so an allowing PreToolUse hook would also skip the permission prompt [I].
 - PostToolUse input: `toolCall` (`name` and `args`), `stepIdx` and `error`; it returns `{}` [D shared hooks:288-295].
-- PreInvocation receives `invocationNum` and `initialNumSteps` and may return `injectSteps` (`toolCall`, `userMessage` or `ephemeralMessage`) [D shared hooks:333-349].
+- PreInvocation receives `invocationNum` and `initialNumSteps` and may return `injectSteps` (`toolCall`, `userMessage` or `ephemeralMessage`) [D shared hooks:333-349]. `ephemeralMessage` is deprecated for `systemMessage`, whose value is an object holding its own `systemMessage` string, and injected steps stay in the conversation history [D 2026-11-26 hooks].
 - PostInvocation may also return `terminationBehavior` [D shared hooks:383-393].
 - Stop receives `fullyIdle` and `terminationReason`, and returns `decision: "continue"` with a `reason` to keep the agent running [D shared hooks:415-430]. The plugin page now agrees: Stop returns `{"decision": "continue", ...}` or `{}` (it said `"block"` before), and its MCP matcher example is `"mcp_.*"` [D 2026-11-13 build-plugins:483-485].
 
@@ -665,6 +671,8 @@ The plugin ships no hook: no `hooks.json` at the plugin root and no user-facing 
   - `allowNonWorkspaceAccess` is off by default [D CLI settings:157];
   - outside-workspace access is read-only [CL CLI 1.1.14].
 - The project option was renamed "Inherit Global" [CL 2.0 2.14.0] (X11).
+- CLI Auto mode reads files outside the workspace without asking [CL CLI 1.5.14], and creates or edits files there without asking when the file is inside a version-controlled repository or the change only adds content [CL CLI 1.5.16].
+- Plugins failed to load on Windows when the workspace and the Antigravity configuration directory were on different drives; fixed [CL CLI 1.5.18].
 
 ## §10 Transcripts and session data
 
@@ -1256,3 +1264,4 @@ Decision record changes of this release (id — old — new — part). The ids a
 
 - 2026-11-13 — §0, §1, §2.3, §3.10, §7, §15, §16 — 2026-11-13 capture: browser subagent self-start on 2.0 2.30+, worktrees carry uncommitted work, hook fields, current models — maintainer instruction
 - 2026-11-20 — §2.3, §3.10 — 2026-11-20 capture: Neon, `share` wording, Dynamic Workflows; model test results and `final-reviewer` on `inherit` recorded — maintainer instruction
+- 2026-11-26 — §1, §3.10, §4, §7.3, §9 — 2026-11-26 capture: model retirements, Orchestrator roles, `~/.agents/skills`, `ephemeralMessage` deprecated, Auto mode outside-workspace access; model test run 10 and workflow probe 2 recorded — maintainer instruction

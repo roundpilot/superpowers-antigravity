@@ -168,7 +168,7 @@ Read `references/preflight.md` with `view_file` now.
 
 ## Model Selection
 
-No documented dispatch argument sets the model, so an implementer's tier comes from the bundled agent's frontmatter: you choose the tier by choosing the TypeName — `implementer-flash` (`model: flash`), `implementer` (your session's model) or `implementer-pro` (`model: pro`). `flash` and `pro` are tiers; which models they are is not documented, and on some plans both run the same Flash model, so `implementer-pro` is then no step up. If you cannot tell which model your session runs, treat it as Flash. Use the least powerful tier that can handle each role to conserve cost and increase speed.
+No documented dispatch argument sets the model, so an implementer's tier comes from the bundled agent's frontmatter: you choose the tier by choosing the TypeName — `implementer-flash` (`model: flash`), `implementer` (your session's model) or `implementer-pro` (`model: pro`). `flash` and `pro` are tiers; which models they are is not documented and has changed between releases: both have run the same Flash model, and both have run Gemini 4 Hydrogen at different thinking levels, so `implementer-pro` is a small step up at most. Below, "Flash" means a lightweight session model: Gemini 4 Hydrogen or a Gemini Flash model. If you cannot tell which model your session runs, treat it as Flash. Use the least powerful tier that can handle each role to conserve cost and increase speed.
 
 - **Transcription** — the task's plan text contains the complete code to write — **and single-file mechanical fixes:** `implementer-flash`.
 - **Tasks worked from prose, integration and judgment tasks** (multi-file coordination, pattern matching, debugging): `implementer`.

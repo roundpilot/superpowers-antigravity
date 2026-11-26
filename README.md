@@ -269,6 +269,10 @@ Inside an `agy` session, `/plugin install <local-path>` does the same as `agy pl
 
 > CLI 1.2.17 kept its own copy of installed plugins, but current docs say `agy plugin install` writes to `~/.gemini/config/plugins/superpowers`, the folder the app and IDE clone uses. If `agy plugin list` already shows superpowers after you cloned for the app, skip the CLI install: never run both a clone and `agy plugin install` against that folder.
 
+**If the plugin does not load on Windows** and your project is on a different drive from your user profile, update the CLI (`agy update`): 1.5.18 fixes it.
+
+**If you also installed superpowers for another tool,** check `~/.agents/skills`. Since CLI 1.5.16 the CLI loads skills from that folder too, so remove any superpowers copy there and keep this plugin as the only one.
+
 ### ✅ Verify Installation
 
 1. **Check the product's own view** (no model turn):
@@ -335,7 +339,7 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 | `session-analyst` | inherit | Read-only: analyses session transcripts for diagnosing-superpowers |
 | `bundle-scrubber` | inherit | Redacts an exported diagnosis bundle for diagnosing-superpowers |
 
-`inherit` runs your session's model, so the reviewers, including the final review, use whatever you pick: Gemini 4 Neon, Carbon, Argon, Hydrogen, an Orchestrator, Claude or any other. Agent files can name only `inherit`, `flash` or `pro`, not a model. Which models `flash` and `pro` run is not documented and depends on your plan; on some plans both run Gemini 3.8 Flash, so `implementer-pro` may be no step up from `implementer-flash`.
+`inherit` runs your session's model, so the reviewers, including the final review, use whatever you pick: Gemini 4 Neon, Carbon, Hydrogen, an Orchestrator, Claude or any other. Agent files can name only `inherit`, `flash` or `pro`, not a model. Which models `flash` and `pro` run is not documented and has changed between releases. On CLI 1.5.18 `flash` ran Gemini 4 Hydrogen at High thinking and `pro` Hydrogen at Extra High; earlier both ran Gemini 3.8 Flash. So `implementer-pro` is a small step up from `implementer-flash` at most, and both sit below a Neon, Carbon or Claude session.
 
 ## 🧭 Philosophy
 

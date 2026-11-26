@@ -7,17 +7,20 @@ A fork hotfix on upstream v7.0.2. The manifest version stays 7.0.2.
 ### Changes
 
 * `final-reviewer` now runs on your session's model, Orchestrator and Claude included.
-* On a Flash session the agent suggests a stronger model before the final review.
+* On Hydrogen or Flash, the agent suggests a stronger model before the final review.
 * `browser-testing`: in the 2.0 app 2.30+, the agent starts the browser check itself.
 * The CLI, the IDE and business accounts still use `/browser`.
+* `plugin.json` now declares the MIT license.
+* README: notes on `~/.agents/skills` and the Windows cross-drive plugin fix in CLI 1.5.18.
 
 ### Platform Notes
 
-* On two tested accounts, `flash` and `pro` both ran Gemini 3.8 Flash.
-* Paid Pro and Ultra plans are untested and may map `pro` differently.
-* `implementer-pro` may therefore be no step up from `implementer-flash` on your plan.
+* On CLI 1.5.18, `flash` ran Gemini 4 Hydrogen High and `pro` Hydrogen Extra High.
+* Earlier CLIs ran both tiers on Gemini 3.8 Flash, which retires on 2026-11-30.
+* `implementer-pro` is a small step up from `implementer-flash` at most.
+* Other plans may map the tiers differently; only `inherit` is predictable.
 * `inherit` follows any session model, including Gemini 4 Neon, the new default.
-* The platform reference records docs to 2.0 2.33.0, CLI 1.5.12 and IDE 2.8.0.
+* The platform reference records docs to 2.0 2.35.2 and CLI 1.5.18.
 * Dynamic Workflows (`run_workflow`) are recorded in the reference; no skill uses them yet.
 
 ---

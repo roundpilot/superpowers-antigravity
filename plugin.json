@@ -14,6 +14,7 @@
   },
   "homepage": "https://github.com/roundpilot/superpowers-antigravity",
   "repository": "https://github.com/roundpilot/superpowers-antigravity",
+  "license": "MIT",
   "keywords": [
     "skills",
     "tdd",
