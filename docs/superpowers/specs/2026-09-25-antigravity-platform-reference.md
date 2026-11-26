@@ -272,6 +272,7 @@ Every tool on the Supported Tools list of the hooks page [D shared hooks:123-180
   - An "early-termination condition" is mentioned [CL CLI 1.1.12]; its parameter is undocumented [U].
   - Only `{DurationSeconds, Prompt}` has been observed [MO 2.0 ≤2.10.0 2026-08-25 transcript probe].
   - `schedule` and `manage_task` were in the tool list on all three products [MO IDE 2.5.5 2026-10-05 LC1 probe 20261005-1426]; [MO 2.0 2.19.1 2026-10-05 LC1 probe 20261005-1426]; [MO CLI 1.2.17 2026-10-05 LC1 probe 20261005-1426] (ruling S4.3-background).
+- `update_steps` takes `steps`, the whole list each call, each with a `title` and a `status` of `pending`, `in_progress` or `done`; an interactive CLI session had it and it drives the live step checklist, while a headless run's `init.tools` did not list it [MO CLI 1.5.18 2026-11-26 step checklist probe; CL CLI 1.5.16]. The 2.0 app, the IDE and subagents are untested [U].
 - `manage_task` and background commands:
   - `manage_task` is the documented tool for background tasks [D shared hooks:155-156]. It is available to declarative agents that have not opted out of fundamental components [CL CLI 1.1.13].
   - Background tasks keep their names in completion notifications and task lists [CL CLI 1.2.5]. The CLI's completion notices [CL CLI 1.2.5, 1.1.13] have undocumented agent-facing semantics.
@@ -1264,4 +1265,4 @@ Decision record changes of this release (id — old — new — part). The ids a
 
 - 2026-11-13 — §0, §1, §2.3, §3.10, §7, §15, §16 — 2026-11-13 capture: browser subagent self-start on 2.0 2.30+, worktrees carry uncommitted work, hook fields, current models — maintainer instruction
 - 2026-11-20 — §2.3, §3.10 — 2026-11-20 capture: Neon, `share` wording, Dynamic Workflows; model test results and `final-reviewer` on `inherit` recorded — maintainer instruction
-- 2026-11-26 — §1, §3.10, §4, §7.3, §9 — 2026-11-26 capture: model retirements, Orchestrator roles, `~/.agents/skills`, `ephemeralMessage` deprecated, Auto mode outside-workspace access; model test run 10 and workflow probe 2 recorded — maintainer instruction
+- 2026-11-26 — §1, §3.10, §4, §7.3, §9 — 2026-11-26 capture: model retirements, Orchestrator roles, `~/.agents/skills`, `ephemeralMessage` deprecated, Auto mode outside-workspace access; model test run 10, workflow probe 2 and the `update_steps` probe (§2.2) recorded — maintainer instruction
