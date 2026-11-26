@@ -23,7 +23,7 @@ A fork hotfix on upstream v7.0.2. The manifest version stays 7.0.2.
 * Other plans may map the tiers differently; only `inherit` is predictable.
 * `inherit` follows any session model, including Gemini 4 Neon, the new default.
 * The platform reference records docs to 2.0 2.35.2 and CLI 1.5.18.
-* Dynamic Workflows (`run_workflow`) are recorded in the reference; no skill uses them yet.
+* Dynamic Workflows ran our reviewers in parallel in a test; no skill uses them yet.
 
 ---
 
