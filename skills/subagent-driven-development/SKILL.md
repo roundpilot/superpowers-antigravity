@@ -119,7 +119,7 @@ Approvals can pause an unattended run. If your commands run in a terminal sandbo
 Conversation memory does not survive compaction. In real sessions,
 controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
-a ledger file, not only in the task.md artifact.
+a ledger file, not only in the task.md artifact. If your tools include a step checklist tool, also list the plan's tasks in it and update it as each task finishes, so your human partner sees live progress; it is display only, and the ledger stays the record.
 
 - Each plan owns a workspace: a git-ignored directory under `<repo-root>/.superpowers/sdd/`, home to every file for THIS plan — its ledger. Another plan's directory is never yours to read or write. Resolve it at skill start:
   1. Write the plan's path the way the ledger names it: relative to the repository root (`git rev-parse --show-toplevel`), with forward slashes, or absolute if the plan lives outside the repository. Normalize a ledger's first line the same way before you compare it, and on Windows compare without regard to case.

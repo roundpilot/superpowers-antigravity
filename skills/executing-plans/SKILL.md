@@ -114,7 +114,7 @@ Approvals can pause an unattended run. If your commands run in a terminal sandbo
 Conversation memory does not survive compaction. An inline executor that
 loses its place re-implements tasks whose commits already exist — the same
 failure as a controller re-dispatching them, paid for in your own context.
-Track progress in a ledger file, not only in the task.md artifact. The task.md artifact is a live view; the ledger is the record.
+Track progress in a ledger file, not only in the task.md artifact. The task.md artifact is a live view; the ledger is the record. If your tools include a step checklist tool, also list the plan's tasks in it and update it as each task finishes; it too is display only.
 
 The workspace and ledger are shared with superpowers:subagent-driven-development
 — same directory, same format — so a plan can change executors mid-flight

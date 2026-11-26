@@ -95,6 +95,7 @@ Beyond the platform port, this fork adds capabilities that don't exist upstream:
 - ✅ **Review gates** — design docs wait for your partner's approval, and plans end with an `ask_question` your partner answers before work goes on
 - 🔀 **Workspace mode guidance** — decision tables for `branch` and `inherit` per role; `share` is not recommended (untested)
 - 🛡️ **Edit-time purity gate** — contributors can enable a `PreToolUse` hook (`hooks/purity-check.mjs`, needs `node`) through their global `hooks.json`; the release gate `tests/antigravity/test-skill-tool-purity.sh` enforces the same law. See CONTRIBUTING.
+- 📋 **Live step checklist** — where the session has a step checklist tool (CLI 1.5.16+ interactive sessions), both executors mirror the plan's tasks to it; the ledger file stays the record
 - 🔍 **Web research integration** — `search_web` woven into debugging, brainstorming, and planning
 
 ## 🚀 The Workflow
@@ -339,7 +340,7 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 | `session-analyst` | inherit | Read-only: analyses session transcripts for diagnosing-superpowers |
 | `bundle-scrubber` | inherit | Redacts an exported diagnosis bundle for diagnosing-superpowers |
 
-`inherit` runs your session's model, so the reviewers, including the final review, use whatever you pick: Gemini 4 Neon, Carbon, Hydrogen, an Orchestrator, Claude or any other. Agent files can name only `inherit`, `flash` or `pro`, not a model. Which models `flash` and `pro` run is not documented and has changed between releases. On CLI 1.5.18 `flash` ran Gemini 4 Hydrogen at High thinking and `pro` Hydrogen at Extra High; earlier both ran Gemini 3.8 Flash. So `implementer-pro` is a small step up from `implementer-flash` at most, and both sit below a Neon, Carbon or Claude session.
+`inherit` runs your session's model, so the reviewers, including the final review, use whatever you pick: Gemini 4 Neon, Carbon, Hydrogen, an Orchestrator, Claude or any other. Agent files can name only `inherit`, `flash` or `pro`, not a model. Which models `flash` and `pro` run is set by Antigravity for each session, not by this plugin, and has changed without a release. On CLI 1.5.18 `flash` ran Gemini 4 Hydrogen at High thinking and `pro` Hydrogen at Extra High; earlier both ran Gemini 3.8 Flash. So `implementer-pro` is a small step up from `implementer-flash` at most, and both sit below a Neon, Carbon or Claude session.
 
 ## 🧭 Philosophy
 

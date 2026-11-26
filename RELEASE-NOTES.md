@@ -10,6 +10,7 @@ A fork hotfix on upstream v7.0.2. The manifest version stays 7.0.2.
 * On Hydrogen or Flash, the agent suggests a stronger model before the final review.
 * `browser-testing`: in the 2.0 app 2.30+, the agent starts the browser check itself.
 * The CLI, the IDE and business accounts still use `/browser`.
+* Both executors mirror plan tasks to the live step checklist where the session has one.
 * `plugin.json` now declares the MIT license.
 * README: notes on `~/.agents/skills` and the Windows cross-drive plugin fix in CLI 1.5.18.
 
@@ -18,6 +19,7 @@ A fork hotfix on upstream v7.0.2. The manifest version stays 7.0.2.
 * On CLI 1.5.18, `flash` ran Gemini 4 Hydrogen High and `pro` Hydrogen Extra High.
 * Earlier CLIs ran both tiers on Gemini 3.8 Flash, which retires on 2026-11-30.
 * `implementer-pro` is a small step up from `implementer-flash` at most.
+* Antigravity's servers set this mapping per session; no plugin setting changes it.
 * Other plans may map the tiers differently; only `inherit` is predictable.
 * `inherit` follows any session model, including Gemini 4 Neon, the new default.
 * The platform reference records docs to 2.0 2.35.2 and CLI 1.5.18.

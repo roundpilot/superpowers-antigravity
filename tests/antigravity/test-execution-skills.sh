@@ -158,6 +158,15 @@ check_E16() {
   done
   verdict E16 'every references/<name>.md pointer in a SKILL.md resolves'
 }
+check_E17() {
+  local f
+  for f in skills/subagent-driven-development/SKILL.md skills/executing-plans/SKILL.md; do
+    must_have "$f" 'step checklist tool'
+    must_have "$f" 'display only'
+    must_lack "$f" 'update_steps'
+  done
+  verdict E17 'both executors mirror tasks to a step checklist tool, unnamed and display only'
+}
 
 CHECKS=$(declare -F | sed 's/^declare -f //' | grep -E '^check_E[0-9]+$' | sort -t E -k2,2n)
 for c in $CHECKS; do "$c"; done
