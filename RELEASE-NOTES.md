@@ -1,6 +1,6 @@
 # Superpowers Release Notes
 
-## v7.0.2.1 (2026-11-20)
+## v7.0.2.1 (2026-11-27)
 
 A fork hotfix on upstream v7.0.2. The manifest version stays 7.0.2.
 
