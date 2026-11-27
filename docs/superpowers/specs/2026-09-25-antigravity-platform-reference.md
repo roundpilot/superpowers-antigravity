@@ -729,7 +729,11 @@ The plugin ships no hook: no `hooks.json` at the plugin root and no user-facing 
   - `/plan`, `/grill-me` and `/learn` (X10);
   - `/plugin` (§6);
   - `/schedule`, `/browser` and `/btw`;
-  - `/boost` and `/teamwork-preview`, on paid plans [D 2.0/CLI slash-commands:31-32] (the 2026-07-29 reference's "Ultra plan exclusive" is corrected in §14).
+  - `/boost` and `/teamwork-preview`, on paid plans [D 2.0/CLI slash-commands:31-32] (the 2026-07-29 reference's "Ultra plan exclusive" is corrected in §14). The 2026-11-26 docs name the second one `/teamwork` [D 2.0/CLI 2026-11-26 teamwork:1];
+  - `/swarm`, in preview on all plans for the 2.0 app and the CLI: the conversation becomes a coordinator that adds named workers and a verifier, all posting to one shared board; workers run on the conversation's model and share its workspace by default, and a member that runs out of quota pauses [D 2.0/CLI 2026-11-26 swarm:3-9, :24-40, :50]. How this plugin's rule and skills behave inside a swarm is untested [U]; considered, not used;
+  - `/compact`, which checkpoints the conversation on demand and keeps live subagents, background tasks and artifacts [D 2.0/CLI 2026-11-26 commands/compact:1-12];
+  - `/agy-customizations` and `/antigravity-guide`, built-in skills that load the customization reference and the product docs [D 2026-11-26 commands/agy-customizations:1-8, commands/antigravity-guide:1-8];
+  - the 2026-11-26 pages for `/goal`, `/grill-me`, `/learn`, `/schedule`, `/btw`, `/boost` and `/teamwork` also list the IDE and its extensions [D 2026-11-26 commands/goal:2, commands/grill-me:2, boost:2, teamwork:2].
 - Plugin slash commands show their plugin name in the 2.0 `/` menu [CL 2.0 2.18.1].
 - CLI interactive:
   - `/diff` with VCS, Turn and Commit modes, and line comments that steer the agent [D CLI cli/commands/diff:7, :27];
