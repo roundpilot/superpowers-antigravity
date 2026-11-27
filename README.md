@@ -340,7 +340,7 @@ The always-loaded footprint is a single ~55-line bootstrap; individual skills ar
 | `session-analyst` | inherit | Read-only: analyses session transcripts for diagnosing-superpowers |
 | `bundle-scrubber` | inherit | Redacts an exported diagnosis bundle for diagnosing-superpowers |
 
-`inherit` runs your session's model, so the reviewers, including the final review, use whatever you pick: Gemini 4 Neon, Carbon, Hydrogen, an Orchestrator, Claude or any other. Agent files can name only `inherit`, `flash` or `pro`, not a model. Which models `flash` and `pro` run is set by Antigravity for each session, not by this plugin, and has changed without a release. On CLI 1.5.18 `flash` ran Gemini 4 Hydrogen at High thinking and `pro` Hydrogen at Extra High; earlier both ran Gemini 3.8 Flash. So `implementer-pro` is a small step up from `implementer-flash` at most, and both sit below a Neon, Carbon or Claude session.
+`inherit` runs your session's model, so the reviewers, including the final review, use whatever you pick: Gemini 4 Neon, Carbon, Hydrogen, an Orchestrator, Claude or any other. Agent files can name only `inherit`, `flash` or `pro`, not a model. Which models `flash` and `pro` run is set by Antigravity for each session, not by this plugin, and has changed without a release. On CLI 1.5.18 `flash` ran Gemini 4 Hydrogen at High thinking and `pro` Hydrogen at Extra High; earlier both ran Gemini 3.8 Flash. Your plan may map them differently. So `implementer-pro` is a small step up from `implementer-flash` at most, and both sit below a Neon, Carbon or Claude session.
 
 ## 🧭 Philosophy
 
